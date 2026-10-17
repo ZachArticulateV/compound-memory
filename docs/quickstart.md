@@ -115,6 +115,16 @@ and it picks up where you stopped.
 Add a few words to aim the next session: `/project-memory handoff finish the
 login form`.
 
+It works for any kind of work, not only code. A deploy, a bug hunt, a document,
+or a plan each gets the verification that fits it: a deploy records the health
+check you saw, a plan records what you agreed versus what was only proposed.
+Anything durable the session learned (a decision, a confirmed bug, a new task)
+is filed into the memory file that owns it, and the handoff links to it.
+
+When the work is finished and merged, run `/project-memory handoff close`. It
+files whatever the handoff still holds and retires it, so the next session is
+not handed instructions for work that is already done.
+
 ## That is the whole routine
 
 | When | Run |
@@ -125,6 +135,7 @@ login form`.
 | After shipping something substantial | `/project-memory sync` |
 | Before building something big | `/project-memory grill <your plan>` |
 | "Memory says something I do not believe" | `/project-memory audit`, then `/project-memory repair` |
+| Memory feels heavy, repetitive, or out of date | `/project-memory cleanup` |
 
 When you want more (several branches at once, Codex, CI checks), read
 [`advanced.md`](advanced.md).
@@ -142,7 +153,7 @@ When you want more (several branches at once, Codex, CI checks), read
 ## Words you will see
 
 - **Memory tree**: the `memory/` folder. Plain Markdown, committed like code.
-- **Mode**: one of the seven commands after `/project-memory` (`init`,
+- **Mode**: one of the eight commands after `/project-memory` (`init`,
   `status`, and so on).
 - **Playbook**: the instructions Claude follows for one mode. You never edit
   these; they ship with the plugin.

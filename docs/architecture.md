@@ -8,7 +8,7 @@ model to do, it says so — and it matters, because instruction and enforcement 
 not the same guarantee.
 
 **Read this before reading anything else here.** Most of this plugin is Markdown
-that a model reads: the router, seven mode playbooks, four shared references, the
+that a model reads: the router, eight mode playbooks, four shared references, the
 auditor prompt, the writing rule, and ten templates. Those shape behavior; they
 do not constrain it the way code does. Exactly three properties are mechanically
 enforced, and [`docs/limitations.md`](./limitations.md) names them: the bundled
@@ -16,7 +16,7 @@ auditor cannot write because its tool grant contains no writer, the Codex tier
 cannot write because it runs under `-s read-only`, and validation warnings cannot
 block an edit because the hook always exits 0.
 
-Two sections below — [The seven modes](#the-seven-modes) and much of
+Two sections below — [The eight modes](#the-eight-modes) and much of
 [Safeguards](#safeguards) — describe playbook instructions. They are labelled at
 the top of each, and reading them as enforced behavior would be reading this
 document the way the plugin exists to stop people reading memory.
@@ -29,7 +29,7 @@ The spec this implements asks for nine deliverables. Here is where each one is.
 | --- | --- |
 | A. Architecture | [Components, and why each one exists](#components-and-why-each-one-exists) |
 | B. File Tree | [File tree](#file-tree) |
-| C. Skill Interface | [`README.md` → Use](../README.md#use), expanded in [The seven modes](#the-seven-modes) |
+| C. Skill Interface | [`README.md` → Use](../README.md#use), expanded in [The eight modes](#the-eight-modes) |
 | D. Claude Workflow | [What Claude reads, and when](#what-claude-reads-and-when) |
 | E. User Workflow | [`README.md` → What you actually need](../README.md#what-you-actually-need) |
 | F. Context Cost | [Context cost](#context-cost) |
@@ -67,33 +67,35 @@ Two structural commitments follow from that, and they explain most of the rest:
 
 ## Components, and why each one exists
 
-### One skill, seven modes
+### One skill, eight modes
 
 `skills/project-memory/SKILL.md` is a router and nothing else. It resolves the
 mode from `$0`, runs the deterministic probe, loads exactly one playbook, and
 carries the standing rules that hold in every mode.
 
-It is deliberately small. Loading six playbooks to run one mode is the context
+It is deliberately small. Loading seven playbooks to run one mode is the context
 inflation this system exists to prevent, so the architecture lives in the
 references and the router stays a table.
 
-Its `allowed-tools` grants exactly three `Bash` patterns, each scoped to one
+Its `allowed-tools` grants exactly four `Bash` patterns, each scoped to one
 bundled script:
 
 ```text
 Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/project-state.mjs" *)
 Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/memory-validate.mjs" *)
 Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/auditor-bridge.mjs" *)
+Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/memory-hygiene.mjs" *)
 ```
 
 The skill stays model-invocable, so the only thing keeping ordinary coding work
 from triggering an audit is the negative half of its `description`. That clause
 is asserted by the test suite rather than assumed.
 
-### Seven mode playbooks
+### Eight mode playbooks
 
 One file per mode under `skills/project-memory/references/`: `init.md`,
-`status.md`, `sync.md`, `handoff.md`, `grill.md`, `audit.md`, `repair.md`.
+`status.md`, `sync.md`, `handoff.md`, `grill.md`, `audit.md`, `repair.md`,
+`cleanup.md`.
 
 Each is loaded only by its own mode. Each ends with a "failure modes this mode
 must avoid" section, because the useful part of a playbook is usually the thing
@@ -106,7 +108,7 @@ it actually uses:
 
 | Reference | Carries |
 | --- | --- |
-| `memory-schema.md` | The canonical contract: what each artifact holds, how it changes, who may change it |
+| `memory-schema.md` | The canonical contract: what each artifact holds, how it changes, who may change it, and which artifact owns each kind of fact (the one table `repair`, `handoff`, and `cleanup` all route by) |
 | `evidence-policy.md` | The five-value finding classification, the promotion prohibition, the verification gate, the eight-value audit taxonomy, many-readers-one-writer |
 | `safety.md` | Secrets, untrusted-content normalization, external authority, the auto-memory boundary, branch isolation, the context budget |
 | `interview.md` | How the skill asks the user anything: design tree, frontier rounds, a recommended answer per question, facts looked up rather than asked, answers challenged against memory |
@@ -228,6 +230,25 @@ overlapping matches on one value report once, so the count reflects secrets
 rather than patterns. **A finding never echoes the value it found**: the excerpt
 is a four-character prefix plus a length, so a detection cannot re-leak the
 credential into logs or CI output.
+
+**`scripts/memory-hygiene.mjs`** — the rot check, run by `cleanup`. It raises
+eight kinds of signal, each a candidate the playbook confirms by reading:
+
+| Signal | Fires on |
+| --- | --- |
+| `completed-task` | A checked `[x]` item still in `next-actions.md` |
+| `resolved-bug` | A `bugs-and-risks.md` entry whose `Status:` is resolved, fixed, closed, or done |
+| `duplicated-text` | One sentence (60+ characters, 8+ words, normalized for wrapping, emphasis, and case) in two or more memory files; template guidance and `archive/` are exempt |
+| `diverging-test-counts` | Two different `N passed, M failed, K skipped` results across the startup files and handoffs |
+| `stale-handoff` | A handoff whose recorded `HEAD` is unknown or behind by commits outside `memory/` (saving the handoff does not age it), or whose branch has merged into this one or no longer exists |
+| `journal-entries` | Three or more date-led lines in `current-state.md` or a handoff, both of which are replaced rather than appended to |
+| `unreachable-file` | A memory file no memory or contract file links to; schema files and `archive/` are exempt |
+| `startup-budget` | The startup set (`INDEX.md`, `current-state.md`, the active handoff, `next-actions.md`) over 400 lines combined |
+
+It exits 0 whenever it ran, however many signals it found, because a signal is
+not a verdict: a duplicate can be a deliberate signpost, and a checked task can
+be waiting for its completion to be recorded. It reads files and queries Git,
+and writes nothing.
 
 **`scripts/lib/`** — `git.mjs` (every call an `execFileSync` with an array argv,
 never a shell string; every function degrades to a valid result instead of
@@ -436,6 +457,7 @@ project-memory/
 │   ├── project-state.mjs             deterministic probe
 │   ├── memory-validate.mjs           structural validator
 │   ├── auditor-bridge.mjs            tiered external evaluator
+│   ├── memory-hygiene.mjs            rot-signal check for cleanup
 │   ├── session-status-hook.mjs       SessionStart handler
 │   ├── post-tool-validate-hook.mjs   PostToolUse handler
 │   └── lib/
@@ -444,7 +466,7 @@ project-memory/
 │       ├── memory-model.mjs          layout constants, parsing, secret patterns
 │       └── report.mjs                shared CLI contract and renderers
 ├── skills/project-memory/
-│   ├── SKILL.md                      the seven-mode router
+│   ├── SKILL.md                      the eight-mode router
 │   ├── references/
 │   │   ├── init.md                   \
 │   │   ├── status.md                  |
@@ -452,7 +474,8 @@ project-memory/
 │   │   ├── handoff.md                 |  loaded one at a time
 │   │   ├── grill.md                   |
 │   │   ├── audit.md                   |
-│   │   ├── repair.md                 /
+│   │   ├── repair.md                  |
+│   │   ├── cleanup.md                /
 │   │   ├── memory-schema.md          \
 │   │   ├── evidence-policy.md         |  shared references,
 │   │   ├── safety.md                  |  loaded on demand
@@ -525,7 +548,7 @@ project with no verifiable feature set does not get an empty acceptance file, a
 project with no vocabulary of its own gets no glossary, and the archive exists
 when something has been retired into it.
 
-## The seven modes
+## The eight modes
 
 The user-facing table is in [`README.md`](../README.md#use).
 
@@ -582,6 +605,17 @@ mode reads whatever is already at the target and checks its `Branch:` line —
 because two branch names can slug to one filename, and writing anyway destroys
 another workstream's state with no error and nothing in the diff to notice.
 
+The handoff is written for any kind of work. A work-type table defines what
+"observed" means for code, a bug investigation, a deploy, a migration, a
+document, research, a plan, or an operational task, so a session with no test
+suite still has an honest `Verified` section — a plan's verification is the
+user's agreement, and a recommendation stays `Proposed, not agreed` until given.
+Before writing, the mode files each durable fact the session produced into the
+artifact that owns it, then points to it: the handoff is replaced every run, so
+a fact kept only there would be erased by the next one. `handoff close` retires
+a finished workstream the same way, filing what it still holds before deleting
+the file and its `INDEX.md` pointer.
+
 **`grill`** stress-tests a plan before it is built. It runs the interview
 discipline in `interview.md`: the plan is a design tree, questions are asked a
 frontier at a time with a recommended answer each, facts are looked up rather
@@ -609,6 +643,17 @@ are not: an unsupported root cause is **moved** back to the hypotheses list with
 `Unknown` restored to the confirmed field, and a reversed decision gets a new
 record plus a `superseded` status on the old one, whose body stays byte for byte
 as written.
+
+**`cleanup`** reads the whole tree, the only mode that does, because
+contradictions live between files. It starts from the probe, the validator, and
+the rot check, then builds a ledger of major claims sorted by subject and makes
+three passes: contradictions inside memory, settled by the repository rather than
+by which file sounds surer; inaccuracies against the checkout, classified with
+the audit taxonomy; and rot, each class mapped to the lifecycle fix the schema
+already prescribes. It presents a plan and writes nothing until the user accepts
+it. Its accuracy pass is run by the same kind of session that wrote the memory,
+so it is thorough rather than independent, and it says so and recommends
+`audit` for the claims that matter most.
 
 Repair also weighs the finding list by the tier that produced it, and checks the
 `demotions` trail: an empty trail means no external evaluator was installed and
@@ -670,7 +715,7 @@ nothing in the audit path writes.
 | `CLAUDE.md` | Whatever the project's contract file already costs, plus one short section |
 | `SessionStart` hook output | Zero when memory is healthy; a few lines otherwise, hard-capped at 3,000 characters |
 
-That is the entire automatic cost. The plugin's own Markdown — the router, seven
+That is the entire automatic cost. The plugin's own Markdown — the router, eight
 playbooks, four shared references, ten templates, the auditor prompt, the
 writing rule — loads none of itself at session start.
 
