@@ -9,7 +9,7 @@ Status values: `unverified`, `verified`, `failing`, `not-applicable`.
 A criterion moves to `verified` only with cited evidence — a test that ran, a
 behavior observed, an artifact checked. Existence of code is not evidence.
 
-Updated: 2026-09-29
+Updated: 2026-10-17
 
 ## Structural core
 
@@ -52,6 +52,8 @@ protected writes, so interactive behavior is not covered.
 | `repair` edits only accepted findings and leaves declined ones untouched | verified | Live run: 5 files, 33 lines added and 32 removed; declined brief finding left byte-identical; user-reported test run labelled as such |
 | `grill` runs a round, waits, and writes only after confirmation | verified | Live three-round run via `--resume`: eight frontier questions with recommendations, a write proposal, and writes only after approval; working tree unchanged until then; one decision record, not one per answer |
 | Modes find the skill's templates rather than composing from prose | verified | After `8fa999f`, a live handoff's tool calls read `skills/project-memory/templates/handoff.md` from the plugin; the result validated clean |
+| `cleanup` reports seeded rot and writes nothing before approval | unverified | — |
+| `handoff` files durable facts into their owners and `handoff close` retires a merged workstream | unverified | — |
 | `init` installs the writing rule | failing | Protected `.claude/` write refused in a headless run; `init` now prints the copy command |
 
 ## Out of scope for completion
