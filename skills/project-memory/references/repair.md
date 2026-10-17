@@ -92,23 +92,14 @@ correction. Mark the claim unverified and say why.
 
 ### 2c. Determine which artifact owns the information
 
-Ownership is defined in `memory-schema.md`. Read it rather than inferring from
-where the wrong claim happened to live — the artifact carrying a false statement
-is frequently not the artifact that should carry the true one.
+Ownership is defined in `memory-schema.md`, under Which artifact owns a fact.
+Read it rather than inferring from where the wrong claim happened to live — the
+artifact carrying a false statement is frequently not the artifact that should
+carry the true one.
 
-| The correction is about | It belongs in |
-| --- | --- |
-| What a capability does now | `current-state.md` |
-| What the project decided to become | `current-state.md`, under Intended direction |
-| A choice with alternatives and consequences | a new record in `decisions/` |
-| A problem, its evidence, and its causes | `bugs-and-risks.md` |
-| Whether a feature is done, and on what evidence | `acceptance-criteria.md` |
-| Work still to do | `next-actions.md` |
-| Where memory lives and who is authoritative | `INDEX.md` |
-| Continuation state for this workstream | the active handoff |
-| A durable project invariant | `CLAUDE.md`, mirrored into `AGENTS.md` when the change is to the memory section |
-| What a project term means, or which word to avoid | `glossary.md` |
-| An `avoided-term` finding | The flagged file: reword to the glossary term. The glossary itself changes only if the term is wrong |
+One correction is repair's alone: an `avoided-term` finding is fixed in the
+flagged file, by rewording to the glossary term. The glossary itself changes
+only if the term is wrong.
 
 A `MISPLACED` finding is resolved by moving the claim, not by copying it. Leaving
 the original in place converts one finding into a `DUPLICATED` one.

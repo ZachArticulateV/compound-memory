@@ -14,7 +14,7 @@ The committed directory of a target repository that holds its canonical project 
 _Avoid_: notes folder, knowledge base
 
 **Mode**:
-One of the seven operations the skill routes to: init, status, sync, handoff, grill, audit, repair.
+One of the eight operations the skill routes to: init, status, sync, handoff, grill, audit, repair, cleanup.
 _Avoid_: subcommand
 
 **Playbook**:
@@ -28,6 +28,10 @@ The deterministic, read-only inspection every mode runs before loading its playb
 
 **Validator**:
 The structural checker for a memory tree. It never judges whether a claim is true.
+
+**Rot signal**:
+A deterministic candidate for context rot raised by the rot check; it becomes a finding only after the cleanup pass reads the files it names.
+_Avoid_: rot finding
 
 **Auditor tier**:
 The evaluator an audit ran on: the Codex CLI first, the bundled read-only subagent as fallback.

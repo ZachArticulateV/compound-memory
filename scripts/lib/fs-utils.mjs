@@ -134,9 +134,10 @@ export function lineOf(text, index) {
 /**
  * `includeFileLinks` also returns symbolic links that resolve to files, so a
  * caller that checks containment can report a link escaping the repository
- * instead of never seeing it. Links to directories are never followed.
+ * instead of never seeing it. Links to directories are never followed; pass
+ * a `dirLinks` array to collect them, so a caller can name what it skipped.
  */
-export function listFiles(absDir, { extension = null, maxDepth = 12, includeFileLinks = false } = {}) {
+export function listFiles(absDir, { extension = null, maxDepth = 12, includeFileLinks = false, dirLinks = null } = {}) {
   const out = []
   const walk = (dir, depth) => {
     if (depth > maxDepth) return
@@ -151,6 +152,7 @@ export function listFiles(absDir, { extension = null, maxDepth = 12, includeFile
       if (SKIP_DIRS.has(entry.name)) continue
       const abs = join(dir, entry.name)
       if (entry.isDirectory()) walk(abs, depth + 1)
+      else if (dirLinks !== null && entry.isSymbolicLink() && statSafe(abs)?.isDirectory() === true) dirLinks.push(abs)
       else if (extension !== null && !entry.name.endsWith(extension)) continue
       else if (entry.isFile()) out.push(abs)
       else if (includeFileLinks && entry.isSymbolicLink() && statSafe(abs)?.isFile() === true) out.push(abs)

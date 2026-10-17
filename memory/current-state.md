@@ -4,7 +4,7 @@ What is true about this project right now. A snapshot, not a journal — obsolet
 state is replaced here rather than appended to. History lives in Git and in
 `decisions/`.
 
-Updated: 2026-09-29
+Updated: 2026-10-17
 
 ## Skill and modes
 
@@ -12,20 +12,25 @@ Status: working, partially verified
 
 ### Current reality
 
-One skill, `skills/project-memory/SKILL.md`, routes seven modes (`init`,
-`status`, `sync`, `handoff`, `grill`, `audit`, `repair`) to one playbook each,
-with four shared references and ten templates.
+One skill, `skills/project-memory/SKILL.md`, routes eight modes (`init`,
+`status`, `sync`, `handoff`, `grill`, `audit`, `repair`, `cleanup`) to one
+playbook each, with four shared references and ten templates. `handoff` covers
+any kind of work, files durable facts into their owners before writing, and
+retires a finished workstream with `handoff close`.
 
 **Verified:**
 
-- `node --test`: 459 passed, 0 failed, 15 skipped, on the working tree after
-  `8ba1d96`, 2026-09-29.
+- `node --test`: 506 passed, 0 failed, 15 skipped, on branch
+  feature-branch, 2026-10-17.
 - `claude plugin validate . --strict` passed on the same tree.
+- [Pull request #1](https://github.com/ZachArticulateV/project-memory/pull/1)
+  (1.1.0) merged to main on 2026-09-29; its three CI checks (Ubuntu, Windows,
+  manifests) passed, read from GitHub on 2026-10-17.
 - Four audits ran on 2026-09-29 (Markdown system; code, hooks, packaging;
   an independent re-audit; a convergence audit of the re-audit's fixes). Every HIGH and MEDIUM
   finding is fixed with a test, except the release steps in `next-actions.md`
   and the items in `bugs-and-risks.md`.
-- Live headless runs of all seven modes on a sample project; results in
+- Live headless runs of the first seven modes on a sample project; results in
   `acceptance-criteria.md`.
 
 **Not verified:**
@@ -33,6 +38,8 @@ with four shared references and ten templates.
 - Model behavior under any playbook. The tests pin the instructions, not what a
   model does with them.
 - `grill`, the handoff focus, and the Codex launch line in a live session.
+- `cleanup`, `handoff close`, and the handoff's work-type and filing steps in
+  any live session.
 
 **Known limitations:**
 
@@ -47,7 +54,8 @@ Status: working
 `scripts/project-state.mjs` (state probe, now with a `contract` block for the
 three governed contract files), `scripts/memory-validate.mjs` (eleven
 checks, including `avoided-term` and `glossary-format`), `scripts/auditor-bridge.mjs` (Codex tier, subagent
-fallback), and two Claude Code hooks. `AGENTS.md` is governed alongside the
+fallback), `scripts/memory-hygiene.mjs` (eight rot signals for `cleanup`;
+always exits 0), and two Claude Code hooks. `AGENTS.md` is governed alongside the
 two `CLAUDE.md` forms by every component. The Codex manifest opts out of the
 hooks (decision 007).
 
@@ -65,8 +73,10 @@ hooks (decision 007).
 
 ## Active workstreams
 
-- Branch feature-branch: version 1.1.0 prepared (benchmark,
-  audits, onboarding docs). Not yet merged, tagged, or published.
+- Branch feature-branch: code-review fixes with regression tests, the
+  `cleanup` mode and rot check, and the handoff upgrade. Pushed; no pull
+  request opened. Listed under Unreleased in `CHANGELOG.md`.
+- Version 1.1.0 is merged to main but not tagged or published.
 
 ## Intentionally deferred
 
