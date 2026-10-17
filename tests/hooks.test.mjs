@@ -806,3 +806,20 @@ test('case folding follows the filesystem, not the platform', () => {
   assert.equal(selectFindings(findings, 'agents.md', { foldCase: true }).length, 1)
   assert.equal(selectFindings(findings, 'agents.md', { foldCase: false }).length, 0)
 })
+
+// ---------------------------------------------------------------------------
+// Code review of the 1.1.0 merge
+// ---------------------------------------------------------------------------
+
+test('a relative file_path resolves against the session cwd, not the project root', () => {
+  // The session runs in src/ and the edit names ../memory/...; resolved against
+  // the root instead, the path lands outside it and the hook says nothing.
+  const root = makeFixture({ ...duplicateDecisionIdTree(), 'src/.keep': '' })
+  cleanupAfter(test, root)
+
+  const context = contextOf(
+    runHook(VALIDATE_HOOK, editPayload(join(root, 'src'), join('..', 'memory', 'decisions', '002-cache-eviction.md'))).stdout
+  )
+  assert.notEqual(context, null, 'the relative edit was not recognized as a memory edit')
+  assert.match(context, /duplicate-decision-id/)
+})

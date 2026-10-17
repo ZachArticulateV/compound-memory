@@ -285,7 +285,9 @@ export function extractReferences(text) {
       // Windows file path is converted: an escape such as `a\\b` or a regex is
       // not a path, and turning it into one reports a broken reference.
       const trimmed = raw.trim()
-      const windowsPath = /^[^\s\\]+(\\{1,2}[^\s\\]+)+$/.test(trimmed) && /\.[A-Za-z0-9]{1,6}$/.test(trimmed)
+      // The last segment needs a name before its extension: `foo\\.md` is an
+      // escaped dot, not a file called `.md`.
+      const windowsPath = /^[^\s\\]+(\\{1,2}[^\s\\]+)+$/.test(trimmed) && /(^|\\)[^\\.][^\\]*\.[A-Za-z0-9]{1,6}$/.test(trimmed)
       if (trimmed.includes('\\') && !windowsPath) continue
       const cleaned = (windowsPath ? trimmed.replace(/\\/g, '/') : trimmed).replace(/^\.\//, '').replace(/[#?].*$/, '')
       if (!looksLikePath(cleaned)) continue
