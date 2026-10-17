@@ -236,7 +236,11 @@ export function runPostToolHook(raw) {
     const filePath = editedPath(payload)
     if (filePath === null) return { code: 0, stdout: '' }
 
-    const context = validationContext(payloadRoot(payload), filePath)
+    // A relative file path is relative to the session's cwd, not to the
+    // project root found above it; resolve it before the root changes.
+    const cwd = typeof payload.cwd === 'string' && payload.cwd.trim() !== '' ? payload.cwd : process.cwd()
+    const absFile = isAbsolute(filePath) ? filePath : resolve(cwd, filePath)
+    const context = validationContext(payloadRoot(payload), absFile)
     if (context === null) return { code: 0, stdout: '' }
 
     return { code: 0, stdout: `${JSON.stringify(buildOutput(context, event))}\n` }
