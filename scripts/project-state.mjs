@@ -106,7 +106,7 @@ export function collectContract(absRoot) {
       lines: facts.present ? facts.lines : 0,
       large: facts.present && facts.lines > CLAUDE_MD_LINE_SIGNAL,
       hasMemorySection: section !== null,
-      importsAgentsMd: text !== null && rel !== AGENTS_MD && importsAgentsMd(text),
+      importsAgentsMd: text !== null && rel !== AGENTS_MD && importsAgentsMd(text, rel),
       section,
     }
   })

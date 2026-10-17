@@ -125,8 +125,10 @@ export function validateMemory(root) {
     }
   }
 
+  const texts = new Map()
   for (const rel of scanned) {
     const text = readTextSafe(joinRel(absRoot, rel))
+    texts.set(rel, text)
     if (text === null) {
       findings.push(finding('unreadable-file', 'error', rel, 'File could not be read as UTF-8 text.'))
       continue
@@ -143,7 +145,7 @@ export function validateMemory(root) {
   }
 
   checkDuplicateDecisionIds(absRoot, memory, findings)
-  checkAvoidedTerms(absRoot, memory, findings)
+  checkAvoidedTerms(absRoot, memory, findings, texts)
 
   return buildResult(absRoot, scanned, findings, memory)
 }
@@ -461,6 +463,25 @@ const phrasePattern = (phrase) =>
 const blank = (m) => m.replace(/[^\n]/g, ' ')
 
 /**
+ * The glossary's patterns, compiled once per parsed glossary rather than once
+ * per file scanned.
+ */
+const compiledGlossaries = new WeakMap()
+function compiledGlossary(glossary) {
+  let compiled = compiledGlossaries.get(glossary)
+  if (compiled === undefined) {
+    const ordered = [...glossary.aliases.values()].sort((a, b) => b.alias.length - a.alias.length)
+    compiled = {
+      termPatterns: glossary.terms.map((term) => new RegExp(phrasePattern(term), 'giu')),
+      pattern: new RegExp(ordered.map((a) => `(${phrasePattern(a.alias)})`).join('|'), 'giu'),
+      ordered,
+    }
+    compiledGlossaries.set(glossary, compiled)
+  }
+  return compiled
+}
+
+/**
  * Every prose use of an avoided word in one document, as { index, match,
  * alias, term }. Pure, so every edge case is testable without a tree.
  *
@@ -472,8 +493,8 @@ const blank = (m) => m.replace(/[^\n]/g, ' ')
  * still counts.
  */
 export function findAvoidedTerms(text, glossary) {
-  const { terms, aliases } = glossary
-  if (aliases.size === 0) return []
+  if (glossary.aliases.size === 0) return []
+  const { termPatterns, pattern, ordered } = compiledGlossary(glossary)
 
   const prose = maskNonProse(text)
     .replace(/`[^`\n]*`/g, blank)
@@ -481,8 +502,8 @@ export function findAvoidedTerms(text, glossary) {
     .replace(/\bhttps?:\/\/\S+/g, blank)
 
   const canonical = []
-  for (const term of terms) {
-    const re = new RegExp(phrasePattern(term), 'giu')
+  for (const re of termPatterns) {
+    re.lastIndex = 0
     let m
     while ((m = re.exec(prose)) !== null) {
       if (m[0] === '') {
@@ -494,9 +515,7 @@ export function findAvoidedTerms(text, glossary) {
   }
   const insideCanonical = (from, to) => canonical.some(([s, e]) => from >= s && to <= e)
 
-  const byLength = (a, b) => b.length - a.length
-  const ordered = [...aliases.values()].sort((a, b) => byLength(a.alias, b.alias))
-  const pattern = new RegExp(ordered.map((a) => `(${phrasePattern(a.alias)})`).join('|'), 'giu')
+  pattern.lastIndex = 0
   const found = []
   let match
   while ((match = pattern.exec(prose)) !== null) {
@@ -521,10 +540,12 @@ export function findAvoidedTerms(text, glossary) {
  * capped per file, with one summary finding for the rest, so a large file
  * cannot flood the report or outrun the post-edit hook's timeout.
  */
-function checkAvoidedTerms(root, memory, findings) {
+function checkAvoidedTerms(root, memory, findings, texts = new Map()) {
+  // Texts the main loop already read are reused, not read a second time.
+  const read = (rel) => (texts.has(rel) ? texts.get(rel) : readTextSafe(joinRel(root, rel)))
   const glossaryRel = `${MEMORY_DIRNAME}/${GLOSSARY_FILENAME}`
   if (!memory.markdownFiles.includes(glossaryRel)) return
-  const glossaryText = readTextSafe(joinRel(root, glossaryRel))
+  const glossaryText = read(glossaryRel)
   if (glossaryText === null) return
   const glossary = parseGlossary(glossaryText)
   // An _Avoid_ line the parser could not attach to a term is a word the check
@@ -546,7 +567,7 @@ function checkAvoidedTerms(root, memory, findings) {
     if (rel === glossaryRel) continue
     if (isDecisionRecord(rel, memory)) continue
     if (rel.startsWith(`${MEMORY_DIRNAME}/archive/`)) continue
-    const text = readTextSafe(joinRel(root, rel))
+    const text = read(rel)
     if (text === null) continue
     const found = findAvoidedTerms(text, glossary)
     const lineOfIndex = lineCounter(text)

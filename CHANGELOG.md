@@ -4,6 +4,44 @@ All notable changes to this plugin are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **`cleanup` mode.** `/project-memory cleanup` reads the whole memory tree for
+  contradictions between files, claims the checkout disproves, and context rot,
+  presents a plan, and applies only what the user accepts. Decision 008.
+- **`scripts/memory-hygiene.mjs`**: a read-only rot check raising eight kinds
+  of candidate signal (`completed-task`, `resolved-bug`, `duplicated-text`,
+  `diverging-test-counts`, `stale-handoff`, `journal-entries`,
+  `unreachable-file`, `startup-budget`). Always exits 0; signals are not
+  verdicts.
+- **Handoff for any kind of work.** A work-type table defines what verification
+  means for code, investigation, infrastructure, data, docs, research, planning,
+  and operations; the template gains a `Work type:` line.
+- **Handoff files durable facts.** Before writing, the handoff mode files what
+  the session learned into the artifact that owns it and points there, so the
+  next handoff cannot erase it.
+- **`handoff close`** retires a finished workstream's handoff after filing what
+  it still holds. A handoff is also written when memory is not initialized.
+
+### Changed
+
+- The fact-ownership table lives once, in `memory-schema.md`; `repair.md`
+  defers to it.
+
+### Fixed
+
+- The post-edit hook resolves a relative `file_path` against the session cwd.
+- `.claude/CLAUDE.md` must import `@../AGENTS.md`; a fenced or commented import
+  no longer counts.
+- An escaping directory link anywhere under `memory/` is reported, not only
+  `decisions/`, `handoffs/`, and `archive/`.
+- Reference extraction no longer reads a command with a file argument, a
+  backslash escape, or `foo\.md` as a path.
+- The audit prompt reserves room for its omitted-files notice only when a file
+  was cut, and orders files independently of the host locale.
+
 ## [1.1.0] — Unreleased
 
 Prepared on this branch; the date is set when it is tagged.

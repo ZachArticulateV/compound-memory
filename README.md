@@ -58,17 +58,18 @@ request), and `/project-memory handoff for codex: <focus>` prints a ready
 | `/project-memory init` | Inspect the project and build the memory system. Reconstructs state for mature repos; interviews you for new ones. |
 | `/project-memory status` | Read-only health report. Never writes. |
 | `/project-memory sync` | Reconcile memory with what actually changed. Idempotent — often reports no changes required. |
-| `/project-memory handoff [focus]` | Capture continuation state before `/clear`, a context switch, or the end of a session. Optional focus tailors it to the next session's job; ends with a paste-ready resume prompt. |
+| `/project-memory handoff [focus]` | Capture continuation state before `/clear`, a context switch, or the end of a session, for any kind of work: code, debugging, deploys, docs, research, planning. Files what the session learned into the memory file that owns it, so the handoff never holds the only copy. Optional focus tailors it to the next session's job; ends with a paste-ready resume prompt. `handoff close` retires a finished workstream's handoff. |
 | `/project-memory grill [plan]` | Interview you about a plan in rounds, checking each answer against memory and code, then record the decisions and actions it settled. |
 | `/project-memory audit` | Independently check memory against repository reality. Returns evidence, not edits. |
 | `/project-memory repair` | Correct the problems an audit or the validator found, preserving valid human-authored context. |
+| `/project-memory cleanup` | Read the whole tree for contradictions between files, claims the checkout disproves, and context rot (finished tasks, duplicated claims, expired handoffs, diary-style state), then fix what you accept. |
 
 Each mode loads exactly one playbook. Running `status` does not read the `audit`
 instructions, and neither of them costs anything during ordinary coding work.
 
 ## What you actually need
 
-You do not need to learn seven commands. You need two, and the rest are there for
+You do not need to learn eight commands. You need two, and the rest are there for
 when you are planning or when something has gone wrong.
 
 **Once, per project:**
@@ -102,6 +103,7 @@ what it must not assume.
 | "I just shipped something substantial" | `/project-memory sync` |
 | "Memory says something I do not believe" | `/project-memory audit` |
 | "The audit was right; fix it" | `/project-memory repair` |
+| "Memory feels heavy, repetitive, or contradicts itself" | `/project-memory cleanup` |
 
 You do not have to remember to run `status`. When memory has drifted behind the
 code, a session-start line says so, naming the memory file that trails the
