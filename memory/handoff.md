@@ -1,45 +1,54 @@
 # Active Handoff
 
-Updated: 2026-09-29
-Branch: claude/dazzling-cori-d3zw4n
-HEAD: 1b243b1
-Working tree: convergence-audit fixes and this memory sync, uncommitted at time of writing
-Next session focus: release 1.1.0
+Updated: 2026-10-17
+Branch: claude/kind-ride-kiczmp
+HEAD: ed09928
+Working tree: this memory sync, committed directly on top of HEAD
+Work type: code change
+Next session focus: open a pull request for this branch and verify the new modes live
 
 ## Objective
 
-Ship version 1.1.0: the mattpocock/skills benchmark, three audits' fixes,
-this repository's own memory, and the onboarding docs.
+Pin the code-review fixes with regression tests, give memory a cleanup mode
+that finds contradictions, inaccuracies, and context rot, and make the handoff
+work for any kind of work while filing durable facts into memory.
 
 ## Completed
 
-- Benchmark (`a6dc528` to `bc1d945`), coherence audit fixes (`2010a4e` to
-  `092fdd5`), onboarding docs (`18ed66e`), live-run fixes (`205cedd` to
-  `ba1d13e`), re-audit fixes (`84c44e9` to `368b87e`), live-run fixes for
-  every mode (`892dd28` to `1b243b1`), convergence-audit fixes (this commit).
-- Both manifests and the changelog at 1.1.0.
+- Code-review fixes (`e7484c9`) and their regression tests (`9051ba1`), which
+  also closed a gap: `foo\.md` was still read as a path.
+- `cleanup` mode, `scripts/memory-hygiene.mjs`, decision 008.
+- Handoff: work-type verification table, filing step, `handoff close`, the
+  no-memory case, and a `Work type:` template line.
+- The previous handoff (branch claude/dazzling-cori-d3zw4n) was closed: its
+  pull request merged with green CI, now recorded in `current-state.md`.
 
 ## Verified
 
-- `node --test`: 459 passed, 0 failed, 15 skipped, 2026-09-29.
-- `claude plugin validate . --strict`: passed.
-- `node scripts/memory-validate.mjs` on this tree: no errors.
+- `node --test`: 506 passed, 0 failed, 15 skipped, 2026-10-17, on `ed09928`.
+- `claude plugin validate . --strict` and `node scripts/memory-validate.mjs`
+  passed on the same tree.
+- Ten of the eleven new regression tests fail on the pre-fix code (`e8c12be`).
+- Two hygiene tests were mutation-checked: removing the template exemption
+  makes the boilerplate test fail.
+- `scripts/memory-hygiene.mjs` on this repository flagged the old handoff as
+  behind its recorded HEAD and its branch gone, which was true.
 
 ## Unverified
 
-- The CI workflow on GitHub: [pull request #1](https://github.com/ZachArticulateV/project-memory/pull/1) is open, and no run result has been
-  observed yet.
-- Anything under Codex in a live session.
-- The quickstart followed end to end in an interactive session.
+- Any live model run of `cleanup`, `handoff close`, or the handoff's new
+  filing and work-type steps. The tests pin playbook sentences, not behavior.
+- CI on GitHub for this branch: no pull request is open, so nothing has run.
 
 ## Current problem
 
-Publishing needs steps outside this repository (see Continue here).
+None blocking. The new modes are instruction-only until a live run exercises
+them.
 
 ## Evidence collected
 
-- The marketplace entry in ZachArticulateV/claude-plugins pins
-  project-memory to v1.0.0 (read by the re-audit).
+- Pull request #1 merged 2026-09-29 with three green checks; `v1.1.0` is not
+  tagged (only `v1.0.0` exists on the remote).
 
 ## Unverified hypotheses
 
@@ -47,23 +56,26 @@ Publishing needs steps outside this repository (see Continue here).
 
 ## Pointers
 
-- What changed: `CHANGELOG.md` (1.1.0).
-- Audit history: `docs/benchmark/mattpocock-skills.md` and the commit log.
+- `memory/current-state.md`: merged 1.1.0, eight modes, the rot check.
+- `memory/next-actions.md`: the live verification item for cleanup and close.
+- `memory/decisions/008-cleanup-as-a-mode.md`: why cleanup is a mode.
+- `CHANGELOG.md`, Unreleased: everything this branch adds.
 
 ## Continue here
 
-1. Watch the CI run on [pull request #1](https://github.com/ZachArticulateV/project-memory/pull/1), including the new memory-validation step, and
-   fix anything red.
-2. After merge, tag `v1.1.0` on main and set the changelog date.
-3. Bump the project-memory entry in the ZachArticulateV/claude-plugins
-   marketplace to `v1.1.0` (a different repository).
+1. Open a pull request from claude/kind-ride-kiczmp to main when the user asks
+   for one, and watch its CI.
+2. Do the Now item in `memory/next-actions.md`: a live `cleanup` and
+   `handoff close` run on a sample repository with seeded rot.
 
 ## Suggested commands
 
-- `node --test` and `node scripts/memory-validate.mjs` before any commit.
-- `claude plugin validate . --strict` after touching a manifest.
+- `node scripts/memory-hygiene.mjs` to see this repository's rot signals.
+- `/project-memory cleanup` once the plugin is installed from this branch.
+- `/project-memory handoff close` when this branch merges.
 
 ## Do not assume
 
-- That installing from the marketplace gives 1.1.0 before step 3 is done.
-- That CI passes on GitHub until a run is observed.
+- That `cleanup` or the new handoff steps behave as written: no live run yet.
+- That 1.1.0 is released: it is merged but untagged and unpublished.
+- That CI passes for this branch until a run is observed.

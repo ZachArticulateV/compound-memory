@@ -644,11 +644,6 @@ const TAXONOMY_LINES = [
 ]
 
 /**
- * Build the audit briefing: the memory tree as claims, plus the taxonomy and
- * the contract for answering. Deterministic — the same tree produces the same
- * prompt, so a tier difference is never a prompt difference.
- */
-/**
  * Memory files in the order an audit most needs them: the startup set and the
  * index first, then the other core and optional files, handoffs, decision
  * records, and the archive last. A large archive must never be what pushes
@@ -665,9 +660,15 @@ export function byAuditPriority(files) {
     if (name.startsWith('archive/')) return 40
     return 30
   }
-  return [...files].sort((a, b) => rank(a) - rank(b) || a.localeCompare(b))
+  // Code-unit order, not localeCompare: the prompt must not depend on the host locale.
+  return [...files].sort((a, b) => rank(a) - rank(b) || (a < b ? -1 : a > b ? 1 : 0))
 }
 
+/**
+ * Build the audit briefing: the memory tree as claims, plus the taxonomy and
+ * the contract for answering. Deterministic — the same tree produces the same
+ * prompt, so a tier difference is never a prompt difference.
+ */
 export function buildAuditPrompt(root, options = {}) {
   const {
     maxFileChars = MAX_FILE_CHARS,
@@ -767,29 +768,36 @@ export function buildAuditPrompt(root, options = {}) {
     '',
   ]
 
-  const sections = []
-  let budget = maxPromptChars - head.join('\n').length
-
-  // Room for the omitted-files notice is reserved up front, so naming what was
-  // cut can never push the prompt past its limit.
-  const NOTICE_RESERVE = Math.min(4000, Math.floor(maxPromptChars / 10))
-  budget -= NOTICE_RESERVE
-  const omitted = []
-  for (const { rel, text } of readable) {
+  const fullBudget = maxPromptChars - head.join('\n').length
+  const candidates = readable.map(({ rel, text }) => {
     const clipped =
       text.length > maxFileChars
         ? `${text.slice(0, maxFileChars)}\n… [truncated: ${text.length - maxFileChars} more characters]\n`
         : text
-    const section = `=== ${rel} ===\n${clipped}`
-    // A file too large for what is left is cut, but smaller files after it
-    // still get their chance: order sets priority, not an all-or-nothing cutoff.
-    if (section.length > budget) {
-      omitted.push(rel)
-      continue
+    return { rel, section: `=== ${rel} ===\n${clipped}` }
+  })
+  // A file too large for what is left is cut, but smaller files after it
+  // still get their chance: order sets priority, not an all-or-nothing cutoff.
+  const fit = (budget) => {
+    const sections = []
+    const omitted = []
+    for (const { rel, section } of candidates) {
+      if (section.length > budget) {
+        omitted.push(rel)
+        continue
+      }
+      sections.push(section)
+      budget -= section.length
     }
-    sections.push(section)
-    budget -= section.length
+    return { sections, omitted }
   }
+
+  // Room for the omitted-files notice is reserved only when something is cut,
+  // so naming what was cut can never push the prompt past its limit, and a
+  // prompt that fits whole never loses capacity to a notice it does not need.
+  const NOTICE_RESERVE = Math.min(4000, Math.floor(maxPromptChars / 10))
+  let { sections, omitted } = fit(fullBudget)
+  if (omitted.length > 0) ({ sections, omitted } = fit(fullBudget - NOTICE_RESERVE))
   // Every file cut for budget is named. A file missing with no explanation
   // reads exactly like a file that was checked and passed.
   if (omitted.length > 0) {

@@ -171,18 +171,22 @@ regenerates a file.
 
 ## Reading the scripts directly
 
-Both inspectors take `--json` and a directory, and neither writes anything:
+All three inspectors take `--json` and a directory, and none writes anything:
 
 ```bash
 node <plugin>/scripts/project-state.mjs --json .
 node <plugin>/scripts/memory-validate.mjs --json .
+node <plugin>/scripts/memory-hygiene.mjs --json .
 ```
 
 The JSON carries a `schemaVersion`. `project-state` reports memory files, Git
 branch and worktrees, the active handoff and whether it matches the branch,
 each contract file with its size and memory section, and which memory files
 trail the code they name. It is a reasonable feed for a dashboard or a
-scheduled check across many repositories.
+scheduled check across many repositories. `memory-hygiene` lists rot candidates
+(finished tasks, duplicated sentences, stale handoffs, and the rest named in
+[`architecture.md`](architecture.md)); it always exits 0, so use it to report,
+not to gate CI.
 
 ## Keeping memory healthy as a team
 
@@ -197,6 +201,13 @@ scheduled check across many repositories.
 - **Let files shrink.** A memory file over 400 lines or 40 KB draws a warning.
   Resolved bugs and finished work move to `memory/archive/`, which is almost
   never loaded.
+- **Run `cleanup` now and then.** After a long run of sessions, before a new
+  person joins, or when memory starts to feel heavy, `/project-memory cleanup`
+  reads the whole tree for contradictions and rot and proposes the fixes. It
+  writes nothing until you accept them.
+- **Close handoffs when work lands.** `/project-memory handoff close` files
+  what a finished workstream's handoff still holds and retires it, so nobody
+  is handed instructions for merged work.
 - **Keep `CLAUDE.md` and `AGENTS.md` lean.** Both load on every session in
   their harness; each gets a size warning past 200 lines.
 

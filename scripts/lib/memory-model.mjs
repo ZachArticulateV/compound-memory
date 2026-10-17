@@ -6,7 +6,7 @@
 // are secret-shaped. Duplicating any of these in the two entry points is how
 // they drift apart.
 
-import { basename, extname } from 'node:path'
+import { basename, extname, posix } from 'node:path'
 
 import {
   containedBy,
@@ -106,9 +106,17 @@ export function extractMemorySection(text) {
   return lines.slice(start, end).join(' ').replace(/\s+/g, ' ').trim()
 }
 
-/** True when a CLAUDE.md pulls AGENTS.md in whole, so AGENTS.md's section serves both. */
-export function importsAgentsMd(text) {
-  return /^\s*@(\.\/)?AGENTS\.md\s*$/m.test(text)
+/**
+ * True when a CLAUDE.md pulls the root AGENTS.md in whole, so AGENTS.md's
+ * section serves both. Imports resolve relative to the importing file, so
+ * `.claude/CLAUDE.md` must write `@../AGENTS.md`; a bare `@AGENTS.md` there
+ * names `.claude/AGENTS.md`. Fences and comments are masked first: an example
+ * import is not an import.
+ */
+export function importsAgentsMd(text, fromRel = CLAUDE_MD) {
+  const target = posix.relative(posix.dirname(fromRel), AGENTS_MD)
+  const pattern = new RegExp(`^[ \\t]*@(\\./)?${target.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[ \\t]*$`, 'm')
+  return pattern.test(maskNonProse(text.replace(/\r\n/g, '\n')))
 }
 
 /** True when an unresolved reference points at a schema-defined optional location. */
@@ -238,7 +246,12 @@ export function looksLikePath(token) {
   // (`e.g. foo.md`) fail one test or the other. A path whose first segment has
   // no slash (`My Docs/file.md`) is given up: no syntax separates it from a
   // command, and a false alarm on every command is the worse failure.
-  if (/\s/.test(t) && !(t.split(/\s/)[0].includes('/') && /\.[A-Za-z0-9]{1,6}$/.test(t))) return false
+  // A first segment that is itself a complete file (`scripts/run.sh out.txt`)
+  // is a command with an argument, not a spaced path.
+  if (/\s/.test(t)) {
+    const first = t.split(/\s/)[0]
+    if (!(first.includes('/') && !/\.[A-Za-z0-9]{1,6}$/.test(first) && /\.[A-Za-z0-9]{1,6}$/.test(t))) return false
+  }
   if (/^\.{1,2}$/.test(t)) return false
   // A version string (`v1.1.0`, `18.20.4`, `2.0.0-rc.1`), not a file with a
   // numeric extension.
@@ -268,8 +281,15 @@ export function extractReferences(text) {
       const raw = match[1]
       if (plannedMarker && /^\s*\(new\)/.test(prose.slice(match.index + match[0].length))) continue
       // Backslashes are normalized so `memory\\INDEX.md` resolves the same way
-      // on every platform instead of only on Windows.
-      const cleaned = raw.trim().replace(/\\/g, '/').replace(/^\.\//, '').replace(/[#?].*$/, '')
+      // on every platform instead of only on Windows. Only a span shaped like a
+      // Windows file path is converted: an escape such as `a\\b` or a regex is
+      // not a path, and turning it into one reports a broken reference.
+      const trimmed = raw.trim()
+      // The last segment needs a name before its extension: `foo\\.md` is an
+      // escaped dot, not a file called `.md`.
+      const windowsPath = /^[^\s\\]+(\\{1,2}[^\s\\]+)+$/.test(trimmed) && /(^|\\)[^\\.][^\\]*\.[A-Za-z0-9]{1,6}$/.test(trimmed)
+      if (trimmed.includes('\\') && !windowsPath) continue
+      const cleaned = (windowsPath ? trimmed.replace(/\\/g, '/') : trimmed).replace(/^\.\//, '').replace(/[#?].*$/, '')
       if (!looksLikePath(cleaned)) continue
       if (!found.has(cleaned)) {
         found.set(cleaned, { ref: cleaned, kind, line: lineOf(prose, match.index) })
@@ -415,7 +435,7 @@ export function extractTasks(text) {
   prose.split(/\r?\n/).forEach((line, index) => {
     const match = TASK_LINE.exec(line)
     if (!match) return
-    tasks.push({ line: index + 1, text: match[2], key: normalizeTaskText(match[2]) })
+    tasks.push({ line: index + 1, text: match[2], key: normalizeTaskText(match[2]), done: match[1] !== ' ' })
   })
   return tasks
 }
@@ -654,7 +674,8 @@ export function discoverMemory(root) {
   // under repository-looking names. Escapes are reported rather than dropped
   // silently -- memory that vanished from an audit with no explanation is the
   // silent degradation this project exists to refuse.
-  const discovered = exists ? listFiles(memoryAbs, { extension: '.md', includeFileLinks: true }) : []
+  const dirLinks = []
+  const discovered = exists ? listFiles(memoryAbs, { extension: '.md', includeFileLinks: true, dirLinks }) : []
   const markdownFiles = []
   const escapedFiles = []
   for (const abs of discovered) {
@@ -664,10 +685,10 @@ export function discoverMemory(root) {
   }
   if (exists && !containedBy(root, memoryAbs)) escapedFiles.unshift(`${MEMORY_DIRNAME}/`)
   // The walk above never follows a directory link, so a linked subdirectory's
-  // files are simply not listed. Name the link itself, or it vanishes silently.
-  for (const sub of [DECISIONS_DIRNAME, HANDOFFS_DIRNAME, 'archive']) {
-    const subAbs = joinRel(root, `${MEMORY_DIRNAME}/${sub}`)
-    if (isDirectory(subAbs) && !containedBy(root, subAbs)) escapedFiles.push(`${MEMORY_DIRNAME}/${sub}/`)
+  // files are simply not listed. Name every escaping link itself, whatever it
+  // is called, or it vanishes silently.
+  for (const linkAbs of dirLinks) {
+    if (!containedBy(root, linkAbs)) escapedFiles.push(`${relPosix(root, linkAbs)}/`)
   }
 
   return {
