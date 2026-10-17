@@ -4,7 +4,7 @@ import { readFileSync, rmSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 
-import { cleanupAfter, gitAvailable, writeTree } from './fixtures/build.mjs'
+import { cleanupAfter, completeMemoryTree, gitAvailable, makeFixture, writeTree } from './fixtures/build.mjs'
 import {
   COLLIDING_BRANCHES,
   dirtyTreeRepo,
@@ -368,4 +368,86 @@ test('playbook defers shared policy rather than restating it', () => {
   assert.match(playbook, /evidence-policy\.md/)
   assert.match(playbook, /safety\.md/)
   assert.match(playbook, /memory-schema\.md/)
+})
+
+// ---------------------------------------------------------------------------
+// Any kind of work, filed into memory, and closed when it is over
+// ---------------------------------------------------------------------------
+
+const schemaFlat = readFileSync(
+  join(repoRoot, 'skills', 'project-memory', 'references', 'memory-schema.md'),
+  'utf8'
+).replace(/\s+/g, ' ')
+
+test('playbook defines verification for every kind of work, not only code', () => {
+  for (const kind of [
+    'Code change',
+    'Bug investigation',
+    'Infrastructure, deploy, configuration',
+    'Data or migration',
+    'Documentation or content',
+    'Research or analysis',
+    'Planning or design',
+    'Operations or process',
+  ]) {
+    assert.ok(playbookFlat.includes(`| ${kind} |`), `no verification row for ${kind}`)
+  }
+  assert.match(playbookFlat, /an empty cell is a `Not run` entry, never a reason to skip it/)
+  assert.match(playbookFlat, /`Proposed, not agreed` until the user accepts it/)
+})
+
+test('playbook files durable facts into their owners before writing the handoff', () => {
+  assert.match(playbookFlat, /## 3\. File what this session learned/)
+  assert.match(playbookFlat, /A durable fact that lives only there is lost/)
+  assert.match(playbookFlat, /using the table in `memory-schema\.md`, Which artifact owns a fact/)
+  assert.match(playbookFlat, /Then point, do not copy/)
+  // Filing is scoped; reconciling everything else is still sync's job.
+  assert.match(playbookFlat, /Drift from other work, or from before this session, is `sync`'s job/)
+  assert.ok(playbook.indexOf('## 3. File what this session learned') < playbook.indexOf('## 6. Write it'))
+})
+
+test('the ownership table lives once, in the schema, and repair defers to it', () => {
+  assert.match(schemaFlat, /## Which artifact owns a fact/)
+  assert.match(schemaFlat, /\| A choice with alternatives and consequences \| a new record in `decisions\/` \|/)
+  const repair = readFileSync(join(repoRoot, 'skills', 'project-memory', 'references', 'repair.md'), 'utf8')
+  assert.doesNotMatch(repair, /\| The correction is about \| It belongs in \|/, 'repair.md carries a second ownership table')
+  assert.match(repair.replace(/\s+/g, ' '), /under Which artifact owns a fact/)
+})
+
+test('playbook closes a finished workstream instead of leaving its handoff in place', () => {
+  assert.match(playbookFlat, /`\/project-memory handoff close`, with `close` as the only word/)
+  assert.match(playbookFlat, /## 7\. Closing a finished workstream/)
+  assert.match(playbookFlat, /Close it first \(Section 7\), so its durable facts are filed before its file is replaced/)
+  assert.match(playbookFlat, /Never close a workstream on the strength of a branch name alone/)
+})
+
+test('closing the single handoff as instructed leaves a tree that validates', () => {
+  // Performed literally: delete memory/handoff.md and replace its read-first
+  // line in INDEX.md with "No active handoff."
+  const tree = completeMemoryTree()
+  delete tree['memory/handoff.md']
+  const root = makeFixture({
+    ...tree,
+    'memory/INDEX.md': tree['memory/INDEX.md'].replace('2. `handoff.md`', '2. No active handoff.'),
+  })
+  cleanupAfter(test, root)
+
+  const state = collectProjectState(root)
+  assert.equal(state.handoff.active, null)
+  assert.equal(state.handoff.reason, 'no-handoff')
+  const result = validateMemory(root)
+  assert.equal(result.counts.error, 0, JSON.stringify(result.findings))
+  assert.deepEqual(result.findings.filter((f) => f.check === 'broken-reference'), [])
+})
+
+test('a handoff is still written when memory is not initialized, and init is not run', () => {
+  assert.match(playbookFlat, /## 9\. When there is no memory yet/)
+  assert.match(playbookFlat, /Write `memory\/handoff\.md` from the template and nothing else/)
+  assert.match(playbookFlat, /Do not initialize memory from here/)
+})
+
+test('the handoff template names the work type and points at filed facts', () => {
+  const template = readFileSync(join(repoRoot, 'skills', 'project-memory', 'templates', 'handoff.md'), 'utf8')
+  assert.match(template, /^Work type: \{\{work_type\}\}$/m)
+  assert.match(template.replace(/\s+/g, ' '), /the memory files this session filed facts into/)
 })

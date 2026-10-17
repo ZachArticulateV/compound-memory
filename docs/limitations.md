@@ -20,6 +20,23 @@ whether their claims hold.
 
 Accuracy is what `audit` is for, and `audit` has its own bounds — see below.
 
+## Rot signals are candidates, and cleanup is not independent
+
+`memory-hygiene.mjs` finds the mechanical shapes of context rot: finished tasks,
+unarchived resolved bugs, a sentence repeated across files, two test results for
+one suite, a handoff behind its branch, date-led diary lines, unlinked files, an
+oversized startup set. It cannot see two claims that disagree in different
+words, a status that is wrong, or a cause nobody established. Those are the
+`cleanup` playbook's reading passes, and they are instruction a model follows,
+not code.
+
+The duplicate check compares whole sentences after normalizing wrapping,
+emphasis, and case. A paraphrase of the same claim is not a duplicate to it.
+
+`cleanup` also checks claims against the checkout, but the session doing it is
+the same kind of process that wrote the memory. It is thorough, not independent;
+`audit` is the independent check.
+
 ## Staleness detection has a coverage gap
 
 Staleness is computed by comparing a memory file's last commit against later
@@ -60,7 +77,7 @@ CLI, and it is the price of the removal described below.
 
 ## Model behavior is instructed, not enforced
 
-Most of this plugin is Markdown read by a model: the router, seven mode playbooks,
+Most of this plugin is Markdown read by a model: the router, eight mode playbooks,
 four shared references, the auditor's system prompt, the writing rule,
 and ten templates. All of it shapes behavior. None of it constrains behavior the
 way code does.

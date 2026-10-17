@@ -17,6 +17,7 @@ import { dirname, join } from 'node:path'
 import { CHECKS } from '../scripts/memory-validate.mjs'
 import { CLAUDE_MD_SCOPE, SECRET_PATTERNS } from '../scripts/lib/memory-model.mjs'
 import { AUDIT_CLASSIFICATIONS } from '../scripts/auditor-bridge.mjs'
+import { SIGNALS } from '../scripts/memory-hygiene.mjs'
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..')
 const architecture = readFileSync(join(repoRoot, 'docs', 'architecture.md'), 'utf8')
@@ -122,7 +123,7 @@ function allowedBashRules(source) {
 function documentedInvocations() {
   const sources = [
     ['SKILL.md', skill],
-    ...['audit.md', 'grill.md', 'handoff.md', 'init.md', 'repair.md', 'status.md', 'sync.md'].map((n) => [n, reference(n)]),
+    ...['audit.md', 'cleanup.md', 'grill.md', 'handoff.md', 'init.md', 'repair.md', 'status.md', 'sync.md'].map((n) => [n, reference(n)]),
   ]
   const found = []
   for (const [name, body] of sources) {
@@ -217,10 +218,17 @@ test('the onboarding docs exist, are linked, and cover every mode', () => {
 
   const skillBody = readFileSync(join(repoRoot, 'skills', 'project-memory', 'SKILL.md'), 'utf8')
   const modes = [...skillBody.matchAll(/^\| `([a-z]+)` \| `references\/\1\.md` \|$/gm)].map((m) => m[1])
-  assert.equal(modes.length, 7, `router playbook table changed shape: ${modes}`)
+  assert.equal(modes.length, 8, `router playbook table changed shape: ${modes}`)
   for (const mode of modes) {
     assert.ok(quickstart.includes(`/project-memory ${mode}`), `quickstart never shows /project-memory ${mode}`)
   }
   // Codex guidance matches the shipped manifest: hooks opted out.
   assert.match(advanced, /No hooks run/)
+})
+
+test('architecture.md states the real number of rot signals and names each one', () => {
+  const stated = /It raises\s+(\w+)\s+kinds of signal/.exec(architecture)
+  assert.notEqual(stated, null, 'the sentence naming the signal count has moved or been reworded')
+  assert.equal(stated[1].toLowerCase(), word(SIGNALS.length), `architecture.md says ${stated[1]}; the script raises ${SIGNALS.length}`)
+  for (const id of SIGNALS) assert.ok(architecture.includes(`\`${id}\``), `architecture.md never names ${id}`)
 })

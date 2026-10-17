@@ -1,16 +1,16 @@
 ---
 name: project-memory
-description: Project memory under memory/: init, status, sync, handoff, grill, audit, repair. Use when the user runs /project-memory, asks to set up project memory, asks whether memory has drifted, asks to sync memory after implementation work, asks for a handoff before /clear or to another session or Codex, asks to grill a plan against memory, or asks to audit or repair memory against the repository. Do NOT use for ordinary coding, refactoring, debugging, test-writing, or code-review requests: writing code in a project that has memory is not a memory operation, and routine work must never trigger an audit.
-argument-hint: "[init|status|sync|handoff|grill|audit|repair] [focus or plan]"
-allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/project-state.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/memory-validate.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/auditor-bridge.mjs" *)
+description: Project memory under memory/: init, status, sync, handoff, grill, audit, repair, cleanup. Use when the user runs /project-memory, asks to set up project memory, asks whether memory has drifted, asks to sync memory after implementation work, asks for a handoff before /clear or to another session or Codex, asks to grill a plan against memory, or asks to audit or repair memory against the repository, or asks to clean up memory, find contradictions in it, or prune stale content. Do NOT use for ordinary coding, refactoring, debugging, test-writing, or code-review requests: writing code in a project that has memory is not a memory operation, and routine work must never trigger an audit.
+argument-hint: "[init|status|sync|handoff|grill|audit|repair|cleanup] [focus or plan]"
+allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/project-state.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/memory-validate.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/auditor-bridge.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/memory-hygiene.mjs" *)
 ---
 
 # Project Memory
 
 Canonical project memory lives at `memory/` in the working repository and is
 committed to Git. This skill initializes it, reports on it, reconciles it with
-reality, captures continuation state, grills plans against it, audits it, and
-repairs it.
+reality, captures continuation state, grills plans against it, audits it,
+repairs it, and cleans it up.
 
 Memory is an orientation layer. It is never evidence that a feature works.
 
@@ -46,12 +46,13 @@ The requested mode is `$0`. Follow these steps in order.
 | `grill` | Stress-test a plan, then record what it settled |
 | `audit` | Independent check against repository reality |
 | `repair` | Correct problems an audit found |
+| `cleanup` | Find contradictions, inaccuracies, and rot, then fix what the user accepts |
 
-If `$0` is empty or is not one of the seven, print the table above and stop. Do not
+If `$0` is empty or is not one of the eight, print the table above and stop. Do not
 guess a mode from surrounding conversation.
 
 Words after the mode are that mode's argument: the next session's focus for
-`handoff`, the plan to test for `grill`. The other modes take none. The full
+`handoff` (or `close`), the plan to test for `grill`. The other modes take none. The full
 input is `$ARGUMENTS`.
 
 ### 2. Inspect existing state
@@ -80,8 +81,9 @@ Read only the playbook for the resolved mode:
 | `grill` | `references/grill.md` |
 | `audit` | `references/audit.md` |
 | `repair` | `references/repair.md` |
+| `cleanup` | `references/cleanup.md` |
 
-Do not preload the others. Loading six playbooks to run one mode is the context
+Do not preload the others. Loading seven playbooks to run one mode is the context
 inflation this system exists to prevent.
 
 ### 4. Consult shared references when the playbook calls for them

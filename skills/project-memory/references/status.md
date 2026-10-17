@@ -29,7 +29,8 @@ middle of someone else's work.
 
 If the user wants something changed, say which mode does it: `sync` for
 reconciliation, `repair` for structural problems an audit or the validator
-found, `handoff` for continuation state.
+found, `handoff` for continuation state, `cleanup` for contradictions between
+memory files and accumulated rot.
 
 ## 2. What to report
 
