@@ -345,6 +345,33 @@ both directions.
 
 **Lifecycle:** rarely read. Never part of normal session startup.
 
+## Which artifact owns a fact
+
+Every fact has one home. Repair uses this table to correct a claim, handoff uses
+it to file what a session learned, and cleanup uses it to resolve a duplicate.
+Read it rather than inferring from where a claim happened to be written: the
+file carrying a statement is often not the file that should.
+
+| The fact is about | It belongs in |
+| --- | --- |
+| What a capability does now | `current-state.md` |
+| What the project decided to become | `current-state.md`, under Intended direction |
+| A choice with alternatives and consequences | a new record in `decisions/` |
+| A problem, its evidence, and its causes | `bugs-and-risks.md` |
+| Whether a feature is done, and on what evidence | `acceptance-criteria.md` |
+| Work still to do | `next-actions.md` |
+| Where memory lives and who is authoritative | `INDEX.md` |
+| Continuation state for this workstream | the active handoff |
+| A durable project invariant | `CLAUDE.md`, mirrored into `AGENTS.md` when the change is to the memory section |
+| What a project term means, or which word to avoid | `glossary.md` |
+| Retired content worth keeping but not loading | `archive/` |
+
+A fact belongs in exactly one row. A fact that seems to belong in two is
+usually two facts — "the retry now works" (`current-state.md`) and "we chose
+retry over a circuit breaker" (`decisions/`) — and each goes to its own home.
+A copy kept in a second file is a `DUPLICATED` finding waiting to happen: the
+two drift the moment one is updated.
+
 ## Lifecycle summary
 
 | Artifact | Behavior |

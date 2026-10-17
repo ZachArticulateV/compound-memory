@@ -435,7 +435,7 @@ export function extractTasks(text) {
   prose.split(/\r?\n/).forEach((line, index) => {
     const match = TASK_LINE.exec(line)
     if (!match) return
-    tasks.push({ line: index + 1, text: match[2], key: normalizeTaskText(match[2]) })
+    tasks.push({ line: index + 1, text: match[2], key: normalizeTaskText(match[2]), done: match[1] !== ' ' })
   })
   return tasks
 }
