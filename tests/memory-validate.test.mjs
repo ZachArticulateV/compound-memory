@@ -800,3 +800,37 @@ test('bulleted _Avoid_ lines parse, and a definition after the list is not read 
   assert.deepEqual([...aliases.keys()].sort(), ['bill', 'statement'])
   assert.deepEqual(unattributed, [])
 })
+
+// --- code review of the 1.1.0 merge ----------------------------------------
+
+test('a command whose first word is a complete file is not a spaced path', () => {
+  const tree = completeMemoryTree()
+  const root = fixtureWith({
+    'memory/next-actions.md': tree['memory/next-actions.md'] + '\nRun `scripts/run.sh out.txt` and `bin/tool.mjs --out report.json`.\n',
+  })
+  cleanupAfter(test, root)
+  assert.deepEqual(findingsOf(validateMemory(root), 'broken-reference'), [])
+})
+
+test('backslash escapes and regexes are not paths; a Windows path still is', () => {
+  const tree = completeMemoryTree()
+  const root = fixtureWith({
+    'memory/next-actions.md':
+      tree['memory/next-actions.md'] + '\nMatch `a\\b`, `foo\\.md`, and `\\d+\\.md`; see `docs\\missing.md`.\n',
+  })
+  cleanupAfter(test, root)
+  const refs = findingsOf(validateMemory(root), 'broken-reference').map((f) => f.reference)
+  assert.deepEqual(refs, ['docs/missing.md'])
+})
+
+test('one glossary scanned against many files gives each file its own correct hits', () => {
+  // The compiled patterns are cached per glossary and are global regexes, so a
+  // lastIndex left over from one file must never skip a match in the next.
+  const glossary = parseGlossary('**Workstream**:\nA branch.\n_Avoid_: lane, track\n')
+  const first = findAvoidedTerms('A lane and a track and another lane.\n', glossary).map((h) => h.match)
+  const second = findAvoidedTerms('lane\n', glossary).map((h) => h.match)
+  const again = findAvoidedTerms('A lane and a track and another lane.\n', glossary).map((h) => h.match)
+  assert.deepEqual(first, ['lane', 'track', 'lane'])
+  assert.deepEqual(second, ['lane'])
+  assert.deepEqual(again, first)
+})

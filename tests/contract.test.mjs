@@ -354,3 +354,69 @@ test('the frozen brief is history, never stale', { skip: !gitAvailable() && 'git
   assert.ok(!staleness.staleFiles.includes('memory/project-brief.md'))
   assert.ok(staleness.historicalBehind.includes('memory/project-brief.md'))
 })
+
+// --- code review of the 1.1.0 merge ----------------------------------------
+
+test('an AGENTS.md import resolves relative to the importing file', () => {
+  assert.equal(importsAgentsMd('@AGENTS.md\n', 'CLAUDE.md'), true)
+  assert.equal(importsAgentsMd('@./AGENTS.md\n', 'CLAUDE.md'), true)
+  // From .claude/, a bare @AGENTS.md names .claude/AGENTS.md.
+  assert.equal(importsAgentsMd('@AGENTS.md\n', '.claude/CLAUDE.md'), false)
+  assert.equal(importsAgentsMd('@../AGENTS.md\n', '.claude/CLAUDE.md'), true)
+})
+
+test('an example import inside a fence or a comment is not an import', () => {
+  assert.equal(importsAgentsMd('# P\n\n```md\n@AGENTS.md\n```\n'), false)
+  assert.equal(importsAgentsMd('# P\n\n<!--\n@AGENTS.md\n-->\n'), false)
+  assert.equal(importsAgentsMd('# P\r\n\r\n@AGENTS.md\r\n'), true)
+})
+
+test('.claude/CLAUDE.md importing the wrong AGENTS.md path leaves Claude Code uncovered', () => {
+  const wrong = makeFixture({
+    ...completeMemoryTree(),
+    '.claude/CLAUDE.md': '# Local\n\n@AGENTS.md\n',
+    'AGENTS.md': withSection('Agents'),
+  })
+  cleanupAfter(test, wrong)
+  const wrongState = collectProjectState(wrong)
+  assert.equal(wrongState.contract.files.find((f) => f.path === '.claude/CLAUDE.md').importsAgentsMd, false)
+  assert.ok(wrongState.signals.some((s) => s.id === 'contract-section-missing'), JSON.stringify(wrongState.signals))
+
+  const right = makeFixture({
+    ...completeMemoryTree(),
+    '.claude/CLAUDE.md': '# Local\n\n@../AGENTS.md\n',
+    'AGENTS.md': withSection('Agents'),
+  })
+  cleanupAfter(test, right)
+  const rightState = collectProjectState(right)
+  assert.equal(rightState.contract.files.find((f) => f.path === '.claude/CLAUDE.md').importsAgentsMd, true)
+  assert.deepEqual(rightState.contract.missingSection, [])
+})
+
+test('a linked memory subdirectory outside the checkout is reported whatever it is called', (t) => {
+  const root = makeFixture(completeMemoryTree())
+  const outside = mkdtempSync(join(tmpdir(), 'pm-outside-'))
+  cleanupAfter(test, root)
+  t.after(() => rmSync(outside, { recursive: true, force: true }))
+  writeFileSync(join(outside, 'note.md'), '# Note\n')
+  if (!linkOrSkip(t, outside, join(root, 'memory', 'notes'))) return
+
+  const state = collectProjectState(root)
+  assert.ok(state.memory.escaped.includes('memory/notes/'), JSON.stringify(state.memory.escaped))
+  assert.ok(!state.memory.markdownFiles.some((f) => f.startsWith('memory/notes/')))
+  const escapes = validateMemory(root).findings.filter((f) => f.check === 'escapes-repository').map((f) => f.artifact)
+  assert.ok(escapes.includes('memory/notes/'), JSON.stringify(escapes))
+})
+
+test('a prompt that fits whole loses nothing to the omitted-files reserve', () => {
+  const tree = completeMemoryTree()
+  for (let i = 1; i <= 3; i += 1) tree[`memory/archive/f${i}.md`] = `# F${i}\n\n${'x'.repeat(2000)}\n`
+  const root = makeFixture(tree)
+  cleanupAfter(test, root)
+
+  const whole = buildAuditPrompt(root, { maxPromptChars: 1_000_000 })
+  assert.doesNotMatch(whole, /omitted: prompt budget exhausted/)
+  // At exactly its own length the prompt still fits; a reserve taken up front
+  // would have cut the archive files and named them as omitted.
+  assert.equal(buildAuditPrompt(root, { maxPromptChars: whole.length }), whole)
+})

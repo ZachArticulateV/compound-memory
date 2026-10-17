@@ -22,6 +22,7 @@ import {
   WRITE_ENABLING_FLAGS,
   assertNoWriteEnablingFlags,
   buildAuditPrompt,
+  byAuditPriority,
   classifyFailure,
   composeCodexArgv,
   extractJson,
@@ -1232,4 +1233,22 @@ test('the installed codex actually executes through the resolved entry point', (
     windowsHide: true,
   })
   assert.match(stdout.trim(), /\d+\.\d+/, 'codex --version produced no version string')
+})
+
+// ---------------------------------------------------------------------------
+// Code review of the 1.1.0 merge
+// ---------------------------------------------------------------------------
+
+test('audit priority breaks ties by code-unit order, independent of locale', () => {
+  // localeCompare puts a before B before b; code-unit order puts B first.
+  const files = ['memory/b.md', 'memory/a.md', 'memory/B.md', 'memory/current-state.md']
+  assert.deepEqual(byAuditPriority(files), ['memory/current-state.md', 'memory/B.md', 'memory/a.md', 'memory/b.md'])
+})
+
+test('the deterministic-prompt doc comment sits on buildAuditPrompt', () => {
+  const source = readTextSafe(join(repoRoot, 'scripts', 'auditor-bridge.mjs'))
+  const at = source.indexOf('export function buildAuditPrompt')
+  const comment = source.slice(source.lastIndexOf('/**', at), at)
+  assert.match(comment, /Build the audit briefing/)
+  assert.doesNotMatch(comment, /\*\/[\s\S]*\/\*\*/, 'two doc comments are stacked on buildAuditPrompt')
 })
