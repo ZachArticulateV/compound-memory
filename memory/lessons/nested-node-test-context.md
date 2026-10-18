@@ -32,4 +32,4 @@ before relying on it, so a leak shows up as a failed precondition.
 ## Evidence
 
 `tests/engineering-scripts.test.mjs` ("every live harness spawns with
-NODE_TEST_CONTEXT removed"); `memory/bugs-and-risks.md` entry of the same name.
+NODE_TEST_CONTEXT removed"); the resolved entry in `memory/archive/2026-10-resolved-bugs.md`.

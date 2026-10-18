@@ -2,8 +2,8 @@
 
 Updated: 2026-10-18
 Branch: claude/serene-faraday-shkcdn
-HEAD: 30ce38b
-Working tree: the live-tier results commit, made directly on top of HEAD
+HEAD: ceb84d3
+Working tree: the memory-tier results commit, made directly on top of HEAD
 Work type: code change
 Next session focus: ship watch and feedback on a real PR, and Codex
 
@@ -53,14 +53,12 @@ trust the model, with deterministic scripts for what must be exact.
 ## Unverified
 
 - `ship watch` and `ship feedback` against real GitHub, and Codex.
-- The memory live tier since the `NODE_TEST_CONTEXT` fix (see
-  `bugs-and-risks.md`).
 - CI on GitHub for this branch: no pull request is open.
 
 ## Current problem
 
-None blocking. The engineering live tier passes 6 of 6; what remains needs a
-real GitHub pull request, a Codex CLI, or a re-run of the memory live tier.
+None blocking. Both live tiers pass what this machine can run; what remains
+needs a real GitHub pull request or a Codex CLI.
 
 ## Evidence collected
 

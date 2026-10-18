@@ -54,7 +54,7 @@ import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { dirname, join, resolve, sep } from 'node:path'
 
-import { childEnv, cleanupAfter, gitAvailable } from '../fixtures/build.mjs'
+import { childEnv, cleanupAfter, gitAvailable, writeTree } from '../fixtures/build.mjs'
 import { CONTRADICTED_INSTRUCTION, PRESERVED_RULES, emptyRepo, existingClaudeMdRepo, matureRepo } from '../fixtures/repos.mjs'
 import { INJECTED_STRINGS, SECRET_NAMES, SECRET_VALUES, externalTrackerRepo, injectionRepo, secretsRepo } from '../fixtures/hostile.mjs'
 import {
@@ -676,7 +676,12 @@ test(label('G', 'write half'), live(), (t) => {
   const otherHandoff = join(root, 'memory', 'handoffs', `${branchA}.md`)
   const before = readFileSync(otherHandoff, 'utf8')
 
-  runMode(worktree, 'handoff')
+  // A worktree with no work of its own gives the model nothing to hand off,
+  // and it may rightly ask what the work is rather than write an empty
+  // handoff (it did in 3 of 9 runs). Give it a change and a focus, as a real
+  // handoff would have.
+  writeTree(worktree, { 'src/auth.mjs': 'export const refreshToken = () => null // retry pending\n' })
+  const { text: reply } = runMode(worktree, 'handoff finish the refresh-token retry')
 
   assert.equal(
     readFileSync(otherHandoff, 'utf8'),
@@ -687,7 +692,7 @@ test(label('G', 'write half'), live(), (t) => {
   // And branchB's own handoff must exist and declare the right branch -- a
   // handoff written into the wrong file is the same failure wearing a mask.
   const mine = join(worktree, 'memory', 'handoffs', `${branchB}.md`)
-  assert.ok(existsSync(mine), `no handoff was written for ${branchB}`)
+  assert.ok(existsSync(mine), `no handoff was written for ${branchB}. The run said:\n${String(reply).slice(0, 2500)}`)
   const declared = readFileSync(mine, 'utf8').replace(/\s+/g, ' ')
   assert.ok(
     declared.includes(`Branch: ${branchB}`),
