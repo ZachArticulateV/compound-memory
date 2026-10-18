@@ -117,8 +117,10 @@ nothing more:
 
 Everything else in those skills (running lenses in parallel, the disprove pass,
 red before green, synthetic data in evidence, merging only when granted)
-rests on instruction-following. None of the new skills has been run in a live
-session as of this release; the suite pins their structure, not their behavior.
+rests on instruction-following. Eight of the skills' paths have been run live in
+headless sessions on one sample repository (`memory/acceptance-criteria.md`);
+the rest are pinned in structure only, and no skill has been run under Codex
+or in an interactive session.
 
 Claude Code lists every skill's description in a shared budget of about one
 percent of the context window. The twelve descriptions total about 4,600
