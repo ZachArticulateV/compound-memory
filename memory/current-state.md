@@ -68,17 +68,18 @@ with section, and composes through the artifacts in `references/artifacts.md`.
   Playwright against two fixture pages: it reported the clipped field and
   button on the broken page and passed the clean one, 2026-10-18.
 
-- Live headless runs of `debug`, `learn capture`, `plan tickets`, `build`,
-  `review`, `verify run`, `autopilot`, and `catch-up work` on a sample repository
-  met their Done when lines; results and the one fix they drove are in
-  `acceptance-criteria.md` (Engineering skills, live), 2026-10-18.
+- Every engineering mode except `ship watch` and `ship feedback` met its Done
+  when line in a live headless run on a sample repository, 2026-10-18; results,
+  and the two fixes the runs drove (autopilot stage sizing, plan readiness), are
+  in `acceptance-criteria.md` (Engineering skills, live).
 
 **Not verified:**
 
-- The other modes live (listed in `acceptance-criteria.md`), any run in an
-  interactive session, and any run under Codex.
+- `ship watch` and `ship feedback` (no GitHub pull request with CI here), any
+  run under Codex, and any interactive session.
 - The console and component-provenance checks in
-  `skills/verify/references/checks.md` (not executed).
+  `skills/verify/references/checks.md` (not executed by this repository's
+  tests; the generated verification skill's layout check ran).
 
 ## Deterministic core
 

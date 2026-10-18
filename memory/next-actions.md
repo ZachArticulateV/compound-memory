@@ -7,8 +7,8 @@ Each item names an observable outcome. "Improve the backend" is not an action.
 
 ## Now
 
-- [ ] Run the engineering modes not yet exercised live: `prototype`, `ship` (against a repository with a remote), `write`, `learn correct`, `learn retro`, `learn refresh`, `learn profile`, `verify create`
-  - Done when: each met its Done when line in a live session, recorded in `acceptance-criteria.md` (Engineering skills, live)
+- [ ] Run `ship watch` and `ship feedback` on a real GitHub pull request with CI, and any skill under Codex
+  - Done when: each met its Done when line, recorded in `acceptance-criteria.md` (Engineering skills, live)
   - Out of scope: changing a skill's wording before the run shows a problem
 
 - [ ] Decide whether the plugin keeps the name `project-memory` now that it ships engineering skills
