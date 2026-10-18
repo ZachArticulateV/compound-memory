@@ -79,7 +79,7 @@ CLI, and it is the price of the removal described below.
 
 Most of this plugin is Markdown read by a model: the router, eight mode playbooks,
 four shared references, the auditor's system prompt, the writing rule,
-and ten templates. All of it shapes behavior. None of it constrains behavior the
+ten templates, and the eleven engineering skills. All of it shapes behavior. None of it constrains behavior the
 way code does.
 
 Three things *are* mechanically enforced, and they are the ones where a promise
@@ -94,6 +94,36 @@ Everything else — that `init` will not overstate what it found, that `sync` wi
 leave unchanged concepts alone, that a hypothesis will not be written as a cause
 — rests on instruction-following, reinforced by the path-scoped writing rule and
 by templates whose defaults make the wrong answer awkward to type.
+
+## The engineering skills trust the model
+
+The eleven engineering skills (`plan` through `catch-up`) are written to state
+outcomes and leave the method to the model, by design (decision 009). They add
+no mechanical enforcement of their own. What their four scripts guarantee, and
+nothing more:
+
+- `findings-check.mjs` confirms a quoted line exists near the cited line. It
+  does not confirm the finding is right, and it only sees findings the review
+  writes to its input file.
+- `tickets-check.mjs` reports collisions only between tickets whose `Touches`
+  lines overlap. A ticket with no `Touches` line is reported as unknown, not as
+  safe.
+- `lessons.mjs` matches words and paths. A lesson written in words the next
+  task does not use is not found; tags drawn from existing lessons narrow that
+  gap but do not close it.
+- `measure.mjs` judges the samples it is given. Too few samples, or samples from
+  a noisy machine, make it say `inconclusive`, which is the correct answer and
+  not a result.
+
+Everything else in those skills (running lenses in parallel, the disprove pass,
+red before green, synthetic data in evidence, merging only when granted)
+rests on instruction-following. None of the new skills has been run in a live
+session as of this release; the suite pins their structure, not their behavior.
+
+Claude Code lists every skill's description in a shared budget of about one
+percent of the context window. The twelve descriptions total about 4,600
+characters; alongside many other plugins, the least-used descriptions are the
+first Claude Code drops.
 
 ## Test coverage: what is machine-verified and what is not
 

@@ -8,6 +8,30 @@ All notable changes to this plugin are documented here. Format follows
 
 ### Added
 
+- **Eleven engineering skills** beside `project-memory`: `plan` (brainstorm,
+  decide, plan, tickets), `prototype` (logic, ui), `build` (work, simplify,
+  optimize), `debug`, `review` (code, doc), `verify` (create, run, maintain),
+  `ship` (commit, pr, watch, feedback), `autopilot`, `learn` (capture, correct,
+  retro, refresh, profile), `write` (docs, agents, plain), and `catch-up`
+  (chat, work). Each works alone and composes through the artifacts in
+  `references/artifacts.md`. Decision 009.
+- **Shared references** at the plugin root: `references/artifacts.md` (every
+  artifact, its default path, producer, and readers) and
+  `references/principles.md`.
+- **Four read-only scripts:** `lessons.mjs` (lesson lookup by words and changed
+  paths, both YAML list styles, stale and retired skipped), `findings-check.mjs`
+  (review findings checked against the quoted code, merged, gated at confidence
+  75 or P0, promoted only on cross-model agreement), `tickets-check.mjs` (the
+  ticket frontier, parallel waves, cycles, unknown blockers, path collisions),
+  and `measure.mjs` (keep, revert, or inconclusive against a noise floor).
+- **`memory/lessons/` and `memory/guardrails.md`** in the memory schema, owned
+  by `learn`, and a twelfth validator check, `lesson-format`.
+- **`docs/coverage.md`**: where each adopted upstream skill lives, and why the
+  rest were not adopted; `docs/benchmark/compound-engineering.md` and
+  `docs/benchmark/skill-candidates-2026-10.md`.
+- **Tests** for every skill's anatomy, its paths, its script pre-approvals, its
+  Codex metadata, the coverage map, and the four scripts.
+
 - **`cleanup` mode.** `/project-memory cleanup` reads the whole memory tree for
   contradictions between files, claims the checkout disproves, and context rot,
   presents a plan, and applies only what the user accepts. Decision 008.

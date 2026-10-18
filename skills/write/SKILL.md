@@ -1,0 +1,53 @@
+---
+name: write
+description: "Write and edit prose its reader understands on the first read: docs, READMEs, guides, reports, PR descriptions, and commit messages for people; skills, CLAUDE.md, AGENTS.md, and prompts for agents; or a plain explanation of something that did not land. Use when the user asks to write, edit, tighten, or check documentation or agent instructions, or says they did not follow something."
+argument-hint: "[docs|agents|plain] [text, file path, or nothing for the last message]"
+---
+
+# Write
+
+Prose that does its job for one named reader on the first read, with every
+fact from the source still in it.
+
+**Done when:** the text passes the checks in the mode's reference, every fact,
+number, name, path, and command in the source survives, and nothing was added
+that the source or the user did not supply.
+
+## Modes
+
+| `$0` | Use it to | Reference |
+| --- | --- | --- |
+| `docs` | Write or edit documentation people read | `references/docs.md` |
+| `agents` | Write or edit what an agent reads: skills, instruction files, prompts | `references/agents.md` |
+| `plain` | Explain something plainly, or strip AI writing tells from a draft | `references/plain.md` |
+
+Pick by the reader. A person reading to act or learn is `docs`; an agent
+following instructions is `agents`; "what does this mean?" or "make this sound
+less like a machine" is `plain`.
+
+## Always
+
+- **Name the reader** before writing, and write for them.
+- **The codebase is the word list.** Use the real symbol, file, flag, and
+  command, never a synonym for it.
+- **Keep facts exact.** Code blocks, quotes, identifiers, link targets, and
+  numbers are copied, not reworded.
+- **Edit the user's own writing lightly.** Keep their voice; change only what
+  fails a check.
+- **This skill is the plugin's writing standard.** Other skills point here
+  rather than restating it.
+
+## Works with
+
+- **Reads:** the draft, the code it describes, the project's glossary
+  (`memory/glossary.md`) for the project's own terms.
+- **Hands off:** finished text to wherever it belongs; agent documents to
+  `review doc` when they are large.
+- **Alone:** works on any text, in or out of a repository.
+
+Paths in this skill and its references are relative to this skill's directory
+(`${CLAUDE_SKILL_DIR}`). Outside Claude Code, that is the directory holding this
+file, and `$0` is the first word after the skill name.
+
+Draws on pstack's `technical-writing`, mattpocock/skills `writing-for-agents`,
+and Compound Engineering `ce-noslop` and `wtf`.
