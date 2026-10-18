@@ -11,9 +11,10 @@ Carry one request to its end state without waiting on the user: for a code
 change, an open pull request with CI decided, the change verified and
 reviewed, and everything unresolved written where the user will see it.
 
-**Done when:** the PR is open with its URL in hand, CI is green or each red
-check is explained, and open items are in the PR body; or the run stopped,
-said why, and pushed nothing that was not already pushed.
+**Done when:** every stage below ran or is named in the report with the reason
+it did not, and the PR is open with its URL in hand, CI green or each red check
+explained, and open items in the PR body; or the run stopped, said why, and
+pushed nothing that was not already pushed.
 
 ## Route by what the request is
 
@@ -32,7 +33,10 @@ When unsure, take the route that asks more of the evidence.
 ## The run
 
 Each stage's reference is the skill it names; `references/stages.md` gives what
-each stage passes to the next and the gate it must clear.
+each stage passes to the next and the gate it must clear. Size each stage to
+the change: a ten-line fix gets a one-pass review and one real run of the
+behavior, not a skipped review and verify. Only simplify and learn may be
+skipped outright, and a skipped stage goes in the report with its reason.
 
 1. **Work source:** an implementation-ready plan (from `plan`), or a fixed
    defect (from `debug`). Large plans go through `plan tickets`.
