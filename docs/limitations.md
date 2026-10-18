@@ -117,11 +117,17 @@ nothing more:
 
 Everything else in those skills (running lenses in parallel, the disprove pass,
 red before green, synthetic data in evidence, merging only when granted)
-rests on instruction-following. Every mode except `ship watch` and `ship
-feedback` has been run live in headless sessions on one sample repository
-(`memory/acceptance-criteria.md`); those two need a GitHub pull request with CI.
-No skill has been run under Codex or in an interactive session, and one sample
-repository is evidence of the path working, not of every project.
+rests on instruction-following. Every mode has been run live in headless
+sessions (`memory/acceptance-criteria.md`): on a Node and a Python sample, across
+resumed turns with a human answering, and, for `ship watch` and `ship feedback`,
+against a scripted `gh` rather than real GitHub. No skill has been run under
+Codex. Two small samples show the paths work; they do not show every project
+behaves the same.
+
+`tests/acceptance/live-engineering.test.mjs` re-runs six scenarios and checks
+their artifacts with the plugin's own scripts. Like the memory live tier it is
+off by default (`PROJECT_MEMORY_LIVE_ACCEPTANCE=1`), costs model tokens, and is
+not a CI gate. Re-run it after changing a skill's wording.
 
 Claude Code lists every skill's description in a shared budget of about one
 percent of the context window. The twelve descriptions total about 4,600

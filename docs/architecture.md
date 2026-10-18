@@ -90,7 +90,8 @@ Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/memory-hygiene.mjs" *)
 ```
 
 The skill stays model-invocable, so the only thing keeping ordinary coding work
-from triggering an audit is the negative half of its `description`. That clause
+from triggering an audit is the routing clause in its `description`, which
+sends that work to the sibling engineering skills. That clause
 is asserted by the test suite rather than assumed.
 
 ### Eight mode playbooks
@@ -474,6 +475,10 @@ check, so a lesson the validator accepts is one lookup can find.
 call against its `allowed-tools`, the Codex metadata, and that every skill named
 under **Works with** exists. `tests/coverage.test.mjs` pins that each upstream
 skill `docs/coverage.md` claims is adopted maps to a skill or mode that exists.
+`tests/acceptance/live-engineering.test.mjs` runs six scenarios with a model
+against a temp fixture (with a scripted `gh` from `tests/fixtures/fake-gh.cjs`
+for the shipping scenario) and checks the artifacts with these same scripts;
+it is off unless `PROJECT_MEMORY_LIVE_ACCEPTANCE=1` is set.
 
 ## File tree
 

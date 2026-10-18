@@ -377,3 +377,32 @@ test('a noise or minimum effect that is not a ratio is a usage error', () => {
   assert.equal(run('measure.mjs', ['--baseline', '1,2', '--candidate', '1,2', '--min-effect', 'abc']).status, 2)
   assert.equal(run('measure.mjs', ['--baseline', '1,2', '--candidate', '1,2', '--noise', '0.05']).status, 0)
 })
+
+// ---------------------------------------------------------------------------
+// The live harnesses must not leak the test runner's context
+// ---------------------------------------------------------------------------
+
+test('every live harness spawns with NODE_TEST_CONTEXT removed', async () => {
+  // An inherited NODE_TEST_CONTEXT makes a nested `node --test` exit 0 on a
+  // failing suite. The first armed run of live-engineering.test.mjs saw its red
+  // fixtures as green because of it.
+  const { readFileSync } = await import('node:fs')
+  const { childEnv } = await import('./fixtures/build.mjs')
+  assert.equal('NODE_TEST_CONTEXT' in childEnv({ NODE_TEST_CONTEXT: 'child-v8', A: '1' }), false)
+  const here = dirname(fileURLToPath(import.meta.url))
+  for (const file of ['acceptance/live-scenarios.test.mjs', 'acceptance/live-engineering.test.mjs']) {
+    const source = readFileSync(join(here, file), 'utf8')
+    assert.match(source, /childEnv\(\)/, `${file} spawns without childEnv()`)
+  }
+  assert.match(readFileSync(join(here, 'fixtures', 'fake-gh.cjs'), 'utf8'), /delete env\.NODE_TEST_CONTEXT/)
+})
+
+test('a nested test run inside node --test reports failure once the context is removed', (t) => {
+  const root = makeTempRoot()
+  cleanupAfter(t, root)
+  writeTree(root, { 'a.test.mjs': "import { test } from 'node:test'\nimport assert from 'node:assert'\ntest('x', () => assert.equal(1, 2))\n" })
+  return import('./fixtures/build.mjs').then(({ childEnv }) => {
+    const nested = spawnSync(process.execPath, ['--test'], { cwd: root, encoding: 'utf8', env: childEnv() })
+    assert.notEqual(nested.status, 0)
+  })
+})
