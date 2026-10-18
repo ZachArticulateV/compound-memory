@@ -31,6 +31,10 @@ All notable changes to this plugin are documented here. Format follows
   `docs/benchmark/skill-candidates-2026-10.md`.
 - **Tests** for every skill's anatomy, its paths, its script pre-approvals, its
   Codex metadata, the coverage map, and the four scripts.
+- **`tests/acceptance/live-engineering.test.mjs`**: six live scenarios (debug;
+  plan tickets then build; review; learn capture and refresh; ship watch and
+  feedback against a scripted `gh`; routing away from memory), checked by
+  artifacts, off by default.
 
 - **`cleanup` mode.** `/project-memory cleanup` reads the whole memory tree for
   contradictions between files, claims the checkout disproves, and context rot,
@@ -51,6 +55,8 @@ All notable changes to this plugin are documented here. Format follows
 
 ### Changed
 
+- `project-memory`'s description routes ordinary coding to the sibling skills
+  instead of prohibiting it.
 - `project-memory` infers the mode from a plain request ("is memory still
   right?" runs `status`) and asks only when two modes fit; its standing rules
   are stated as what keeps memory true rather than as prohibitions.

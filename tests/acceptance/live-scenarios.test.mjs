@@ -54,7 +54,7 @@ import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { dirname, join, resolve, sep } from 'node:path'
 
-import { cleanupAfter, gitAvailable } from '../fixtures/build.mjs'
+import { childEnv, cleanupAfter, gitAvailable } from '../fixtures/build.mjs'
 import { CONTRADICTED_INSTRUCTION, PRESERVED_RULES, emptyRepo, existingClaudeMdRepo, matureRepo } from '../fixtures/repos.mjs'
 import { INJECTED_STRINGS, SECRET_NAMES, SECRET_VALUES, externalTrackerRepo, injectionRepo, secretsRepo } from '../fixtures/hostile.mjs'
 import {
@@ -145,6 +145,7 @@ function spawnCli(name, args, { cwd, timeout = TIMEOUT_MS }) {
   try {
     const stdout = execFileSync(file, argv, {
       cwd,
+      env: childEnv(),
       timeout,
       encoding: 'utf8',
       windowsHide: true,

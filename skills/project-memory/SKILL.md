@@ -1,6 +1,6 @@
 ---
 name: project-memory
-description: Project memory under memory/: init, status, sync, handoff, grill, audit, repair, cleanup. Use when the user runs /project-memory, asks to set up project memory, asks whether memory has drifted, asks to sync memory after implementation work, asks for a handoff before /clear or to another session or Codex, asks to grill a plan against memory, or asks to audit or repair memory against the repository, or asks to clean up memory, find contradictions in it, or prune stale content. Do NOT use for ordinary coding, refactoring, debugging, test-writing, or code-review requests: writing code in a project that has memory is not a memory operation, and routine work must never trigger an audit. This plugin's plan, build, debug, review, and verify skills cover that work.
+description: Project memory under memory/: init, status, sync, handoff, grill, audit, repair, cleanup. Use when the user runs /project-memory, asks to set up project memory, asks whether memory has drifted, asks to sync memory after implementation work, asks for a handoff before /clear or to another session or Codex, asks to grill a plan against memory, or asks to audit or repair memory against the repository, or asks to clean up memory, find contradictions in it, or prune stale content. Ordinary coding, refactoring, debugging, test-writing, and code review go to this plugin's plan, build, debug, review, and verify skills instead: writing code in a project that has memory is not a memory operation, and routine work leaves memory and its audit alone.
 argument-hint: "[init|status|sync|handoff|grill|audit|repair|cleanup] [focus or plan]"
 allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/project-state.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/memory-validate.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/auditor-bridge.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/memory-hygiene.mjs" *)
 ---
@@ -12,7 +12,8 @@ committed to Git. This skill initializes it, reports on it, reconciles it with
 reality, captures continuation state, grills plans against it, audits it,
 repairs it, and cleans it up.
 
-Memory is an orientation layer. It is never evidence that a feature works.
+Memory is an orientation layer. Evidence that a feature works comes from code,
+tests, runtime behavior, and Git.
 
 The plugin's other skills (`plan`, `build`, `debug`, `review`, `verify`,
 `ship`, `learn`, and the rest) read this tree when it exists. `learn` owns
@@ -90,7 +91,7 @@ Read only the playbook for the resolved mode:
 | `repair` | `references/repair.md` |
 | `cleanup` | `references/cleanup.md` |
 
-Do not preload the others. Loading seven playbooks to run one mode is the context
+Load another playbook when you switch to its mode. Loading seven playbooks to run one mode is the context
 inflation this system exists to prevent.
 
 ### 4. Consult shared references when the playbook calls for them

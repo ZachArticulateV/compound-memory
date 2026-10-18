@@ -2,8 +2,8 @@
 
 Updated: 2026-10-18
 Branch: claude/serene-faraday-shkcdn
-HEAD: ba2c029
-Working tree: the live-coverage commit, made directly on top of HEAD
+HEAD: 5e7c513
+Working tree: the live-harness commit, made directly on top of HEAD
 Work type: code change
 Next session focus: ship watch and feedback on a real PR, and Codex
 
