@@ -18,10 +18,10 @@
 // Read-only.
 
 import { fileURLToPath } from 'node:url'
-import { resolve } from 'node:path'
+import { isAbsolute, resolve } from 'node:path'
 import { readFileSync } from 'node:fs'
 
-import { isFile, joinRel, readTextContained } from './lib/fs-utils.mjs'
+import { isFile, joinRel, readTextContained, relPosix } from './lib/fs-utils.mjs'
 import { USAGE_EXIT_CODE, emit, parseCliArgs } from './lib/report.mjs'
 
 export const FINDINGS_SCHEMA_VERSION = 1
@@ -57,7 +57,9 @@ export function locateQuote(text, quote, line) {
   for (const raw of text.split(/\r?\n/)) {
     const part = squash(raw)
     starts.push(joined.length === 0 ? 0 : joined.length + 1)
-    joined = joined.length === 0 ? part : `${joined} ${part}`
+    // A blank line adds nothing, so a quote spanning one still matches; its
+    // start maps to the next line with text.
+    if (part !== '') joined = joined.length === 0 ? part : `${joined} ${part}`
   }
   const lineAt = (offset) => {
     let n = 0
@@ -88,7 +90,8 @@ export function checkFinding(root, finding, index) {
   out.confidence = floorConfidence(stated)
   if (!CONFIDENCE_LEVELS.includes(stated)) problems.push(`confidence ${finding.confidence} rounded down to ${out.confidence}`)
 
-  const rel = typeof finding.file === 'string' ? finding.file.replace(/\\/g, '/').replace(/^\.\//, '') : ''
+  const given = typeof finding.file === 'string' ? finding.file : ''
+  const rel = (isAbsolute(given) ? relPosix(root, given) : given).replace(/\\/g, '/').replace(/^\.\//, '')
   const abs = rel === '' ? null : joinRel(root, rel)
   const text = abs !== null && isFile(abs) ? readTextContained(root, abs) : null
   if (text === null) {
@@ -122,11 +125,16 @@ export function mergeFindings(findings) {
       (g) => g.file === f.file && titleKey(g.title) === titleKey(f.title) && Math.abs((g.line ?? 0) - (f.line ?? 0)) <= LINE_TOLERANCE
     )
     if (group === undefined) {
-      groups.push({ ...f, lenses: [f.lens].filter(Boolean), models: [f.model].filter(Boolean), sources: [f.index] })
+      // Only a model whose quote checked out counts toward agreement: a
+      // second model quoting code that is not there has not corroborated
+      // anything.
+      const verified = f.quoteStatus === 'at-line' && f.model ? [f.model] : []
+      groups.push({ ...f, lenses: [f.lens].filter(Boolean), models: [f.model].filter(Boolean), verifiedModels: verified, sources: [f.index] })
       continue
     }
     if (f.lens && !group.lenses.includes(f.lens)) group.lenses.push(f.lens)
     if (f.model && !group.models.includes(f.model)) group.models.push(f.model)
+    if (f.model && f.quoteStatus === 'at-line' && !group.verifiedModels.includes(f.model)) group.verifiedModels.push(f.model)
     group.sources.push(f.index)
     if (SEVERITIES.indexOf(f.severity) < SEVERITIES.indexOf(group.severity)) group.severity = f.severity
     group.confidence = Math.max(group.confidence, f.confidence)
@@ -140,7 +148,7 @@ export function mergeFindings(findings) {
   // Reviewers on one model agreeing is one reading repeated. Only agreement
   // across different models, on a quote that checks out, raises confidence.
   for (const g of groups) {
-    g.promoted = g.models.length >= 2 && g.quoteStatus === 'at-line' && g.confidence < 100
+    g.promoted = g.verifiedModels.length >= 2 && g.quoteStatus === 'at-line' && g.confidence < 100
     if (g.promoted) g.confidence = promote(g.confidence)
   }
   return groups

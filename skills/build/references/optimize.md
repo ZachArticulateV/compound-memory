@@ -10,7 +10,8 @@ changes whose effect is larger than the noise.
 2. **Baseline:** run the measurement at least three times on the unchanged
    code.
 3. **Noise:** when runs vary a lot, measure two identical builds against each
-   other; that difference is the noise floor every claim must clear.
+   other. Their difference divided by the baseline median (12 ms on 400 ms is
+   0.03) is the noise floor every claim must clear; pass it as `--noise`.
 
 ## Loop
 
@@ -20,7 +21,7 @@ changes whose effect is larger than the noise.
 4. Let the script decide:
 
    ```bash
-   node "${CLAUDE_SKILL_DIR}/../../scripts/measure.mjs" --baseline "<n,n,n>" --candidate "<n,n,n>" --direction lower
+   node "${CLAUDE_SKILL_DIR}/../../scripts/measure.mjs" --baseline "<n,n,n>" --candidate "<n,n,n>" --direction lower --noise <ratio>
    ```
 
    - `keep`: commit, with the numbers in the message. The candidate becomes

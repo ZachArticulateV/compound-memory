@@ -2,7 +2,7 @@
 name: autopilot
 description: "Take a request from idea or bug report to a reviewed, verified pull request without stopping, by running this plugin's skills in order: plan or debug, build, simplify, verify, review, learn, and ship. Use when the user asks for hands-off, end-to-end, or autonomous work, such as \"take it all the way\", \"just do it\", or \"lfg\"."
 argument-hint: "[feature, bug, issue, or plan path]"
-allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/tickets-check.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/findings-check.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" *)
+allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/tickets-check.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/findings-check.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/memory-validate.mjs" *)
 ---
 
 # Autopilot

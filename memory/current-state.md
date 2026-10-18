@@ -20,7 +20,7 @@ retires a finished workstream with `handoff close`.
 
 **Verified:**
 
-- `node --test`: 643 passed, 0 failed, 15 skipped (658 tests), on branch
+- `node --test`: 654 passed, 0 failed, 15 skipped (669 tests), on branch
   claude/serene-faraday-shkcdn, 2026-10-18.
 - `claude plugin validate . --strict` passed on the same tree.
 - [Pull request #1](https://github.com/ZachArticulateV/project-memory/pull/1)

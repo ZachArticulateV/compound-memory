@@ -21,7 +21,8 @@ import { isDirectory, listFiles, readTextContained, relPosix } from './lib/fs-ut
 import { USAGE_EXIT_CODE, emit, parseCliArgs } from './lib/report.mjs'
 
 export const TICKETS_SCHEMA_VERSION = 1
-const DONE = /\b(done|merged|closed|complete|completed)\b/i
+// Anchored, so "not done" and the unfilled "ready | in-progress | done" are open.
+const DONE = /^\W*(done|merged|closed|complete|completed)\b/i
 
 const field = (text, name) => {
   // [ \t] rather than \s: \s crosses the newline, so an empty field would
@@ -30,10 +31,18 @@ const field = (text, name) => {
   return match === null ? null : match[1].trim()
 }
 
-/** Ticket numbers named on a "Blocked by" line. "None" and empty mean no blockers. */
+/**
+ * Ticket numbers named on a "Blocked by" line. "None" and empty mean no
+ * blockers. Only numbers in list position count, and parenthesized notes are
+ * ignored, so "03 (needs Node 18)", "02, see PR #45", and a date are one
+ * blocker each, not several.
+ */
 export function parseBlockers(value) {
-  if (value === null || !/\d/.test(value)) return []
-  return [...new Set([...value.matchAll(/#?\b(\d{1,4})\b/g)].map((m) => String(Number(m[1]))))]
+  if (value === null) return []
+  const text = value.replace(/\([^)]*\)/g, ' ')
+  if (/^\W*none\b/i.test(text)) return []
+  const ids = [...text.matchAll(/(?:^|[,;&]|\band\b)\s*#?(\d{1,4})\b(?![-./]\d)/gi)].map((m) => String(Number(m[1])))
+  return [...new Set(ids)]
 }
 
 /** Paths or areas on a "Touches" line, backticks and trailing slashes stripped. */
@@ -90,7 +99,14 @@ export function findCycles(tickets) {
 
 export function analyzeTickets(tickets) {
   const byId = new Map(tickets.map((t) => [t.id, t]))
+  const allById = new Map()
+  for (const t of tickets) allById.set(t.id, [...(allById.get(t.id) ?? []), t])
   const problems = []
+  for (const [id, group] of allById) {
+    if (id !== null && group.length > 1) {
+      problems.push({ kind: 'duplicate-id', ticket: group[1].path, message: `shares number ${id} with ${group.map((t) => t.path).join(', ')}` })
+    }
+  }
   for (const t of tickets) {
     if (t.id === null) problems.push({ kind: 'unnumbered', ticket: t.path, message: 'file name does not start with a number' })
     for (const b of t.blockedBy) {
@@ -104,7 +120,8 @@ export function analyzeTickets(tickets) {
   const cycles = findCycles(tickets.filter((t) => t.id !== null))
   for (const c of cycles) problems.push({ kind: 'cycle', ticket: byId.get(c[0])?.path ?? c[0], message: `cycle: ${c.join(' -> ')}` })
 
-  const isDone = (id) => byId.get(id)?.done === true
+  // A number is done only when every ticket carrying it is done.
+  const isDone = (id) => (allById.get(id) ?? []).length > 0 && allById.get(id).every((t) => t.done)
   const open = tickets.filter((t) => !t.done && t.id !== null)
   const frontier = open.filter((t) => t.blockedBy.every((b) => !byId.has(b) || isDone(b)))
 
@@ -181,7 +198,8 @@ const USAGE = `Usage: tickets-check.mjs --dir <tickets-dir> [--json] [--cwd <dir
 
 Report the frontier, parallel waves, cycles, unknown blockers, missing verify
 commands, and path collisions for a directory of NN-<slug>.md tickets.
-Read-only. Exits 0 when it ran; 1 when it found a cycle or an unknown blocker; 2 on a usage error.
+Read-only. Exits 0 when it ran; 1 when it found a cycle, an unknown blocker, or
+a duplicate number; 2 on a usage error.
 `
 
 export function main(argv = process.argv.slice(2)) {
@@ -200,7 +218,7 @@ export function main(argv = process.argv.slice(2)) {
     return USAGE_EXIT_CODE
   }
   emit(result, renderTicketsText(result), { json: values.json })
-  return result.problems.some((p) => p.kind === 'cycle' || p.kind === 'unknown-blocker') ? 1 : 0
+  return result.problems.some((p) => ['cycle', 'unknown-blocker', 'duplicate-id'].includes(p.kind)) ? 1 : 0
 }
 
 const invokedDirectly =

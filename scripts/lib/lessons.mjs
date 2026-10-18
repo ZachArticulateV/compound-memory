@@ -58,7 +58,8 @@ export function readLessonFrontmatter(text) {
   for (let i = 1; i < end; i += 1) {
     const raw = lines[i]
     if (raw.trim() === '' || raw.trimStart().startsWith('#')) continue
-    const item = /^\s+-\s+(.*)$/.exec(raw)
+    // Indented or not: both are valid YAML block lists.
+    const item = /^\s*-\s+(.*)$/.exec(raw)
     if (item !== null && openList !== null) {
       data[openList].push(unquote(item[1]))
       continue
@@ -137,24 +138,54 @@ export function lessonProblems(lesson) {
 // ---------------------------------------------------------------------------
 
 const STOPWORDS = new Set([
+  'a', 'an', 'as', 'at', 'be', 'by', 'do', 'if', 'in', 'is', 'it', 'of', 'on', 'or', 'so',
+  'to', 'up', 'we', 'my', 'no', 'me',
   'the', 'and', 'for', 'with', 'that', 'this', 'from', 'into', 'when', 'what', 'how', 'why',
   'are', 'was', 'were', 'has', 'have', 'not', 'but', 'our', 'your', 'its', 'can', 'use',
   'add', 'fix', 'make', 'change', 'update',
 ])
 
-/** Lowercase word tokens of three or more characters, hyphens and slashes split. */
+/**
+ * Lowercase word tokens, hyphens and slashes split. Two letters is enough
+ * (`ci`, `db`, `ui` are real tags); the stopword list drops the short words
+ * that carry nothing.
+ */
 export function tokenize(text) {
   return (text ?? '')
     .toLowerCase()
     .split(/[^a-z0-9]+/)
-    .filter((word) => word.length >= 3 && !STOPWORDS.has(word))
+    .filter((word) => word.length >= 2 && !STOPWORDS.has(word))
 }
 
-const stem = (word) => word.replace(/(ies|es|s|ing|ed)$/, '')
+/**
+ * The forms a word may stand for: itself, its singular, and its stem without
+ * -ing or -ed (with and without a restored final e). Two words match when their
+ * form sets meet, so "retry" meets "retries", "file" meets "files", and
+ * "parse" meets "parsing", while "red" and "ring" stay themselves.
+ */
+export function wordForms(word) {
+  const forms = new Set([word])
+  const add = (form) => form.length >= 3 && forms.add(form)
+  if (word.endsWith('ies') && word.length > 4) add(`${word.slice(0, -3)}y`)
+  if (word.endsWith('es') && word.length > 4) {
+    add(word.slice(0, -1))
+    add(word.slice(0, -2))
+  }
+  if (word.endsWith('s') && !word.endsWith('ss') && word.length > 3) add(word.slice(0, -1))
+  if (word.endsWith('ing') && word.length >= 6) {
+    add(word.slice(0, -3))
+    add(`${word.slice(0, -3)}e`)
+  }
+  if (word.endsWith('ed') && word.length >= 5) {
+    add(word.slice(0, -2))
+    add(word.slice(0, -1))
+  }
+  return forms
+}
 
-function overlap(queryStems, words) {
-  const stems = new Set(words.map(stem))
-  return [...queryStems].filter((q) => stems.has(q))
+function overlap(queryWords, words) {
+  const pool = new Set(words.flatMap((w) => [...wordForms(w)]))
+  return [...queryWords].filter((q) => [...wordForms(q)].some((form) => pool.has(form)))
 }
 
 const normalizePath = (p) => p.replace(/\\/g, '/').replace(/^\.\//, '').replace(/\/+$/, '')
@@ -174,12 +205,12 @@ export function pathMatches(lessonPath, changedPath) {
  * applies_when, paths) over incidental body words.
  */
 export function scoreLesson(lesson, { query = '', paths = [] } = {}) {
-  const queryStems = new Set(tokenize(query).map(stem))
+  const queryWords = new Set(tokenize(query))
   const matched = {
-    title: overlap(queryStems, tokenize(lesson.title)),
-    tags: overlap(queryStems, lesson.tags.flatMap(tokenize)),
-    appliesWhen: overlap(queryStems, tokenize(lesson.appliesWhen)),
-    body: overlap(queryStems, tokenize(lesson.body)),
+    title: overlap(queryWords, tokenize(lesson.title)),
+    tags: overlap(queryWords, lesson.tags.flatMap(tokenize)),
+    appliesWhen: overlap(queryWords, tokenize(lesson.appliesWhen)),
+    body: overlap(queryWords, tokenize(lesson.body)),
     paths: lesson.paths.filter((lp) => paths.some((cp) => pathMatches(lp, cp))),
   }
   const score =
@@ -199,7 +230,9 @@ export function scoreLesson(lesson, { query = '', paths = [] } = {}) {
 export function rankLessons(lessons, { query = '', paths = [], includeInactive = false, limit = 5 } = {}) {
   const inactive = lessons.filter((l) => l.status !== 'active')
   const pool = includeInactive ? lessons : lessons.filter((l) => l.status === 'active')
-  const browsing = tokenize(query).length === 0 && paths.length === 0
+  // Browse only when nothing was asked. A query of stopwords alone matches
+  // nothing rather than everything.
+  const browsing = query.trim() === '' && paths.length === 0
   const scored = pool
     .map((lesson) => ({ lesson, ...scoreLesson(lesson, { query, paths }) }))
     .filter((entry) => browsing || entry.score > 0)

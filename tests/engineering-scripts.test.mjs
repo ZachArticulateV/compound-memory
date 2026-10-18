@@ -22,8 +22,8 @@ import { cleanupAfter, makeTempRoot, writeTree } from './fixtures/build.mjs'
 const scripts = join(dirname(fileURLToPath(import.meta.url)), '..', 'scripts')
 const run = (script, args) => spawnSync(process.execPath, [join(scripts, script), ...args], { encoding: 'utf8' })
 
-const lesson = ({ title = 'Retried jobs must be idempotent', tags = '[jobs, retries]', status = 'active', paths = '[app/jobs/]', body = '## Do this\n\nMake the job safe to run twice.\n' } = {}) =>
-  `---\ntitle: ${title}\ntags: ${tags}\napplies_when: Changing a background job the queue can retry\npaths: ${paths}\nstatus: ${status}\n---\n\n# ${title}\n\n${body}`
+const lesson = ({ title = 'Retried jobs must be idempotent', tags = '[jobs, retries]', status = 'active', paths = '[app/jobs/]', applies = 'Changing a background job the queue can retry', body = '## Do this\n\nMake the job safe to run twice.\n' } = {}) =>
+  `---\ntitle: ${title}\ntags: ${tags}\napplies_when: ${applies}\npaths: ${paths}\nstatus: ${status}\n---\n\n# ${title}\n\n${body}`
 
 // ---------------------------------------------------------------------------
 // Lessons
@@ -95,6 +95,21 @@ test('the lessons CLI runs, and a bad limit is a usage error', (t) => {
   assert.equal(ok.status, 0, ok.stderr)
   assert.equal(JSON.parse(ok.stdout).results.length, 1)
   assert.equal(run('lessons.mjs', ['--cwd', root, '--limit', 'x']).status, 2)
+})
+
+test('a second path is a path, not the project root', (t) => {
+  // `--paths app/jobs tests` once read "tests" as the root, found no lessons
+  // there, and exited 0: a silent miss in every skill that passed two paths.
+  const root = makeTempRoot()
+  cleanupAfter(t, root)
+  writeTree(root, { 'memory/lessons/jobs.md': lesson(), 'tests/x.test.mjs': '', 'app/jobs/charge.rb': '' })
+  for (const args of [['--paths', 'web', 'app/jobs/charge.rb'], ['--paths', 'web app/jobs/charge.rb'], ['--paths', 'web,app/jobs/charge.rb']]) {
+    const out = run('lessons.mjs', ['--cwd', root, '--json', ...args])
+    assert.equal(out.status, 0, out.stderr)
+    const parsed = JSON.parse(out.stdout)
+    assert.equal(parsed.root, root.split('\\').join('/'), `${args.join(' ')} changed the root`)
+    assert.equal(parsed.results.length, 1, `${args.join(' ')} missed the lesson`)
+  }
 })
 
 // ---------------------------------------------------------------------------
@@ -265,4 +280,100 @@ test('the measure CLI requires both sides', () => {
   const ok = run('measure.mjs', ['--baseline', '100,101', '--candidate', '80,81', '--json'])
   assert.equal(ok.status, 0, ok.stderr)
   assert.equal(JSON.parse(ok.stdout).verdict, 'keep')
+})
+
+// ---------------------------------------------------------------------------
+// Regressions from the script review (each input below failed before its fix)
+// ---------------------------------------------------------------------------
+
+test('a second model with a fabricated quote does not count as agreement', (t) => {
+  const root = makeTempRoot()
+  cleanupAfter(t, root)
+  writeTree(root, { 'lib/queue.ts': QUEUE })
+  const result = checkFindings(root, [
+    { model: 'claude', severity: 'P1', confidence: 75, file: 'lib/queue.ts', line: 2, quote: 'return run(job)', title: 'Retry twice' },
+    { model: 'gpt', severity: 'P1', confidence: 75, file: 'lib/queue.ts', line: 3, quote: 'retryForever(job)', title: 'Retry twice' },
+  ])
+  assert.equal(result.kept[0].promoted, false)
+  assert.equal(result.kept[0].confidence, 75)
+})
+
+test('a quote that spans a blank line is found', () => {
+  const where = locateQuote('function a() {}\n\nfunction b() {\n}\n', 'function a() {} function b() {', 1)
+  assert.equal(where.status, 'at-line')
+  assert.equal(where.line, 1)
+  assert.equal(locateQuote('\n\nfoo()\n', 'foo()', 3).line, 3, 'leading blank lines keep the line numbers')
+})
+
+test('an absolute file path inside the repository is accepted', (t) => {
+  const root = makeTempRoot()
+  cleanupAfter(t, root)
+  writeTree(root, { 'lib/queue.ts': QUEUE })
+  const result = checkFindings(root, [{ severity: 'P1', confidence: 75, file: join(root, 'lib', 'queue.ts'), line: 2, quote: 'return run(job)', title: 'T' }])
+  assert.equal(result.kept.length, 1)
+  assert.equal(result.kept[0].file, 'lib/queue.ts')
+})
+
+test('numbers in notes, dates, and PR references are not blockers', () => {
+  assert.deepEqual(parseBlockers('03 (needs Node 18)'), ['3'])
+  assert.deepEqual(parseBlockers('02, see PR #45'), ['2'])
+  assert.deepEqual(parseBlockers('None (was 03)'), [])
+  assert.deepEqual(parseBlockers('04, after the 2026-10-20 release'), ['4'])
+  assert.deepEqual(parseBlockers('01 (the schema, v2)'), ['1'])
+})
+
+test('"not done" and an unfilled status template are open, not done', () => {
+  for (const status of ['not done', 'not complete', 'ready | in-progress | done']) {
+    assert.equal(parseTicket('t/01-a.md', ticket('01', { status })).done, false, status)
+  }
+  assert.equal(parseTicket('t/01-a.md', ticket('01', { status: 'done' })).done, true)
+  assert.equal(parseTicket('t/01-a.md', ticket('01', { status: '**Done** (merged #12)' })).done, true)
+})
+
+test('two tickets with one number are a problem, and the number is not done until both are', () => {
+  const result = analyzeTickets([
+    parseTicket('t/01-a.md', ticket('01')),
+    parseTicket('t/01-b.md', ticket('01', { status: 'done' })),
+    parseTicket('t/02-c.md', ticket('02', { blocked: '01' })),
+  ])
+  assert.ok(result.problems.some((p) => p.kind === 'duplicate-id'))
+  assert.ok(!result.frontier.includes('2'), 'ticket 02 is still blocked by the open 01')
+})
+
+test('plural, -ing, and -ed forms match, and short unrelated words do not', (t) => {
+  const root = makeTempRoot()
+  cleanupAfter(t, root)
+  writeTree(root, {
+    'memory/lessons/retry.md': lesson({ title: 'Retried jobs must be idempotent', tags: '[jobs, retries, files, parsing, cached]' }),
+    'memory/lessons/ring.md': lesson({ title: 'Ring buffer sizing', tags: '[buffers]', applies: 'Sizing a buffer', paths: '[lib/buffer/]', body: '## Do this\n\nSize it to a power of two.\n' }),
+  })
+  for (const query of ['retry', 'file', 'parse', 'cache']) {
+    assert.deepEqual(findLessons(root, { query }).results.map((r) => r.title), ['Retried jobs must be idempotent'], query)
+  }
+  assert.equal(findLessons(root, { query: 'red' }).results.length, 0, '"red" must not match "Ring" or "retried"')
+})
+
+test('two-letter tags match, and a stopword-only query matches nothing', (t) => {
+  const root = makeTempRoot()
+  cleanupAfter(t, root)
+  writeTree(root, {
+    'memory/lessons/ci.md': lesson({ title: 'Pin the runner image', tags: '[ci, docker]' }),
+    'memory/lessons/other.md': lesson({ title: 'Other', tags: '[css]', paths: '[web/]' }),
+  })
+  assert.deepEqual(findLessons(root, { query: 'ci' }).results.map((r) => r.title), ['Pin the runner image'])
+  assert.equal(findLessons(root, { query: 'the of' }).results.length, 0)
+})
+
+test('an unindented block list is read, and later fields survive it', () => {
+  const fm = readLessonFrontmatter('---\ntitle: T\ntags:\n- jobs\n- retries\nstatus: stale\napplies_when: X\n---\n')
+  assert.equal(fm.error, null)
+  assert.deepEqual(fm.data.tags, ['jobs', 'retries'])
+  assert.equal(fm.data.status, 'stale')
+  assert.equal(fm.listStyle.tags, 'block')
+})
+
+test('a noise or minimum effect that is not a ratio is a usage error', () => {
+  assert.equal(run('measure.mjs', ['--baseline', '1,2', '--candidate', '1,2', '--noise', '5%']).status, 2)
+  assert.equal(run('measure.mjs', ['--baseline', '1,2', '--candidate', '1,2', '--min-effect', 'abc']).status, 2)
+  assert.equal(run('measure.mjs', ['--baseline', '1,2', '--candidate', '1,2', '--noise', '0.05']).status, 0)
 })

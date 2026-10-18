@@ -2,8 +2,8 @@
 
 Updated: 2026-10-18
 Branch: claude/serene-faraday-shkcdn
-HEAD: 6ac98f9
-Working tree: the engineering-skills commit, made directly on top of HEAD
+HEAD: 277e8f2
+Working tree: the review-fix commit, made directly on top of HEAD
 Work type: code change
 Next session focus: run the engineering skills live on a sample repository
 
@@ -25,12 +25,18 @@ trust the model, with deterministic scripts for what must be exact.
   the hygiene exemption for lessons.
 - `docs/coverage.md`, two benchmark notes, README, architecture, limitations,
   and quickstart updates; the first lesson in `memory/lessons/`.
+- A two-lens review of the branch (scripts; skill coherence) found 21 issues,
+  all fixed: 10 script bugs, each pinned by a regression test, and 11
+  instruction gaps (path lists, default-branch commits, the findings file's
+  location and checkout, the noise ratio, transcript redaction, artifact
+  readers, coverage wording).
 - The previous handoff (claude/kind-ride-kiczmp) is retired: pull request #2
   merged it to main (`6d5d858`), recorded in `current-state.md`.
 
 ## Verified
 
-- `node --test`: 643 passed, 0 failed, 15 skipped (658 tests), 2026-10-18.
+- `node --test`: 654 passed, 0 failed, 15 skipped (669 tests), 2026-10-18.
+- The 11 regression tests fail on `277e8f2` and pass with the fixes.
 - `claude plugin validate . --strict` passed on the same tree.
 - The verify layout check ran under Playwright on two fixture pages and told
   the clipped page from the clean one.
