@@ -56,6 +56,17 @@ protected writes, so interactive behavior is not covered.
 | `handoff` files durable facts into their owners and `handoff close` retires a merged workstream | unverified | — |
 | `init` installs the writing rule | failing | Protected `.claude/` write refused in a headless run; `init` now prints the copy command |
 
+### Memory live tier re-run, 2026-10-18
+
+`PROJECT_MEMORY_LIVE_ACCEPTANCE=1 node --test tests/acceptance/live-scenarios.test.mjs`
+on Claude Code 2.1.302, after four harness fixes: the inherited
+`NODE_TEST_CONTEXT`, `--add-dir` for the plugin directory (newer headless runs
+refuse reads outside the fixture), an unattended prompt for scenarios H and J
+whose one-commit fixtures read as new projects, and a worktree with real work
+for scenario G (with none, the model asked what the work was in 3 of 9 runs).
+Scenarios A, B, C, D, E, F, G, H, I, J, and K passed; G passed 4 of 4 after its
+fixture fix. The two Codex scenarios skipped: no Codex CLI on this machine.
+
 ## Engineering skills, live
 
 Headless `claude -p` runs with `--plugin-dir` and `--permission-mode
