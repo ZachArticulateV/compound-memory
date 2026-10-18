@@ -175,6 +175,10 @@ function runMode(root, mode, { sessionId = null, resume = null, extraPrompt = ''
   const args = [
     '-p',
     '--plugin-dir', PLUGIN_DIR,
+    // The playbooks and templates live in the plugin, outside the fixture's
+    // working directory. Claude Code 2.1.3xx refuses reads outside it under
+    // acceptEdits in a headless run, so the plugin directory is granted.
+    '--add-dir', PLUGIN_DIR,
     '--permission-mode', PERMISSION_MODE,
     '--allowedTools', 'Bash(node *)',
     '--output-format', 'json',
