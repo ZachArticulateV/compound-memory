@@ -117,6 +117,14 @@ export function main(argv = process.argv.slice(2)) {
     process.stdout.write(USAGE)
     return 0
   }
+  for (const name of ['noise', 'min-effect']) {
+    if (values[name] === undefined) continue
+    const n = Number(values[name])
+    if (!Number.isFinite(n) || n < 0) {
+      process.stderr.write(`measure: --${name} must be a ratio of 0 or more (0.03 for 3%), not ${values[name]}\n\n${USAGE}`)
+      return USAGE_EXIT_CODE
+    }
+  }
   const result = {
     schemaVersion: MEASURE_SCHEMA_VERSION,
     ...decide({

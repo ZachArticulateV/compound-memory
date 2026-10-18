@@ -12,7 +12,7 @@ parallel subagents and keep only their conclusions:
 
 - **Repository patterns:** how the code already does the nearest similar
   thing, which helpers exist, which tests cover the area.
-- **Lessons:** `lessons.mjs --query "<terms>" --paths <dirs the work touches>`
+- **Lessons:** `lessons.mjs --query "<terms>" --paths <dir>,<dir>`
   (see the router), then read the matches.
 - **Outside docs:** only when the work leans on a framework or API whose
   behavior you would otherwise guess.

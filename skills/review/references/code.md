@@ -17,7 +17,7 @@ and the diff is not empty before starting any subagent.
   changed paths:
 
   ```bash
-  node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" --paths <changed dirs>
+  node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" --paths <dir>,<dir>
   ```
 
 ## 3. Run the lenses
@@ -38,21 +38,26 @@ model does not.
 
 ## 4. Gate
 
-Collect every lens's findings into one `review-findings.json` and run:
+Collect every lens's findings into one `.verify/review-findings.json` (keep
+`.verify/` in `.gitignore`) and run it against a checkout of the reviewed head:
 
 ```bash
-node "${CLAUDE_SKILL_DIR}/../../scripts/findings-check.mjs" --input review-findings.json
+node "${CLAUDE_SKILL_DIR}/../../scripts/findings-check.mjs" --input .verify/review-findings.json
 ```
 
 It checks that each quote is really in the file near the cited line, merges
-duplicates, and keeps findings at confidence 75 or more, or P0.
+duplicates, and keeps findings at confidence 75 or more, or P0. It reads files
+as they are on disk, so when the reviewed head is not the current tree (a PR you
+have not checked out), add a worktree for it (`git worktree add`) and pass that
+directory with `--cwd`. A finding about a deleted line quotes the code that
+remains around it.
 
 ## 5. Try to disprove
 
 For each kept P0 and P1, read the code yourself (or have a fresh subagent do
 it) with one goal: show the finding is wrong. Drop what you disprove, with the
-reason. Keep what survives. Mark what you cannot settle as unresolved; it still
-counts.
+reason. Keep what survives. Mark what you cannot settle as unresolved: it stays
+in the report, labelled, and counts toward the lens's worst finding.
 
 ## 6. Report
 

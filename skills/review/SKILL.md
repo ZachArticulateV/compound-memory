@@ -13,8 +13,8 @@ build the wrong thing, or build the right thing badly; separate lenses keep one
 from hiding the other.
 
 **Done when:** every lens has reported or said why it was skipped, the findings
-went through `findings-check.mjs`, and every kept P0 and P1 survived an attempt
-to disprove it.
+went through `findings-check.mjs`, and every kept P0 and P1 was put through an
+attempt to disprove it (dropped, kept, or marked unresolved).
 
 ## Modes
 

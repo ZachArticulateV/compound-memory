@@ -13,13 +13,13 @@ artifact you write.
 | --- | --- | --- | --- |
 | Memory tree | `memory/` | `project-memory` | every skill, at the start of substantial work |
 | Plan | `docs/plans/YYYY-MM-DD-<slug>.md` | `plan` | `build`, `review`, `autopilot`, `verify` |
-| Tickets | `docs/plans/<slug>/tickets/NN-<slug>.md` | `plan tickets` | `build`, `autopilot`, `project-memory sync` |
+| Tickets | `docs/plans/<slug>/tickets/NN-<slug>.md` | `plan tickets` | `build`, `autopilot`, `catch-up` |
 | Prototype | branch `prototype/<slug>` | `prototype` | `plan`, `build` |
 | Verification skill | `.claude/skills/verify-<app>/` | `verify create` | `verify run`, `build`, `review`, `autopilot` |
 | Evidence | `.verify/evidence/<run-id>/` (not committed) | `verify run` | `review`, `ship pr`, `catch-up` |
-| Review report | the reply, plus `review-findings.json` when gated | `review` | `build`, `ship feedback`, `autopilot` |
+| Review report | the reply, plus `.verify/review-findings.json` | `review` | `build`, `ship pr`, `autopilot` |
 | Lessons | `memory/lessons/<slug>.md` | `learn capture` | `plan`, `debug`, `review`, `build` |
-| Guardrails table | `memory/guardrails.md` | `learn correct` | `review`, `learn retro` |
+| Guardrails table | `memory/guardrails.md` | `learn correct` | `review`, `learn correct` |
 | Writing standard | `skills/write/references/` | `write` | every skill that writes prose |
 
 ## Plan
@@ -61,8 +61,9 @@ One file per ticket, numbered in dependency order.
 ```
 
 `scripts/tickets-check.mjs` reads these lines. It reports the frontier, the
-waves that can run in parallel, cycles, unknown blockers, and frontier tickets
-that touch the same paths.
+waves that can run in parallel, cycles, unknown blockers, duplicate numbers,
+and frontier tickets that touch the same paths. Only numbers in list position
+on the `Blocked by` line count; notes in parentheses are ignored.
 
 ## Lessons
 
@@ -77,6 +78,7 @@ applies_when: Changing a background job that the queue can retry
 paths: [app/jobs/, lib/queue.ts]
 status: active
 created: 2026-10-18
+updated: 2026-10-18
 retire_when: The queue guarantees exactly-once delivery
 ---
 
@@ -89,7 +91,9 @@ retire_when: The queue guarantees exactly-once delivery
 ```
 
 `status` is `active`, `stale`, or `retired`. Lookup skips `stale` and `retired`
-lessons unless asked for them.
+lessons unless asked for them. `paths`, `updated`, and `retire_when` are
+optional; the rest are required. `scripts/lessons.mjs` takes changed paths as
+`--paths a,b` or as bare arguments.
 
 ## Guardrails table
 
@@ -108,8 +112,8 @@ it is broken.
 
 ## Findings file
 
-`review` writes findings as JSON when it gates them through
-`scripts/findings-check.mjs`:
+`review` writes findings as JSON to `.verify/review-findings.json` and gates
+them through `scripts/findings-check.mjs`:
 
 ```json
 { "findings": [

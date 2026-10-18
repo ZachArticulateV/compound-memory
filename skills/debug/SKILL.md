@@ -2,7 +2,7 @@
 name: debug
 description: "Find the root cause of a bug and fix it with proof: reproduce the failure, test competing explanations, trace the cause from trigger to symptom, and fix it behind a regression test. Use when something is broken, failing, flaky, slower than it used to be, or behaving differently than expected."
 argument-hint: "[symptom, failing test, error, or issue]"
-allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" *)
+allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/measure.mjs" *)
 ---
 
 # Debug
@@ -22,7 +22,7 @@ written down.
    lessons, recent commits on the suspect paths, and related issues or PRs.
 
    ```bash
-   node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" --query "<symptom>" --paths <suspect paths>
+   node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" --query "<symptom>" --paths <path>,<path>
    ```
 
 2. **Build a tight loop that goes red.** Name one command you have already run

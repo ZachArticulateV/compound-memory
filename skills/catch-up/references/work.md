@@ -53,5 +53,6 @@ Memory and transcripts say what was true then.
   reverted, so the next attempt starts where the last one failed.
 - **Next move:** the single most useful next action, concrete.
 
-Cite each finding by its source (PR number, ticket, session). When memory
+Cite each finding by its source (PR number, ticket, session). Redact secrets
+and personal or health data from anything quoted out of a transcript. When memory
 disagreed with what you verified, say so and suggest `/project-memory sync`.

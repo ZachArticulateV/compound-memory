@@ -42,8 +42,8 @@ subagents and keep only their findings.
 ## Output
 
 Rank the candidates by how much they would have changed the session. For each:
-the category, the evidence (a quote or the tool call), the proposed change, and
-its home:
+the category, the evidence (a quote or the tool call, with secrets and personal
+or health data redacted), the proposed change, and its home:
 
 - a check or structural fix: run `correct`;
 - durable knowledge: run `capture`;

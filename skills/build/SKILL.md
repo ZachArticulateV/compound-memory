@@ -31,8 +31,11 @@ request to decide it, use `work`. Read only the reference for the mode you run.
    lessons for the paths you will touch:
 
    ```bash
-   node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" --paths <dirs the work touches>
+   node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" --paths <dir>,<dir>
    ```
+
+   On the repository's default branch, create a feature branch before the first
+   commit.
 
    When the project has a verification skill (`.claude/skills/verify-*` or
    `.agents/skills/verify-*`), note it: `verify` uses it to prove user-facing

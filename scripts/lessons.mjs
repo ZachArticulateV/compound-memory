@@ -14,9 +14,11 @@
 import { fileURLToPath } from 'node:url'
 import { resolve } from 'node:path'
 
-import { isDirectory, joinRel, listFiles, readTextContained, relPosix } from './lib/fs-utils.mjs'
+import { parseArgs } from 'node:util'
+
+import { findProjectRoot, isDirectory, joinRel, listFiles, readTextContained, relPosix } from './lib/fs-utils.mjs'
 import { LESSONS_REL, lessonProblems, parseLesson, rankLessons } from './lib/lessons.mjs'
-import { USAGE_EXIT_CODE, emit, parseCliArgs } from './lib/report.mjs'
+import { USAGE_EXIT_CODE, emit } from './lib/report.mjs'
 
 export const LESSONS_SCHEMA_VERSION = 1
 
@@ -81,21 +83,47 @@ export function renderLessonsText(result) {
   return out.join('\n')
 }
 
-const USAGE = `Usage: lessons.mjs [--query "<words>"] [--paths a,b] [--all] [--limit n] [--json] [--cwd <dir>]
+const USAGE = `Usage: lessons.mjs [--query "<words>"] [--paths a,b] [path ...] [--all] [--limit n] [--json] [--cwd <dir>]
 
-Find the lessons under memory/lessons/ that match a task. With no query and no
-paths, list the active lessons. Read-only. Exits 0 when it ran; 2 on a usage error.
+Find the lessons under memory/lessons/ that match a task. Paths may be given as
+a comma or space separated --paths value, or as bare arguments. With no query
+and no paths, list the active lessons. Read-only. Exits 0 when it ran; 2 on a
+usage error.
 `
 
+/**
+ * Parse arguments. Unlike the other scripts, a bare argument is a changed path,
+ * not the project root: `--paths app tests` must not read "tests" as the root
+ * and silently report that no lessons exist. The root comes only from --cwd.
+ */
+export function parseLessonsArgs(argv) {
+  try {
+    const { values, positionals } = parseArgs({
+      args: argv,
+      options: {
+        json: { type: 'boolean', default: false },
+        cwd: { type: 'string' },
+        help: { type: 'boolean', default: false, short: 'h' },
+        query: { type: 'string', default: '' },
+        paths: { type: 'string', default: '' },
+        all: { type: 'boolean', default: false },
+        limit: { type: 'string', default: '5' },
+      },
+      allowPositionals: true,
+      strict: true,
+    })
+    if (values.cwd !== undefined && !isDirectory(resolve(values.cwd))) {
+      return { values, error: `not a directory: ${values.cwd}` }
+    }
+    const paths = [...values.paths.split(/[,\s]+/), ...positionals].map((p) => p.trim()).filter(Boolean)
+    return { values, paths, root: values.cwd ?? findProjectRoot(process.cwd()), error: null }
+  } catch (err) {
+    return { values: { json: false, help: false }, error: err.message }
+  }
+}
+
 export function main(argv = process.argv.slice(2)) {
-  const { values, root, error } = parseCliArgs(argv, {
-    extraOptions: {
-      query: { type: 'string', default: '' },
-      paths: { type: 'string', default: '' },
-      all: { type: 'boolean', default: false },
-      limit: { type: 'string', default: '5' },
-    },
-  })
+  const { values, paths, root, error } = parseLessonsArgs(argv)
   if (error !== null) {
     process.stderr.write(`lessons: ${error}\n\n${USAGE}`)
     return USAGE_EXIT_CODE
@@ -109,7 +137,6 @@ export function main(argv = process.argv.slice(2)) {
     process.stderr.write(`lessons: --limit must be a whole number\n\n${USAGE}`)
     return USAGE_EXIT_CODE
   }
-  const paths = values.paths.split(',').map((p) => p.trim()).filter(Boolean)
   const result = findLessons(root, { query: values.query, paths, includeInactive: values.all, limit })
   emit(result, renderLessonsText(result), { json: values.json })
   return 0
