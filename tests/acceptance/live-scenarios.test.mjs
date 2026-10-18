@@ -451,11 +451,18 @@ test(label('F'), live(), (t) => {
 // Scenario H — External task tracker
 // ---------------------------------------------------------------------------
 
+// A one-commit fixture reads as a new project, so init interviews before it
+// writes. A headless run cannot answer, so the scenarios whose subject is not
+// the interview (H, J) say so, the way an unattended run would.
+const UNATTENDED =
+  'No human is available to answer questions. Record each question you would ask as unresolved, ' +
+  'with your recommended answer, and write the memory tree.'
+
 test(label('H'), live(), (t) => {
   const root = externalTrackerRepo({ git: gitAvailable() })
   cleanupAfter(t, root)
 
-  runMode(root, 'init')
+  runMode(root, 'init', { extraPrompt: UNATTENDED })
   assertInitialized(root)
 
   const nextActions = readIf(root, 'memory/next-actions.md')
@@ -468,8 +475,10 @@ test(label('H'), live(), (t) => {
   )
 
   // Does not duplicate the tracker: the punch list stays a local punch list.
-  const issueKeys = (nextActions.match(/\bENG-\d+\b/g) || []).length
-  assert.ok(issueKeys <= 2, `next-actions.md mirrors the issue tracker (${issueKeys} issue keys)`)
+  // Distinct keys, not mentions: naming the one issue the repository cites in a
+  // task and in a blocked item is a pointer, not a mirror.
+  const issueKeys = new Set(nextActions.match(/\bENG-\d+\b/g) || []).size
+  assert.ok(issueKeys <= 2, `next-actions.md mirrors the issue tracker (${issueKeys} distinct issue keys)`)
 })
 
 // ---------------------------------------------------------------------------
@@ -509,7 +518,7 @@ test(label('J', 'refusal half'), live(), (t) => {
   const root = secretsRepo({ git: gitAvailable() })
   cleanupAfter(t, root)
 
-  runMode(root, 'init')
+  runMode(root, 'init', { extraPrompt: UNATTENDED })
 
   const persisted = persistedText(root)
   for (const value of SECRET_VALUES) {
@@ -578,6 +587,13 @@ test(label('K'), live(), (t) => {
 // ---------------------------------------------------------------------------
 
 test('U8 live: the shipped bridge reaches the Codex tier and finds the drift', live(), async (t) => {
+  // A machine without the Codex CLI cannot exercise this tier. That is
+  // reported as a skip with its reason, never as a pass, and not as a failure
+  // of the bridge.
+  if (findExecutable('codex') === null) {
+    t.skip('codex is not on PATH; the Codex tier cannot be exercised on this machine')
+    return
+  }
   const root = staleMemoryRepo({ git: gitAvailable() })
   cleanupAfter(t, root)
   assertTempFixture(root)
