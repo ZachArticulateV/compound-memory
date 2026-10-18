@@ -7,6 +7,10 @@ Each item names an observable outcome. "Improve the backend" is not an action.
 
 ## Now
 
+- [ ] Re-run the memory live tier (`PROJECT_MEMORY_LIVE_ACCEPTANCE=1 node --test tests/acceptance/live-scenarios.test.mjs`) now that spawned agents no longer inherit `NODE_TEST_CONTEXT`
+  - Done when: each scenario's result is recorded in `acceptance-criteria.md`, and the `bugs-and-risks.md` entry is resolved or updated
+  - Out of scope: changing the memory playbooks before the run shows a problem
+
 - [ ] Run `ship watch` and `ship feedback` on a real GitHub pull request with CI, and the live engineering scenarios under Codex
   - Done when: each met its Done when line, recorded in `acceptance-criteria.md` (Engineering skills, live)
   - Out of scope: changing a skill's wording before the run shows a problem

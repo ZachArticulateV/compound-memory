@@ -35,8 +35,10 @@ decide it, use `code`. The lenses themselves are in `references/lenses.md`.
    lessons for the changed paths.
 3. **Run the lenses in parallel subagents**, each with only what it needs. Each
    returns findings in the shape in `../../references/artifacts.md`.
-4. **Gate the findings in code:** quotes are checked against the files,
-   duplicates merged, and only confidence 75 or more (or P0) is kept.
+4. **Gate the findings in code:** write them to `.verify/review-findings.json`
+   and run `findings-check.mjs`, also when you ran the lenses yourself rather
+   than in subagents. Quotes are checked against the files, duplicates merged,
+   and only confidence 75 or more (or P0) is kept.
 5. **Try to disprove** each kept P0 and P1 before reporting it.
 6. **Report each lens under its own heading.** Do not rerank across lenses.
 
