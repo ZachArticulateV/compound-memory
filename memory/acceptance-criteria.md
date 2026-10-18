@@ -110,7 +110,7 @@ in a scratch directory and was not kept.
 | `autopilot` on a second stack (Python, `unittest`) | verified | Live run: routed to debug, failing tests first, fixed on a branch, every skipped stage named |
 | `ship watch` and `ship feedback` against real GitHub | unverified | No GitHub pull request with CI in this environment |
 | Any skill under Codex | unverified | No Codex CLI or OpenAI credentials here |
-| Live scenarios re-runnable from the suite | verified | `PROJECT_MEMORY_LIVE_ACCEPTANCE=1 node --test tests/acceptance/live-engineering.test.mjs`: 6 of 6 passed, 2026-10-18, after two harness fixes (the inherited `NODE_TEST_CONTEXT`, and a fixture change that did not break its test). The review scenario passed 8 of 9 runs; the miss wrote no findings file, and the skill now says the gate applies when the lenses run inline |
+| Live scenarios re-runnable from the suite | verified | `PROJECT_MEMORY_LIVE_ACCEPTANCE=1 node --test tests/acceptance/live-engineering.test.mjs`: 6 of 6 passed in three consecutive full runs (18 of 18), 2026-10-18, after two harness fixes (the inherited `NODE_TEST_CONTEXT`, and a fixture change that did not break its test). The review scenario passed 8 of 9 runs; the miss wrote no findings file, and the skill now says the gate applies when the lenses run inline |
 
 ## Out of scope for completion
 
