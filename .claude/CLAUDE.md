@@ -2,8 +2,11 @@
 
 ## Purpose
 
-A Claude Code and Codex plugin that keeps a project's canonical memory under
-`memory/` accurate, minimal, and evidence-backed. This repository ships the
+A Claude Code and Codex plugin of twelve skills: `project-memory`, which keeps a
+project's canonical memory under `memory/` accurate, minimal, and
+evidence-backed, and eleven engineering skills (plan, prototype, build, debug,
+review, verify, ship, autopilot, learn, write, catch-up) that hand work to each
+other through the files in `references/artifacts.md`. This repository ships the
 plugin and tracks its own development in its own `memory/` tree.
 
 ## Critical Commands
@@ -17,8 +20,14 @@ plugin and tracks its own development in its own `memory/` tree.
 ## Architectural Invariants
 
 - Deterministic facts are code under `scripts/`; judgement is Markdown under
-  `skills/project-memory/`. Read `docs/architecture.md` before moving a
-  responsibility across that line.
+  `skills/`. Read `docs/architecture.md` before moving a responsibility across
+  that line.
+- Skills compose through files, never by calling each other. A new artifact
+  gets a row in `references/artifacts.md`; a new skill or mode keeps the
+  anatomy `tests/skills.test.mjs` pins, and an adopted upstream skill gets a row
+  in `docs/coverage.md`.
+- The engineering skills state outcomes and trust the model (decision 009).
+  Add a script for a fact that must be exact rather than a prohibition.
 - `.claude-plugin/plugin.json` and `.codex-plugin/plugin.json` keep identical
   shared metadata; `tests/manifest.test.mjs` enforces it.
 - Counts stated in prose (modes, checks, templates, secret patterns) are pinned

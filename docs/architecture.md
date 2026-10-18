@@ -8,8 +8,10 @@ model to do, it says so — and it matters, because instruction and enforcement 
 not the same guarantee.
 
 **Read this before reading anything else here.** Most of this plugin is Markdown
-that a model reads: the router, eight mode playbooks, four shared references, the
-auditor prompt, the writing rule, and ten templates. Those shape behavior; they
+that a model reads: the memory router, eight mode playbooks, four shared
+references, the auditor prompt, the writing rule, and ten templates, plus eleven
+engineering skills with their references and the plugin-root
+`references/artifacts.md` and `references/principles.md`. Those shape behavior; they
 do not constrain it the way code does. Exactly three properties are mechanically
 enforced, and [`docs/limitations.md`](./limitations.md) names them: the bundled
 auditor cannot write because its tool grant contains no writer, the Codex tier
@@ -196,7 +198,7 @@ detection still stands when some other reference was uncheckable: stale is
 stale, and only *absence* of change needs every reference to have been readable.
 
 **`scripts/memory-validate.mjs`** — the structural validator. Exits 1 only when
-a finding has `error` severity; warnings and notes never gate. It declares eleven
+a finding has `error` severity; warnings and notes never gate. It declares twelve
 checks:
 
 | Check | Severity | Fires on |
@@ -212,6 +214,7 @@ checks:
 | `escapes-repository` | error | A memory path or `CLAUDE.md` resolves outside the checkout through a link |
 | `avoided-term` | warning | A memory file uses, in prose, a word `glossary.md` lists under `_Avoid_`. Code spans, link targets, and URLs are masked first, and a hit wholly inside a correct canonical term is dropped; decision records and the archive are exempt; capped at 20 per file plus a summary |
 | `glossary-format` | warning | `glossary.md` has an `_Avoid_` line with no term above it, which the `avoided-term` check cannot enforce |
+| `lesson-format` | warning | A file under `memory/lessons/` lacks `title`, `tags`, `applies_when`, or `status`, uses a status other than active, stale, or retired, writes a list in block style, or has no `## Do this` section |
 
 Two further codes can appear that the declared list does not name:
 `memory-missing` (info, when there is no tree to validate) and `unreadable-file`
@@ -433,6 +436,45 @@ metadata. The skill is model-invoked in both harnesses, so it sets no
 `allow_implicit_invocation` policy; a test fails if the two harnesses ever
 disagree about who may invoke it.
 
+### Eleven engineering skills
+
+`plan`, `prototype`, `build`, `debug`, `review`, `verify`, `ship`, `autopilot`,
+`learn`, `write`, and `catch-up` each live in `skills/<name>/` with the same
+shape: a `SKILL.md` that states the outcome, a **Done when** line, a mode table
+pointing at one reference per mode, and a **Works with** section naming what the
+skill reads, what it hands off, and how it runs alone. Each carries
+`agents/openai.yaml` for Codex. Decision 009 records why they are separate
+skills rather than modes of `project-memory`.
+
+They compose through files, never by calling each other.
+`references/artifacts.md` at the plugin root is the single table of those
+files: the memory tree, plans, tickets, prototype branches, the project's
+verification skill, evidence, review findings, lessons, the guardrails table,
+and the writing standard, each with its default path, its one producer, and its
+readers. A skill reads an artifact when it exists and works without it when it
+does not. `references/principles.md` holds the working habits every skill
+assumes, once.
+
+These skills are written to trust the model: they state outcomes and done
+checks and leave the method open. None restricts its tools; `allowed-tools`
+only pre-approves the bundled scripts they call. What must be exact is code:
+
+| Script | Used by | Answers |
+| --- | --- | --- |
+| `scripts/lessons.mjs` | `plan`, `build`, `debug`, `review`, `learn` | Which lessons in `memory/lessons/` match these words and changed paths? Stale and retired lessons are skipped unless asked for. |
+| `scripts/findings-check.mjs` | `review`, `autopilot` | Is each finding's quoted line really in the file near the cited line? Duplicates merged; confidence raised only on cross-model agreement; kept at 75 or more, or P0. |
+| `scripts/tickets-check.mjs` | `plan`, `build`, `catch-up`, `autopilot` | Which tickets are ready, which can run in parallel, and which ready tickets touch the same paths? Cycles and unknown blockers exit 1. |
+| `scripts/measure.mjs` | `build optimize`, `debug` | Does this change clear the noise floor: keep, revert, or inconclusive? |
+
+All four are read-only, like the memory core. `scripts/lib/lessons.mjs` is the
+one lesson reader, shared by `lessons.mjs` and the validator's `lesson-format`
+check, so a lesson the validator accepts is one lookup can find.
+
+`tests/skills.test.mjs` pins the anatomy, every path a skill names, every script
+call against its `allowed-tools`, the Codex metadata, and that every skill named
+under **Works with** exists. `tests/coverage.test.mjs` pins that each upstream
+skill `docs/coverage.md` claims is adopted maps to a skill or mode that exists.
+
 ## File tree
 
 ### The plugin — the reusable structure
@@ -458,13 +500,21 @@ project-memory/
 │   ├── memory-validate.mjs           structural validator
 │   ├── auditor-bridge.mjs            tiered external evaluator
 │   ├── memory-hygiene.mjs            rot-signal check for cleanup
+│   ├── lessons.mjs                   lesson lookup by words and changed paths
+│   ├── findings-check.mjs            review findings checked against the code
+│   ├── tickets-check.mjs             ticket frontier, waves, collisions
+│   ├── measure.mjs                   keep / revert / inconclusive vs noise
 │   ├── session-status-hook.mjs       SessionStart handler
 │   ├── post-tool-validate-hook.mjs   PostToolUse handler
 │   └── lib/
 │       ├── fs-utils.mjs              non-throwing filesystem reads, POSIX paths
 │       ├── git.mjs                   array-argv Git, degrades instead of failing
 │       ├── memory-model.mjs          layout constants, parsing, secret patterns
+│       ├── lessons.mjs               the one lesson reader and matcher
 │       └── report.mjs                shared CLI contract and renderers
+├── references/
+│   ├── artifacts.md                  every artifact: path, producer, readers
+│   └── principles.md                 habits every skill assumes
 ├── skills/project-memory/
 │   ├── SKILL.md                      the eight-mode router
 │   ├── references/
@@ -491,6 +541,11 @@ project-memory/
 │       ├── glossary.md               → memory/glossary.md
 │       ├── decision-record.md        → one file under memory/decisions/
 │       └── claude-md-section.md      → the section inserted into CLAUDE.md
+├── skills/<plan|prototype|build|debug|review|verify|ship|autopilot|learn|write|catch-up>/
+│   ├── SKILL.md                      outcome, Done when, mode table, Works with
+│   ├── references/                   one file per mode, loaded one at a time
+│   ├── templates/                    learn only: lesson.md, guardrails.md
+│   └── agents/openai.yaml            Codex picker metadata
 ├── tests/
 │   ├── *.test.mjs                    unit suites, one per component
 │   ├── acceptance/                   scenario-labelled composed runs, plus a
@@ -501,7 +556,8 @@ project-memory/
     ├── advanced.md                   worktrees, Codex, CI, teams
     ├── architecture.md               this file
     ├── limitations.md                what the system does not guarantee
-    ├── benchmark/                    patterns adopted from mattpocock/skills
+    ├── coverage.md                   each upstream skill and where it lives here
+    ├── benchmark/                    reviews of the three upstreams
     ├── plans/                        the implementation plan
     └── spec/                         the originating specification
 ```

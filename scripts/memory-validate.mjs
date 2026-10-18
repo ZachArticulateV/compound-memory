@@ -37,6 +37,7 @@ import {
   parseSections,
   resolveReference,
 } from './lib/memory-model.mjs'
+import { isLessonPath, lessonProblems, parseLesson } from './lib/lessons.mjs'
 import {
   STRUCTURAL_DISCLAIMER,
   USAGE_EXIT_CODE,
@@ -60,6 +61,7 @@ export const CHECKS = [
   'escapes-repository',
   'avoided-term',
   'glossary-format',
+  'lesson-format',
 ]
 
 const finding = (check, severity, artifact, message, extra = {}) => ({
@@ -141,6 +143,7 @@ export function validateMemory(root) {
     checkSections(text, rel, memory, findings)
 
     if (isDecisionRecord(rel, memory)) checkFrontmatter(text, rel, findings)
+    if (isLessonPath(rel)) checkLesson(text, rel, findings)
     if (basename(rel) === 'next-actions.md') checkDuplicateTasks(text, rel, findings)
   }
 
@@ -322,6 +325,18 @@ function checkFrontmatter(text, rel, findings) {
         })
       )
     }
+  }
+}
+
+/**
+ * A lesson the lookup script cannot match well: missing the fields it matches
+ * on, a status it does not know, a list in the block style the shared flat
+ * parser cannot read, or no "Do this" section. A warning, because lookup still
+ * reads the file; it just finds it less reliably.
+ */
+function checkLesson(text, rel, findings) {
+  for (const problem of lessonProblems(parseLesson(rel, text))) {
+    findings.push(finding('lesson-format', 'warning', rel, `Lesson: ${problem}.`))
   }
 }
 

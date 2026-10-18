@@ -10,3 +10,4 @@
 | 006 | [Not: handoff launching the next agent](006-not-launching-next-agent.md) | accepted |
 | 007 | [The Codex manifest opts out of the Claude Code hooks](007-codex-opts-out-of-hooks.md) | accepted |
 | 008 | [Cleanup is an eighth mode, separate from audit](008-cleanup-as-a-mode.md) | accepted |
+| 009 | [The plugin ships engineering skills beside memory](009-engineering-skills.md) | accepted |

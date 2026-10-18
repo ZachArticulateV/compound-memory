@@ -1,0 +1,74 @@
+---
+id: 009
+status: accepted
+date: 2026-10-18
+---
+
+# The plugin ships engineering skills beside memory, and trusts the model to run them
+
+## Context
+
+The owner asked for one plugin that does what the reviewed skills do
+(Compound Engineering, mattpocock/skills, and Cursor's pstack; see
+`docs/benchmark/`) across memory, planning, building, review, verification,
+shipping, and learning. Each skill had to work alone, together with the others,
+and for different purposes. The owner asked for a posture that trusts the model
+rather than restricting it.
+
+## Decision
+
+The plugin keeps the name `project-memory` and ships twelve skills: the
+existing `project-memory` skill (eight modes, unchanged in contract) and eleven
+engineering skills (`plan`, `prototype`, `build`, `debug`, `review`, `verify`,
+`ship`, `autopilot`, `learn`, `write`, `catch-up`). They compose through files,
+not calls. `references/artifacts.md` at the plugin root is the one place that
+names each artifact, its default path, its producer, and its readers.
+
+The new skills state an outcome and a done check and leave the method to the
+model. They carry no tool restrictions. Deterministic facts (finding quotes,
+ticket graphs, lesson lookup, measurement noise) are bundled read-only scripts.
+
+## Why
+
+- Distinct trigger words (review, debug, prototype, verify) are separate
+  skills so each fires on its own; related operations are modes of one skill so
+  the always-loaded descriptions stay few.
+- Composition through files means any skill runs without the others: a missing
+  plan, memory tree, or verification skill changes what a skill reads, not
+  whether it runs.
+- The reviewed upstreams show the trade: Compound Engineering's long
+  prohibitions cost context and still left its guarantees in prose; Matt's and
+  pstack's short skills rely on the model and lose little. Checks that matter
+  are code here, so the prose can stay short.
+
+## Alternatives considered
+
+- More modes on the one `project-memory` skill: one description cannot carry
+  triggers for review, debugging, and memory without misfiring, and the memory
+  skill's non-trigger clause exists to keep coding work out of it.
+- Separate plugins per area: the owner asked for one plugin, and shared
+  artifacts would cross plugin boundaries.
+- Renaming the plugin: breaks the published install path. Left as an open
+  question for the owner.
+
+## Consequences
+
+- Skills reference each other by literal relative path inside the plugin
+  (decision 004 still holds: no `@`-imports).
+- `memory/lessons/` and `memory/guardrails.md` join the memory schema, owned by
+  `learn`. The validator gains a `lesson-format` check.
+- Writes made by a skill the user invoked are part of that request, including
+  the lesson `autopilot` captures. Memory's own write gates are unchanged.
+- `tests/skills.test.mjs` pins the anatomy every skill shares, and
+  `tests/coverage.test.mjs` pins that each adopted upstream skill maps to a
+  skill that exists.
+
+## Evidence / implementation
+
+`skills/*/SKILL.md`, `references/artifacts.md`, `references/principles.md`,
+`docs/coverage.md`, `scripts/lessons.mjs`, `scripts/findings-check.mjs`,
+`scripts/tickets-check.mjs`, `scripts/measure.mjs`.
+
+## Supersedes
+
+None. Decision 005 stands: grilling stays a mode of `project-memory`.

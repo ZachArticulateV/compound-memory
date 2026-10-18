@@ -140,6 +140,31 @@ not handed instructions for work that is already done.
 When you want more (several branches at once, Codex, CI checks), read
 [`advanced.md`](advanced.md).
 
+## 7. The engineering skills
+
+The same plugin carries eleven skills for the work itself. You can ask in plain
+words ("review this branch", "why does this test fail?") and the right skill
+fires, or type it. In Claude Code they are namespaced under the plugin:
+
+| When | Run |
+| --- | --- |
+| You have an idea and want it pinned down | `/project-memory:plan brainstorm <idea>` |
+| You want a plan another agent can build | `/project-memory:plan` |
+| Several agents will share the work | `/project-memory:plan tickets` |
+| You are not sure which design is right | `/project-memory:prototype ui <screen>` |
+| Time to implement | `/project-memory:build` |
+| Something is broken | `/project-memory:debug <symptom>` |
+| Prove it works in the real app | `/project-memory:verify` (once: `verify create`) |
+| Before you merge | `/project-memory:review` |
+| Commit, PR, CI | `/project-memory:ship` |
+| "Do the whole thing" | `/project-memory:autopilot <request>` |
+| An agent repeated a mistake | `/project-memory:learn correct` |
+| "What happened while I was away?" | `/project-memory:catch-up` |
+
+Each one works without the others, and better with them: `build` reads the plan
+`plan` wrote, `review` checks the change against it, and `debug` starts from the
+lessons `learn` saved. When memory exists, all of them read it first.
+
 ## If something looks wrong
 
 | You see | It means | Do |
@@ -171,3 +196,8 @@ When you want more (several branches at once, Codex, CI checks), read
   session that wrote it.
 - **Glossary**: `memory/glossary.md`, the project's own words and the
   synonyms to avoid. Created only once there is a term worth defining.
+- **Lesson**: one file in `memory/lessons/` holding something past work taught
+  that the code cannot show. Skills look lessons up per task; nobody reads them
+  all.
+- **Evidence**: what `verify` saw in the running app (screenshots, outputs,
+  stored values), kept under `.verify/evidence/` and out of Git.

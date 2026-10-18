@@ -1,0 +1,3 @@
+interface:
+  display_name: "Review"
+  short_description: "Spec, standards, and correctness review with quote-checked findings"
