@@ -82,6 +82,9 @@ hooks (decision 007).
 
 - multi-context glossaries (upstream CONTEXT-MAP); `wait-what` and `retro` patterns
   (see `docs/benchmark/mattpocock-skills.md`, Result).
+- Candidate patterns from Compound Engineering and pstack, not yet adopted
+  (see `docs/benchmark/compound-engineering.md` and
+  `docs/benchmark/skill-candidates-2026-10.md`, Candidates for this plugin).
 
 ## Before modifying this project
 
