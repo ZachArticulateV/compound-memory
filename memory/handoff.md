@@ -2,10 +2,10 @@
 
 Updated: 2026-10-18
 Branch: claude/serene-faraday-shkcdn
-HEAD: 5f6e8e2
-Working tree: the live-run commit, made directly on top of HEAD
+HEAD: ba2c029
+Working tree: the live-coverage commit, made directly on top of HEAD
 Work type: code change
-Next session focus: run the remaining engineering modes live
+Next session focus: ship watch and feedback on a real PR, and Codex
 
 ## Objective
 
@@ -43,15 +43,16 @@ trust the model, with deterministic scripts for what must be exact.
 - `scripts/tickets-check.mjs` caught its own bug in a test (an empty field
   read the next line); fixed and recorded as a lesson.
 
-- Live headless runs of `debug`, `learn capture`, `plan tickets`, `build`,
-  `review`, `verify run`, `autopilot` (twice), and `catch-up work` on a sample
-  repository met their Done when lines. The first `autopilot` run skipped verify
+- Live headless runs of every engineering mode except `ship watch` and `ship
+  feedback` met their Done when lines on a sample repository. The runs drove two
+  fixes: autopilot's stage sizing, and plan's readiness rule for "does not
+  change" claims, re-run and confirmed. The first `autopilot` run skipped verify
   and review silently, which led to the stage-sizing rule in
   `skills/autopilot/SKILL.md`. Details: `acceptance-criteria.md`.
 
 ## Unverified
 
-- The other engineering modes live, interactive sessions, and Codex.
+- `ship watch` and `ship feedback` live, interactive sessions, and Codex.
 - CI on GitHub for this branch: no pull request is open.
 
 ## Current problem
@@ -78,8 +79,8 @@ exercises them.
 
 ## Continue here
 
-1. Do the first Now item in `memory/next-actions.md`: live runs of the modes
-   not yet exercised, recorded in `acceptance-criteria.md`.
+1. Do the first Now item in `memory/next-actions.md`: `ship watch` and `ship
+   feedback` on a real pull request, and a Codex run.
 2. Ask the owner the naming question in `memory/next-actions.md`, and open a
    pull request when they ask for one.
 

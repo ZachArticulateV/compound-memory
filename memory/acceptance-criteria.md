@@ -73,8 +73,27 @@ in a scratch directory and was not kept.
 | `verify run` drives the real CLI and keeps evidence out of Git | verified | Live run: one evidence file per behavior in the sample's evidence directory, which was added to its `.gitignore` |
 | `autopilot` runs every stage or names the ones it skipped, and stops at local commits without a remote | verified | The first run skipped verify and review without saying so; after the stage-sizing rule, a second run drove the CLI, listed its assumptions, and named each skipped stage with a reason |
 | `catch-up work` rebuilds state from Git and tickets when there is no memory | verified | Live run: every thread tagged; caught a change outside the plan and put it to the user as a decision |
-| Any engineering skill in an interactive session, or under Codex | unverified | — |
-| `prototype`, `ship`, `write`, `learn correct`, `learn retro`, `learn refresh`, `learn profile`, `verify create` live | unverified | — |
+| `plan brainstorm` writes testable requirements and records unanswered questions as assumed | verified | Live run: eleven requirements, ten open questions each with a recommended answer marked `assumed` |
+| `plan decide` meets both evidence floors | verified | Live run: 2,500 cases measured in the repository (13% misrounded) plus cited outside practice, with a dissent; confidence and reversal cost stated |
+| `plan` readiness catches an unproven "does not change" claim | verified | `review doc` and `learn retro` both found the plan claimed unchanged totals with no proof; after the readiness rule, a re-run plan added an equivalence test over thousands of seeded invoices and a formula that cannot drift |
+| `prototype logic` records a verdict and keeps the demo off the main branch | verified | Live run: verdict as D6 in the plan; demo on a prototype branch; found a refund rounding edge |
+| `prototype ui` builds two switchable variants | verified | Live run: two structurally different variants behind `?variant=`; rendered with Playwright, no console errors, arrow-key switching worked; the bar showed no variant name, which the skill asks for |
+| `build simplify` removes only what earns removal | verified | Live run: no change made, with a reason for each kept guard; suite unchanged |
+| `build optimize` keeps a change only past the noise floor | verified | Live run: benchmark written, seven-process samples, `scripts/measure.mjs` verdict keep at 51% faster with identical output |
+| `review doc` reviews a plan with the findings gate | verified | Live run: a P1 contradiction between two decisions, confirmed by 871 differing cases; six findings kept by the script |
+| `verify create` generates a skill and proves it end to end | verified | Live run: Launch, Doctor, Drive, Evidence, Cleanup, Helpers, a three-feature map; evidence survived cleanup; its layout check found the page overflows at 375 and 768 px |
+| `verify maintain` corrects the map only and reports an outcome | verified | Live run: outcome "changed", three map corrections committed, app code untouched |
+| `write docs`, `write agents`, and `write plain` | verified | Live runs: a task-named how-to with real outputs; an `AGENTS.md` holding only what the files cannot show; an explanation that leads with the decision |
+| `learn capture` writes a lesson lookup finds | verified | Live run: one lesson, validator clean, `scripts/lessons.mjs` returns it first |
+| `learn correct` fixes a repeated mistake structurally and proves the check | verified | Live run: one input module, a check whose errors name the fix, shown failing on both past commits and passing now, expiring exceptions, a guardrails row |
+| `learn retro` ranks candidates with evidence and a home, applying none | verified | Live run on real transcripts: four ranked candidates, nothing applied |
+| `learn refresh` retires false lessons and merges duplicates | verified | Live run on seeded lessons: the false one retired, the duplicate merged, deletion left to the user; lookup then skipped both |
+| `learn profile` refuses rules history does not support | verified | Live run: one transcript, so no pattern qualified; proposed candidates and structured questions in a file, created no skill |
+| `ship pr` pushes to the upstream remote and writes the PR body in its shape | verified | Live run against a bare remote: branch pushed, body drafted, stopped where `gh` had no GitHub host |
+| `catch-up chat` reports in the update shape | verified | Live run resumed in an autopilot session: decisions first, each with a recommendation and what happens without an answer |
+| `project-memory` infers a mode from a plain request | verified | Live run: "is memory still accurate here?" ran `status` |
+| `ship watch` and `ship feedback` | unverified | Need a GitHub pull request with CI; none in this environment |
+| Any skill under Codex, or in an interactive session | unverified | No Codex CLI here; headless runs only |
 
 ## Out of scope for completion
 

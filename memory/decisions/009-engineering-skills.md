@@ -58,7 +58,13 @@ ticket graphs, lesson lookup, measurement noise) are bundled read-only scripts.
 - `memory/lessons/` and `memory/guardrails.md` join the memory schema, owned by
   `learn`. The validator gains a `lesson-format` check.
 - Writes made by a skill the user invoked are part of that request, including
-  the lesson `autopilot` captures. Memory's own write gates are unchanged.
+  the lesson `autopilot` captures. Memory's approval steps before writing
+  (grill, repair, cleanup) are unchanged: those decisions are the user's.
+- The same posture reaches `project-memory`: it infers its mode from a plain
+  request instead of refusing to guess, and its standing rules are stated as
+  outcomes. The accuracy rules themselves (observed verification only,
+  hypotheses labelled, secrets by name) stay, because they are what makes
+  memory worth reading.
 - `tests/skills.test.mjs` pins the anatomy every skill shares, and
   `tests/coverage.test.mjs` pins that each adopted upstream skill maps to a
   skill that exists.
