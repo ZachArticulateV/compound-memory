@@ -47,7 +47,7 @@ See `docs/limitations.md`.
 
 ## Engineering skills
 
-Status: built, structurally tested, not run live
+Status: working, partially verified
 
 ### Current reality
 
@@ -68,10 +68,15 @@ with section, and composes through the artifacts in `references/artifacts.md`.
   Playwright against two fixture pages: it reported the clipped field and
   button on the broken page and passed the clean one, 2026-10-18.
 
+- Live headless runs of `debug`, `learn capture`, `plan tickets`, `build`,
+  `review`, `verify run`, `autopilot`, and `catch-up work` on a sample repository
+  met their Done when lines; results and the one fix they drove are in
+  `acceptance-criteria.md` (Engineering skills, live), 2026-10-18.
+
 **Not verified:**
 
-- Any engineering skill run by a model in a live session. The suite pins the
-  instructions, not what a model does with them.
+- The other modes live (listed in `acceptance-criteria.md`), any run in an
+  interactive session, and any run under Codex.
 - The console and component-provenance checks in
   `skills/verify/references/checks.md` (not executed).
 

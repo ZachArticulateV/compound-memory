@@ -2,10 +2,10 @@
 
 Updated: 2026-10-18
 Branch: claude/serene-faraday-shkcdn
-HEAD: 277e8f2
-Working tree: the review-fix commit, made directly on top of HEAD
+HEAD: 5f6e8e2
+Working tree: the live-run commit, made directly on top of HEAD
 Work type: code change
-Next session focus: run the engineering skills live on a sample repository
+Next session focus: run the remaining engineering modes live
 
 ## Objective
 
@@ -43,9 +43,15 @@ trust the model, with deterministic scripts for what must be exact.
 - `scripts/tickets-check.mjs` caught its own bug in a test (an empty field
   read the next line); fixed and recorded as a lesson.
 
+- Live headless runs of `debug`, `learn capture`, `plan tickets`, `build`,
+  `review`, `verify run`, `autopilot` (twice), and `catch-up work` on a sample
+  repository met their Done when lines. The first `autopilot` run skipped verify
+  and review silently, which led to the stage-sizing rule in
+  `skills/autopilot/SKILL.md`. Details: `acceptance-criteria.md`.
+
 ## Unverified
 
-- Any engineering skill run by a model in a live session.
+- The other engineering modes live, interactive sessions, and Codex.
 - CI on GitHub for this branch: no pull request is open.
 
 ## Current problem
@@ -72,9 +78,8 @@ exercises them.
 
 ## Continue here
 
-1. Do the first Now item in `memory/next-actions.md`: a live run of `plan`,
-   `plan tickets`, `build`, `review`, `verify run`, and `debug` on a sample
-   repository, recorded in `acceptance-criteria.md`.
+1. Do the first Now item in `memory/next-actions.md`: live runs of the modes
+   not yet exercised, recorded in `acceptance-criteria.md`.
 2. Ask the owner the naming question in `memory/next-actions.md`, and open a
    pull request when they ask for one.
 
