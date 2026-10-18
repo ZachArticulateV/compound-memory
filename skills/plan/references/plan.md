@@ -42,6 +42,11 @@ file.
 - Every unit has a `Verify` that could fail.
 - No unit says "TBD"; each open question is answered or explicitly deferred.
 - The plan names what is out of scope.
+- No two decisions contradict each other.
+- Every claim that existing behavior "does not change" has a unit whose
+  `Verify` compares the old and the new code across many inputs (a property or
+  equivalence test against the code as it is today). One example does not show
+  that a formula is unchanged.
 
 When it passes, offer `/project-memory grill` for a plan worth stress-testing,
 `plan tickets` for work that several agents will share, or `build` to start.

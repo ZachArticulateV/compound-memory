@@ -51,6 +51,9 @@ All notable changes to this plugin are documented here. Format follows
 
 ### Changed
 
+- `project-memory` infers the mode from a plain request ("is memory still
+  right?" runs `status`) and asks only when two modes fit; its standing rules
+  are stated as what keeps memory true rather than as prohibitions.
 - The fact-ownership table lives once, in `memory-schema.md`; `repair.md`
   defers to it.
 
