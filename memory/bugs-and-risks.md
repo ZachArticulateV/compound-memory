@@ -83,5 +83,5 @@ live spawn, and pinned by `tests/engineering-scripts.test.mjs`.
 
 **Verification status:**
 
-The guard tests pass; the engineering live tier is being re-run with the fix.
-The memory live tier has not been re-run.
+The guard tests pass, and the engineering live tier passed 6 of 6 with the fix,
+2026-10-18. The memory live tier has not been re-run.
