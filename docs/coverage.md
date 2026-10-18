@@ -17,7 +17,7 @@ Reviewed at `49dd158` (2026-10-09). The earlier memory-focused adoption is in
 | `writing-for-agents` | `write agents` | Merged with the skill-mechanics notes and Compound Engineering's size and path rules |
 | `to-tickets` | `plan tickets` | Adds `Touches` and `Verify with` lines and a script that checks the graph and parallel collisions |
 | `code-review` | `review code` | Keeps the separate spec and standards lenses and the smell baseline; adds a correctness lens, quote-checked findings, and a disprove pass |
-| `prototype` | `prototype` | Two variants by default; a branch for sites with no code router |
+| `prototype` | `prototype` | Two variants by default; standalone mockups for sites with no code router |
 | `retro` | `learn retro` | Adds transcript locations and a home for every candidate |
 | `tdd` | `build work` | The test anti-patterns and seams, inside the unit loop |
 | `diagnosing-bugs` | `debug` | The tight, red-capable loop standard and the ways to build one |
@@ -85,7 +85,7 @@ Reviewed at `2e41b44` (v3.31.0, 2026-10-17).
 | `ce-sweep` | not adopted | Batch triage of a tracker; `ship feedback` and `debug` cover single items |
 | `ce-polish` | not adopted | Needs a voice-interview service and an OpenAI key; `prototype ui` and `verify` cover the review loop |
 | `ce-dogfood` | not adopted | Overlaps `verify run` driven against the feature map |
-| `ce-test-xcode` | not adopted | Platform-specific; `verify create` generates the project's own harness, including iOS |
+| `ce-test-xcode` | not adopted | Platform-specific; `verify create` names mobile as a surface but ships no simulator recipe |
 | `ce-promote` | not adopted | Marketing copy is outside the plugin's scope |
 | `ce-proof` | not adopted | Depends on an external sharing service |
 | `ce-riffrec-feedback-analysis` | not adopted | Depends on a specific recording tool |

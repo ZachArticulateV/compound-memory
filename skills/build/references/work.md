@@ -17,8 +17,9 @@ a time.
 
 ## Run independent units in parallel
 
-When a wave holds units that touch disjoint paths (`tickets-check` reports no
-collision between them), give each one to a subagent. Each worker gets a
+When a wave holds units that touch disjoint paths, give each one to a
+subagent. For tickets, `tickets-check` reports the collisions among ready
+tickets; for plan units, compare their Files lists yourself. Each worker gets a
 packet, not the whole plan:
 
 - the goal and Done when of the plan;
