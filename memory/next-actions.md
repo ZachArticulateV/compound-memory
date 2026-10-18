@@ -7,6 +7,14 @@ Each item names an observable outcome. "Improve the backend" is not an action.
 
 ## Now
 
+- [ ] Run the engineering skills live on a sample repository: `plan` then `plan tickets` then `build` then `review` then `verify run`, and `debug` on a seeded bug
+  - Done when: each skill produced its artifact at the path in `references/artifacts.md` and met its Done when line in an interactive session, recorded in `acceptance-criteria.md`
+  - Out of scope: changing a skill's wording before the run shows a problem
+
+- [ ] Decide whether the plugin keeps the name `project-memory` now that it ships engineering skills
+  - Done when: the owner chose, and either nothing changes or the manifests, README install lines, and marketplace entry carry the new name
+  - Out of scope: splitting the plugin
+
 - [ ] Run `cleanup` and `handoff close` live on a sample repository with seeded rot (a checked task, a duplicated sentence, a merged-branch handoff)
   - Done when: each seeded item is reported, nothing is written before approval, and the result is recorded in `acceptance-criteria.md`
   - Out of scope: changing the rot signals

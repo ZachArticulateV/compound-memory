@@ -1,6 +1,6 @@
 ---
 name: project-memory
-description: Project memory under memory/: init, status, sync, handoff, grill, audit, repair, cleanup. Use when the user runs /project-memory, asks to set up project memory, asks whether memory has drifted, asks to sync memory after implementation work, asks for a handoff before /clear or to another session or Codex, asks to grill a plan against memory, or asks to audit or repair memory against the repository, or asks to clean up memory, find contradictions in it, or prune stale content. Do NOT use for ordinary coding, refactoring, debugging, test-writing, or code-review requests: writing code in a project that has memory is not a memory operation, and routine work must never trigger an audit.
+description: Project memory under memory/: init, status, sync, handoff, grill, audit, repair, cleanup. Use when the user runs /project-memory, asks to set up project memory, asks whether memory has drifted, asks to sync memory after implementation work, asks for a handoff before /clear or to another session or Codex, asks to grill a plan against memory, or asks to audit or repair memory against the repository, or asks to clean up memory, find contradictions in it, or prune stale content. Do NOT use for ordinary coding, refactoring, debugging, test-writing, or code-review requests: writing code in a project that has memory is not a memory operation, and routine work must never trigger an audit. This plugin's plan, build, debug, review, and verify skills cover that work.
 argument-hint: "[init|status|sync|handoff|grill|audit|repair|cleanup] [focus or plan]"
 allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/project-state.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/memory-validate.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/auditor-bridge.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/memory-hygiene.mjs" *)
 ---
@@ -13,6 +13,11 @@ reality, captures continuation state, grills plans against it, audits it,
 repairs it, and cleans it up.
 
 Memory is an orientation layer. It is never evidence that a feature works.
+
+The plugin's other skills (`plan`, `build`, `debug`, `review`, `verify`,
+`ship`, `learn`, and the rest) read this tree when it exists. `learn` owns
+`memory/lessons/` and `memory/guardrails.md`; `references/memory-schema.md`
+describes both.
 
 ## Outside Claude Code
 

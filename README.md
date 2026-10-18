@@ -1,18 +1,80 @@
 # Project Memory
 
-A version-controlled project context architecture for Claude Code and Codex.
+Memory, planning, building, review, verification, shipping, and learning for
+coding agents: twelve skills for Claude Code and Codex that each work alone and
+hand work to one another through files in your repository.
 
-A fresh Claude session opens your repository knowing nothing about it. The usual
-patch — a growing pile of Markdown notes — fails in a specific way: notes inflate,
-go stale silently, promote hypotheses into facts, and get read in full on every
-task. Project Memory treats project context as an architecture instead of a note
-pile, so another Claude instance can pick up the work correctly without reading
-your old conversations.
+A fresh agent session opens your repository knowing nothing about it, plans
+thinly, reviews what it wrote by reading its own summary, and forgets what the
+last session learned. This plugin gives each of those steps a skill with a
+checkable finish line, and keeps what one step learns where the next one reads
+it: committed memory, plans, tickets, lessons, a verification skill for your
+app, and evidence of what was actually observed.
 
-The system optimizes for accuracy, low context overhead, reliable continuation,
-resistance to stale information, and evidence-backed project state. The objective
-is not to continuously fill memory. It is to keep memory continuously accurate,
-minimal, retrievable, and sufficient.
+The skills state outcomes and leave the method to the model. The checks that
+matter (quoted review findings, the ticket graph, lesson lookup, measurement
+noise, memory structure) are deterministic scripts, so the instructions can
+stay short.
+
+## The skills
+
+| Skill | Use it to |
+| --- | --- |
+| `project-memory` | Keep committed project memory accurate: init, status, sync, handoff, grill, audit, repair, cleanup |
+| `plan` | Settle requirements, decide between options with evidence, write an implementation-ready plan, split it into tickets |
+| `prototype` | Answer one design question with a throwaway logic demo or two UI variants |
+| `build` | Implement a plan or tickets unit by unit with proof, simplify fresh code, or optimize a measured metric |
+| `debug` | Reproduce a bug with a tight loop, find the root cause, fix it behind a regression test |
+| `review` | Review code or a document in separate spec, standards, and correctness lenses, with quote-checked findings |
+| `verify` | Generate a verification skill for your app, drive the real app, and keep the evidence |
+| `ship` | Commit, open a PR that states how it was verified, watch CI, and answer review comments |
+| `autopilot` | Take a request to a reviewed, verified pull request without stopping |
+| `learn` | Capture lessons, turn repeated mistakes into checks, run retros, refresh lessons, update your working profile |
+| `write` | Write docs for people, instructions for agents, or a plain explanation |
+| `catch-up` | Summarize what changed since your last message, or where work stands across sessions |
+
+In Claude Code, plugin skills are namespaced: `/project-memory:plan`,
+`/project-memory:review code`, and so on. The bare name (`/plan`) also works
+when no other command claims it. Every skill is also model-invoked, so asking
+"review this branch" or "why is this test flaky?" reaches the right one.
+
+## Alone, together, or end to end
+
+Each skill reads the artifacts it finds and works without the ones it does not.
+`review` runs on any diff; with a plan it also checks the change against the
+plan's requirements. `debug` works in any repository; with memory it starts
+from the known bugs and lessons. The contract that joins them, one table of
+every artifact with its producer and readers, is
+[`references/artifacts.md`](references/artifacts.md).
+
+Common combinations:
+
+```text
+/project-memory:plan brainstorm  ->  plan  ->  plan tickets  ->  build  ->  verify  ->  review  ->  ship
+/project-memory:debug            ->  review  ->  ship pr  ->  learn capture
+/project-memory:verify create    (once per app)  then  verify run  after every user-facing change
+/project-memory:learn correct    whenever you correct an agent for the same thing twice
+/project-memory:autopilot        all of the first line, unattended, ending at an open PR
+```
+
+[`docs/coverage.md`](docs/coverage.md) maps every upstream skill this plugin
+learned from (Compound Engineering, mattpocock/skills, and Cursor's pstack) to
+where it lives here, and says why the rest were left out.
+
+## Memory
+
+The `project-memory` skill keeps a version-controlled project context
+architecture. The usual patch for a session that knows nothing (a growing pile
+of Markdown notes) fails in a specific way: notes inflate, go stale silently,
+promote hypotheses into facts, and get read in full on every task. Project
+Memory treats project context as an architecture instead of a note pile, so
+another agent can pick up the work correctly without reading your old
+conversations.
+
+It optimizes for accuracy, low context overhead, reliable continuation,
+resistance to stale information, and evidence-backed project state. The
+objective is not to continuously fill memory. It is to keep memory
+continuously accurate, minimal, retrievable, and sufficient.
 
 ## Start here
 
@@ -110,8 +172,9 @@ code, a session-start line says so, naming the memory file that trails the
 code rather than a calendar age. When memory is current, it says nothing at all.
 
 Nothing runs in the background and nothing rewrites your files on its own.
-Automatic rewriting produces volume, not accuracy, so every write follows an
-explicit request from you.
+Automatic rewriting produces volume, not accuracy, so every write follows a
+request from you: a memory mode you ran, or a skill you invoked (`autopilot`
+included) whose work writes a plan, a lesson, or a commit.
 
 ## What it creates in your project
 
@@ -125,6 +188,8 @@ memory/
 ├── bugs-and-risks.md     unresolved problems, with causes separated from hypotheses
 ├── acceptance-criteria.md  when the project has features worth verifying
 ├── glossary.md           the project's own terms, and the words to avoid
+├── guardrails.md         rules agents were corrected on, and what enforces each
+├── lessons/              knowledge from past work, looked up per task
 ├── decisions/            one immutable record per architectural decision
 └── archive/              rarely loaded
 ```
@@ -161,7 +226,9 @@ plugin, delete the directory.
 
 Two things load automatically: your `CLAUDE.md`, which gains one short section,
 and a session-start line that appears only when memory needs attention. Nothing
-else — not the playbooks, not the templates, not the writing rules.
+else — not the playbooks, not the templates, not the writing rules. Claude Code
+also lists each skill's one-paragraph description, about 4,600 characters for
+all twelve.
 
 A normal session then reads five small files. Bugs, decisions, acceptance
 criteria, and archives are fetched when the task makes them relevant.
@@ -179,9 +246,10 @@ criteria, and archives are fetched when the task makes them relevant.
 - [`docs/limitations.md`](docs/limitations.md) — what the system does not
   guarantee, including which acceptance scenarios are machine-verified and which
   are not.
-- [`docs/benchmark/mattpocock-skills.md`](docs/benchmark/mattpocock-skills.md) —
-  which patterns were adopted from mattpocock/skills, which were rejected, and
-  why.
+- [`docs/coverage.md`](docs/coverage.md) — where each upstream skill now
+  lives, and why the rest were not adopted.
+- [`docs/benchmark/`](docs/benchmark/) — the reviews of mattpocock/skills,
+  Compound Engineering, and pstack behind those choices.
 
 ## Platforms
 
