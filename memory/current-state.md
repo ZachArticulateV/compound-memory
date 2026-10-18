@@ -68,15 +68,18 @@ with section, and composes through the artifacts in `references/artifacts.md`.
   Playwright against two fixture pages: it reported the clipped field and
   button on the broken page and passed the clean one, 2026-10-18.
 
-- Every engineering mode except `ship watch` and `ship feedback` met its Done
-  when line in a live headless run on a sample repository, 2026-10-18; results,
-  and the two fixes the runs drove (autopilot stage sizing, plan readiness), are
-  in `acceptance-criteria.md` (Engineering skills, live).
+- Every engineering mode met its Done when line in live headless runs,
+  2026-10-18: on a Node sample, on a Python sample (`autopilot`), across three
+  resumed turns with a human answering (`plan brainstorm`), and for `ship watch`
+  and `ship feedback` against a scripted `gh`. Results, and the two fixes the
+  runs drove, are in `acceptance-criteria.md` (Engineering skills, live).
+- `tests/acceptance/live-engineering.test.mjs` re-runs six of those scenarios
+  and checks their artifacts with the plugin's scripts; off by default.
 
 **Not verified:**
 
-- `ship watch` and `ship feedback` (no GitHub pull request with CI here), any
-  run under Codex, and any interactive session.
+- `ship watch` and `ship feedback` against real GitHub, and any run under
+  Codex (no Codex CLI here).
 - The console and component-provenance checks in
   `skills/verify/references/checks.md` (not executed by this repository's
   tests; the generated verification skill's layout check ran).

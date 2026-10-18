@@ -7,7 +7,7 @@ Each item names an observable outcome. "Improve the backend" is not an action.
 
 ## Now
 
-- [ ] Run `ship watch` and `ship feedback` on a real GitHub pull request with CI, and any skill under Codex
+- [ ] Run `ship watch` and `ship feedback` on a real GitHub pull request with CI, and the live engineering scenarios under Codex
   - Done when: each met its Done when line, recorded in `acceptance-criteria.md` (Engineering skills, live)
   - Out of scope: changing a skill's wording before the run shows a problem
 

@@ -92,8 +92,14 @@ in a scratch directory and was not kept.
 | `ship pr` pushes to the upstream remote and writes the PR body in its shape | verified | Live run against a bare remote: branch pushed, body drafted, stopped where `gh` had no GitHub host |
 | `catch-up chat` reports in the update shape | verified | Live run resumed in an autopilot session: decisions first, each with a recommendation and what happens without an answer |
 | `project-memory` infers a mode from a plain request | verified | Live run: "is memory still accurate here?" ran `status` |
-| `ship watch` and `ship feedback` | unverified | Need a GitHub pull request with CI; none in this environment |
-| Any skill under Codex, or in an interactive session | unverified | No Codex CLI here; headless runs only |
+| `ship watch` fixes CI at its cause and pushes | verified, scripted forge | Live run with a scripted `gh` whose CI is the fixture's real test run: traced the failure to the bad commit from the log, reverted, pushed, re-checked; it also flagged that the scripted check reused the failed run's URL |
+| `ship feedback` answers every thread by verifying each claim | verified, scripted forge | Same scripted `gh`: fixed and resolved the rename, disproved the NaN claim with evidence and a pinning test, proposed rather than built the integer-cents redesign; it did not re-request review, which the skill asks for |
+| A plain coding request in a repo with memory runs no memory mode | verified | Live run with stream output: no Skill call to `project-memory`; the change made and tested, kept inside the plan's scope |
+| `plan brainstorm` with a human answering across turns | verified | Three resumed turns: a seven-question frontier round with recommendations, a second round raised by a constraint the user added (it kept that constraint in the requirements), and the plan file written only after confirmation |
+| `autopilot` on a second stack (Python, `unittest`) | verified | Live run: routed to debug, failing tests first, fixed on a branch, every skipped stage named |
+| `ship watch` and `ship feedback` against real GitHub | unverified | No GitHub pull request with CI in this environment |
+| Any skill under Codex | unverified | no Codex model access |
+| Live scenarios re-runnable from the suite | see below | `tests/acceptance/live-engineering.test.mjs`, armed by `PROJECT_MEMORY_LIVE_ACCEPTANCE=1` |
 
 ## Out of scope for completion
 
