@@ -74,7 +74,9 @@ with section, and composes through the artifacts in `references/artifacts.md`.
   and `ship feedback` against a scripted `gh`. Results, and the two fixes the
   runs drove, are in `acceptance-criteria.md` (Engineering skills, live).
 - `tests/acceptance/live-engineering.test.mjs` re-runs six of those scenarios
-  and checks their artifacts with the plugin's scripts; off by default.
+  and checks their artifacts with the plugin's scripts; off by default. It
+  passed 6 of 6, and the memory live tier passed every scenario this machine
+  can run, both on 2026-10-18 (`acceptance-criteria.md`).
 
 **Not verified:**
 
