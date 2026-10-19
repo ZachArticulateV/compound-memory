@@ -150,8 +150,8 @@ A GitHub Actions job for your own project:
           node-version: '22'
       # Pin a tag or commit of the plugin rather than tracking main. v2.0.0 or
       # later validates everything described here (glossary, AGENTS.md, lessons).
-      - run: git clone --depth 1 --branch v2.0.0 https://github.com/ZachArticulateV/project-memory "$RUNNER_TEMP/project-memory"
-      - run: node "$RUNNER_TEMP/project-memory/scripts/memory-validate.mjs"
+      - run: git clone --depth 1 --branch v2.0.0 https://github.com/ZachArticulateV/compound-memory "$RUNNER_TEMP/compound-memory"
+      - run: node "$RUNNER_TEMP/compound-memory/scripts/memory-validate.mjs"
 ```
 
 Structural validation is not accuracy. A tree can pass every check and be
