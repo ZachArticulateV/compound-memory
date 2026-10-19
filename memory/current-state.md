@@ -119,16 +119,13 @@ hooks (decision 007).
 
 ## Active workstreams
 
-- Branch claude/serene-faraday-shkcdn: the eleven engineering skills, four
-  scripts, lessons and guardrails in the schema, coverage map, benchmark notes,
-  and the rename to `compound-memory`. Open as
-  [pull request #3](https://github.com/ZachArticulateV/project-memory/pull/3);
-  CI green on `a439190` (Ubuntu, Windows, manifests), 2026-10-19. Waiting on the
-  owner's review. Listed under Unreleased in `CHANGELOG.md`.
-- Branch claude/kind-ride-kiczmp (code-review fixes, the `cleanup` mode, the
-  handoff upgrade) merged to main as pull request #2 (`6d5d858`); still listed
-  under Unreleased in `CHANGELOG.md`.
-- Version 1.1.0 is merged to main but not tagged or published.
+- The engineering skills, lessons and guardrails, and the rename to
+  `compound-memory` merged to main as
+  [pull request #3](https://github.com/ZachArticulateV/project-memory/pull/3)
+  (`e910db0`, 2026-10-19), with CI green on its last commit.
+- Release 2.0.0 (the rename, plus 1.1.0, which was never tagged) is prepared on
+  branch claude/serene-faraday-shkcdn: both manifests at 2.0.0 and the changelog
+  dated. Not yet tagged or published; the marketplace entry follows the tag.
 
 ## Intentionally deferred
 
@@ -137,8 +134,6 @@ hooks (decision 007).
 - A behavioral eval harness for the skills (Compound Engineering's
   `skill-eval-cell`, `ce-retune`): needed before claiming any skill's behavior
   improved. See `docs/benchmark/compound-engineering.md`.
-- The marketplace entry still names `project-memory`; renaming it to
-  `compound-memory` (decision 010) is a change in another repository.
 
 ## Before modifying this project
 
