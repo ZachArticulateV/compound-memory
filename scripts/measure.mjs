@@ -71,8 +71,7 @@ export function decide({ baseline, candidate, direction = 'lower', noise = null,
     }
   }
   const improvement = (direction === 'lower' ? base - cand : cand - base) / Math.abs(base)
-  // Use the tighter of the two floors so real wins are not discarded.
-  const floor = Math.min(observedNoise, minEffect)
+  const floor = Math.max(observedNoise, minEffect)
   const verdict = improvement > floor ? 'keep' : improvement < -floor ? 'revert' : 'inconclusive'
   const reason =
     verdict === 'keep'
