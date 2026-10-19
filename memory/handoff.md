@@ -2,10 +2,10 @@
 
 Updated: 2026-10-19
 Branch: claude/serene-faraday-shkcdn
-HEAD: e910db0 (main, after pull request #3 merged)
-Working tree: the 2.0.0 release commit, made directly on top of HEAD
+HEAD: b2419f6 (main, after pull request #5 merged)
+Working tree: the release-state record, made directly on top of HEAD
 Work type: code change
-Next session focus: tag v2.0.0, rename the marketplace entry, and Codex
+Next session focus: the v2.0.0 tag, the marketplace merge, and Codex
 
 ## Objective
 
@@ -58,8 +58,8 @@ trust the model, with deterministic scripts for what must be exact.
 ## Current problem
 
 None blocking. Both live tiers pass what this machine can run; what remains
-is the 2.0.0 release (this branch, then the `v2.0.0` tag), the marketplace
-rename that pins to that tag, and a Codex run on the owner's machine.
+is the owner pushing the `v2.0.0` tag, merging the marketplace rename
+(claude-plugins pull request #1), and a Codex run on the owner's machine.
 
 ## Evidence collected
 
