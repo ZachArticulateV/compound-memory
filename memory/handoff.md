@@ -43,23 +43,23 @@ trust the model, with deterministic scripts for what must be exact.
 - `scripts/tickets-check.mjs` caught its own bug in a test (an empty field
   read the next line); fixed and recorded as a lesson.
 
-- Live headless runs of every engineering mode except `ship watch` and `ship
-  feedback` met their Done when lines on a sample repository. The runs drove two
-  fixes: autopilot's stage sizing, and plan's readiness rule for "does not
-  change" claims, re-run and confirmed. The first `autopilot` run skipped verify
-  and review silently, which led to the stage-sizing rule in
-  `skills/autopilot/SKILL.md`. Details: `acceptance-criteria.md`.
+- Live headless runs of every engineering mode met their Done when lines, on
+  Node, Python, and web-form samples, and `ship watch` and `ship feedback` also
+  on a real scratch pull request (#4, closed unmerged). The runs drove four
+  fixes: autopilot's stage sizing, plan's readiness rule for "does not change"
+  claims, autopilot keeping its verify evidence, and autopilot branching and
+  keeping evidence out of Git on every route; each re-run and confirmed. Details:
+  `acceptance-criteria.md`.
 
 ## Unverified
 
-- `ship watch`'s fix path and `ship feedback`'s reply path against real
-  GitHub, and Codex.
-- CI on GitHub for this branch: no pull request is open.
+- Codex.
 
 ## Current problem
 
 None blocking. Both live tiers pass what this machine can run; what remains
-needs a real GitHub pull request or a Codex CLI.
+needs a Codex CLI, the owner's merge of pull request #3, and then the
+marketplace rename.
 
 ## Evidence collected
 
