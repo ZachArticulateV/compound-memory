@@ -19,8 +19,10 @@ Prove a change works in the running app and keep the evidence.
    resulting state, side effects, and for UI an accessibility snapshot and a
    screenshot with the app visibly identified.
 5. **Run the scripted checks** that fit the change, from `references/checks.md`
-   or the verification skill's helpers. A scripted check is evidence anyone can
-   re-run; an eyeballed screenshot is evidence of one moment.
+   or the verification skill's helpers, and save each check and its output
+   beside the rest of the run's evidence. A scripted check is evidence anyone
+   can re-run; an eyeballed screenshot is evidence of one moment, and a check
+   seen only in the transcript is gone when the session ends.
 6. **Compare** what you observed with what the requirement says, and decide
    pass or fail for each behavior.
 7. **Clean up** what this run started; confirm the evidence survived.
