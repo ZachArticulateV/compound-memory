@@ -6,6 +6,8 @@ All notable changes to this plugin are documented here. Format follows
 
 ## [Unreleased]
 
+## [2.0.0] — 2026-10-19
+
 ### Changed (breaking)
 
 - **Renamed to `compound-memory`.** Uninstall `project-memory` and install
@@ -81,9 +83,9 @@ All notable changes to this plugin are documented here. Format follows
 - The audit prompt reserves room for its omitted-files notice only when a file
   was cut, and orders files independently of the host locale.
 
-## [1.1.0] — Unreleased
+## [1.1.0] — not released separately
 
-Prepared on this branch; the date is set when it is tagged.
+Merged to main on 2026-09-29 and never tagged; these changes ship in 2.0.0.
 
 ### Added
 
