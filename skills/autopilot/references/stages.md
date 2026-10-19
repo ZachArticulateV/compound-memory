@@ -11,7 +11,7 @@ joins them.
 | Debug (defects) | the report | a fix with a regression test | the reproduction passes and the regression test failed first |
 | Build | the plan or tickets | commits, one per unit | every unit's check failed before and passes after, observed this run |
 | Simplify | the branch diff | smaller commits | the suite result is unchanged |
-| Verify | the requirements, the diff | evidence under `.verify/evidence/` | each user-facing behavior passed, or is listed as not driven with a reason |
+| Verify | the requirements, the diff | evidence under `.verify/evidence/<run-id>/` | each user-facing behavior passed with its check output saved there, or is listed as not driven with a reason |
 | Review | the diff, the plan | findings and applied fixes | findings went through `findings-check.mjs`; kept P0 and P1 were re-checked |
 | Learn | what the run discovered | a lesson file, when one is warranted | `memory-validate.mjs` reports no new finding on the lesson |
 | Ship | commits, evidence, open items | a PR URL | CI is green, or each red check is explained on the PR |
