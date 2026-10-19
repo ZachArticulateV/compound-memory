@@ -5,7 +5,7 @@ Branch: claude/serene-faraday-shkcdn
 HEAD: b2419f6 (main, after pull request #5 merged)
 Working tree: the release-state record, made directly on top of HEAD
 Work type: code change
-Next session focus: the v2.0.0 tag, the marketplace merge, and Codex
+Next session focus: the v2.0.0 tag and Codex
 
 ## Objective
 
@@ -58,8 +58,8 @@ trust the model, with deterministic scripts for what must be exact.
 ## Current problem
 
 None blocking. Both live tiers pass what this machine can run; what remains
-is the owner pushing the `v2.0.0` tag, merging the marketplace rename
-(claude-plugins pull request #1), and a Codex run on the owner's machine.
+is the owner pushing the `v2.0.0` tag (the marketplace rename is merged and
+installs by commit) and a Codex run on the owner's machine.
 
 ## Evidence collected
 

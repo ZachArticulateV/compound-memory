@@ -127,11 +127,11 @@ hooks (decision 007).
   as [pull request #5](https://github.com/ZachArticulateV/project-memory/pull/5)
   (`b2419f6`, 2026-10-19), CI green. The `v2.0.0` tag is not pushed: the
   session proxy refused it, so the owner pushes it.
-- The marketplace rename to `compound-memory`, pinned to `b2419f6` and
-  `v2.0.0`, is open as
-  [claude-plugins pull request #1](https://github.com/ZachArticulateV/claude-plugins/pull/1).
-  Installed from that branch, it reported version 2.0.0 and loaded all twelve
-  skills, 2026-10-19.
+- The marketplace entry is renamed to `compound-memory`, pinned to `b2419f6`
+  and `v2.0.0`
+  ([claude-plugins pull request #1](https://github.com/ZachArticulateV/claude-plugins/pull/1),
+  merged 2026-10-19). Installed from the live marketplace it reports version
+  2.0.0; installed from its branch it loaded all twelve skills.
 
 ## Intentionally deferred
 
