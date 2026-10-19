@@ -37,8 +37,13 @@ each stage passes to the next and the gate it must clear. Size each stage to
 the change: a ten-line fix gets one read of the diff against the request and
 one real run of the behavior (for a library, its tests), rather than no review
 and no verify. Even a shrunk verify saves the check it ran and its output under
-`.verify/evidence/<run-id>/`, so the proof outlives the session. Simplify and learn may be skipped outright. Name every stage you
-shrank or skipped in the report, with the reason.
+`.verify/evidence/<run-id>/`, so the proof outlives the session. Simplify and
+learn may be skipped outright. Name every stage you shrank or skipped in the
+report, with the reason.
+
+Whatever the route, the run's commits land on a branch off the default branch,
+and `.verify/` is in `.gitignore` before the first commit: the default branch
+and the history stay as the user left them.
 
 1. **Work source:** an implementation-ready plan (from `plan`), or a fixed
    defect (from `debug`). Large plans go through `plan tickets`.
