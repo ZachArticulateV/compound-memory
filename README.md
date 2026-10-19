@@ -1,4 +1,4 @@
-# Project Memory
+# Compound Memory
 
 Memory, planning, building, review, verification, shipping, and learning for
 coding agents: twelve skills for Claude Code and Codex that each work alone and
@@ -33,8 +33,8 @@ stay short.
 | `write` | Write docs for people, instructions for agents, or a plain explanation |
 | `catch-up` | Summarize what changed since your last message, or where work stands across sessions |
 
-In Claude Code, plugin skills are namespaced: `/project-memory:plan`,
-`/project-memory:review code`, and so on. The bare name (`/plan`) also works
+In Claude Code, plugin skills are namespaced: `/compound-memory:plan`,
+`/compound-memory:review code`, and so on. The bare name (`/plan`) also works
 when no other command claims it. Every skill is also model-invoked, so asking
 "review this branch" or "why is this test flaky?" reaches the right one.
 
@@ -50,11 +50,11 @@ every artifact with its producer and readers, is
 Common combinations:
 
 ```text
-/project-memory:plan brainstorm  ->  plan  ->  plan tickets  ->  build  ->  verify  ->  review  ->  ship
-/project-memory:debug            ->  review  ->  ship pr  ->  learn capture
-/project-memory:verify create    (once per app)  then  verify run  after every user-facing change
-/project-memory:learn correct    whenever you correct an agent for the same thing twice
-/project-memory:autopilot        all of the first line, unattended, ending at an open PR
+/compound-memory:plan brainstorm  ->  plan  ->  plan tickets  ->  build  ->  verify  ->  review  ->  ship
+/compound-memory:debug            ->  review  ->  ship pr  ->  learn capture
+/compound-memory:verify create    (once per app)  then  verify run  after every user-facing change
+/compound-memory:learn correct    whenever you correct an agent for the same thing twice
+/compound-memory:autopilot        all of the first line, unattended, ending at an open PR
 ```
 
 [`docs/coverage.md`](docs/coverage.md) maps every upstream skill this plugin
@@ -95,11 +95,17 @@ has fallen behind the code.
 ```
 
 ```bash
-/plugin install project-memory@zacharticulatev
+/plugin install compound-memory@zacharticulatev
 ```
 
 Adding the marketplace installs nothing on its own — it just makes the plugins
 listed there available. Install only the ones you want.
+
+**Upgrading from `project-memory`:** the plugin was renamed `compound-memory`
+when it grew past memory. Run `/plugin uninstall project-memory`, then the
+install line above. Your `memory/` trees are untouched; the memory skill keeps
+its name, so `/project-memory <mode>` (fully, `/compound-memory:project-memory
+<mode>`) works as before.
 
 **Codex:** the repository also ships `.codex-plugin/plugin.json`, so the same
 skill installs as a Codex plugin. `init` writes the memory pointer into

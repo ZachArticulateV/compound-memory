@@ -1,6 +1,6 @@
 # Architecture
 
-How Project Memory is built, what each piece is for, and what it actually does.
+How Compound Memory is built, what each piece is for, and what it actually does.
 
 This document describes shipped behavior. Where a claim is about what the code
 does, it was read off the code. Where it is about what a playbook instructs a

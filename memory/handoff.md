@@ -2,8 +2,8 @@
 
 Updated: 2026-10-18
 Branch: claude/serene-faraday-shkcdn
-HEAD: ceb84d3
-Working tree: the memory-tier results commit, made directly on top of HEAD
+HEAD: 1aed17b
+Working tree: the rename commit, made directly on top of HEAD
 Work type: code change
 Next session focus: ship watch and feedback on a real PR, and Codex
 
@@ -87,7 +87,7 @@ needs a real GitHub pull request or a Codex CLI.
 ## Suggested commands
 
 - `node scripts/lessons.mjs` to list this repository's lessons.
-- `/project-memory:review code` on this branch once the plugin is installed
+- `/compound-memory:review code` on this branch once the plugin is installed
   from it.
 
 ## Do not assume

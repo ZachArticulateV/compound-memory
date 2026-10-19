@@ -133,8 +133,8 @@ hooks (decision 007).
 - A behavioral eval harness for the skills (Compound Engineering's
   `skill-eval-cell`, `ce-retune`): needed before claiming any skill's behavior
   improved. See `docs/benchmark/compound-engineering.md`.
-- Renaming the plugin now that it covers more than memory: breaks the published
-  install path, so left to the owner (decision 009).
+- The marketplace entry still names `project-memory`; renaming it to
+  `compound-memory` (decision 010) is a change in another repository.
 
 ## Before modifying this project
 
