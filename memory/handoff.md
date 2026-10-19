@@ -2,8 +2,8 @@
 
 Updated: 2026-10-18
 Branch: claude/serene-faraday-shkcdn
-HEAD: 1aed17b
-Working tree: the rename commit, made directly on top of HEAD
+HEAD: a439190
+Working tree: the pull-request record commit, made directly on top of HEAD
 Work type: code change
 Next session focus: ship watch and feedback on a real PR, and Codex
 
@@ -52,7 +52,8 @@ trust the model, with deterministic scripts for what must be exact.
 
 ## Unverified
 
-- `ship watch` and `ship feedback` against real GitHub, and Codex.
+- `ship watch`'s fix path and `ship feedback`'s reply path against real
+  GitHub, and Codex.
 - CI on GitHub for this branch: no pull request is open.
 
 ## Current problem
@@ -81,8 +82,8 @@ needs a real GitHub pull request or a Codex CLI.
 
 1. Do the first Now item in `memory/next-actions.md`: `ship watch` and `ship
    feedback` on a real pull request, and a Codex run.
-2. Ask the owner the naming question in `memory/next-actions.md`, and open a
-   pull request when they ask for one.
+2. Pull request #3 is open with green CI and waits on the owner's review;
+   after it merges, rename the marketplace entry (`memory/next-actions.md`).
 
 ## Suggested commands
 
