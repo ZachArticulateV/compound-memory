@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/ZachArticulateV/project-memory/schemas/audit-findings.schema.json",
+  "$id": "https://github.com/ZachArticulateV/compound-memory/schemas/audit-findings.schema.json",
   "title": "Project memory audit findings",
   "description": "The one finding shape every auditor tier must satisfy. The Codex tier receives this file through --output-schema, so the model cannot emit anything else, AND the reply is re-validated against this same file afterwards -- a reply that satisfied the decoder but not this validator is still rejected rather than passed through. Because Codex passes this to a structured-output decoder, the file stays inside the strict subset that decoder accepts -- every object sets additionalProperties to false and lists every one of its properties in required, and no string constraints beyond enum are used. Adding a keyword outside that subset breaks the Codex tier, and scripts/auditor-bridge.mjs fails loudly rather than silently skipping it.",
   "type": "object",

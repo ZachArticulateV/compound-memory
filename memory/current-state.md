@@ -23,7 +23,7 @@ retires a finished workstream with `handoff close`.
 - `node --test`: 654 passed, 0 failed, 15 skipped (669 tests), on branch
   claude/serene-faraday-shkcdn, 2026-10-18.
 - `claude plugin validate . --strict` passed on the same tree.
-- [Pull request #1](https://github.com/ZachArticulateV/project-memory/pull/1)
+- [Pull request #1](https://github.com/ZachArticulateV/compound-memory/pull/1)
   (1.1.0) merged to main on 2026-09-29; its three CI checks (Ubuntu, Windows,
   manifests) passed, read from GitHub on 2026-10-17.
 - Four audits ran on 2026-09-29 (Markdown system; code, hooks, packaging;
@@ -121,12 +121,15 @@ hooks (decision 007).
 
 ## Active workstreams
 
+- The GitHub repository was renamed from `project-memory` to
+  `compound-memory` on 2026-10-19; links to the old name redirect. The
+  manifests, docs, and marketplace entry now use the new name.
 - The engineering skills, lessons and guardrails, and the rename to
   `compound-memory` merged to main as
-  [pull request #3](https://github.com/ZachArticulateV/project-memory/pull/3)
+  [pull request #3](https://github.com/ZachArticulateV/compound-memory/pull/3)
   (`e910db0`, 2026-10-19), with CI green on its last commit.
 - Release 2.0.0 (the rename, plus 1.1.0, which was never tagged) merged to main
-  as [pull request #5](https://github.com/ZachArticulateV/project-memory/pull/5)
+  as [pull request #5](https://github.com/ZachArticulateV/compound-memory/pull/5)
   (`b2419f6`, 2026-10-19), CI green. The `v2.0.0` tag is not pushed: the
   session proxy refused it, so the owner pushes it.
 - The marketplace entry is renamed to `compound-memory`, pinned to `b2419f6`

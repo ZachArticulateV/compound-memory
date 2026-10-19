@@ -6,6 +6,17 @@ All notable changes to this plugin are documented here. Format follows
 
 ## [Unreleased]
 
+### Changed
+
+- The repository is now `ZachArticulateV/compound-memory`, matching the plugin
+  name. Both manifests' `homepage` and `repository` point there, and a test
+  keeps them on the repository named after the plugin. The old URL redirects.
+
+### Added
+
+- A manifest test that fails when the description stops naming every skill or
+  stating how many there are.
+
 ## [2.0.0] — 2026-10-19
 
 ### Changed (breaking)

@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 
@@ -56,4 +56,30 @@ test('the plugin root carries no CLAUDE.md', () => {
   // repository's own instructions live at .claude/CLAUDE.md instead.
   assert.equal(existsSync(join(repoRoot, 'CLAUDE.md')), false)
   assert.equal(existsSync(join(repoRoot, '.claude', 'CLAUDE.md')), true)
+})
+
+// The description is what a marketplace shows before anyone installs. It names
+// every skill and states their count, so adding or removing a skill without
+// updating it would leave the listing describing a different plugin.
+const NUMBER_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen']
+
+test('the description names every skill and states how many there are', () => {
+  const { description } = readManifest('.claude-plugin/plugin.json')
+  const skillsDir = join(repoRoot, 'skills')
+  const skills = readdirSync(skillsDir).filter((name) => existsSync(join(skillsDir, name, 'SKILL.md')))
+  for (const skill of skills) {
+    assert.match(description, new RegExp(`\\b${skill}\\b`), `the description does not name the ${skill} skill`)
+  }
+  const countWord = NUMBER_WORDS[skills.length]
+  assert.ok(countWord, `no number word for ${skills.length} skills`)
+  assert.match(description, new RegExp(`\\b${countWord} skills\\b`, 'i'), `the description should say "${countWord} skills"`)
+})
+
+test('homepage and repository point at the repository named after the plugin', () => {
+  for (const path of ['.claude-plugin/plugin.json', '.codex-plugin/plugin.json']) {
+    const { name, homepage, repository } = readManifest(path)
+    const expected = `https://github.com/ZachArticulateV/${name}`
+    assert.equal(repository, expected, `${path} repository`)
+    assert.equal(homepage, expected, `${path} homepage`)
+  }
 })
