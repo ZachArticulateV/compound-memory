@@ -13,9 +13,22 @@ to this project do.
 The committed directory of a target repository that holds its canonical project memory.
 _Avoid_: notes folder, knowledge base
 
+**Skill**:
+One of the plugin's twelve directories under `skills/`, each invoked on its own: the memory skill and eleven engineering skills.
+
 **Mode**:
-One of the eight operations the skill routes to: init, status, sync, handoff, grill, audit, repair, cleanup.
+One of the operations a skill routes to through its mode table. The memory skill has eight: init, status, sync, handoff, grill, audit, repair, cleanup.
 _Avoid_: subcommand
+
+**Artifact contract**:
+The table in `references/artifacts.md` naming every file the skills hand to each other, with its default path, its one producer, and its readers.
+
+**Lesson**:
+One file under `memory/lessons/` holding knowledge from past work that the code cannot carry, found per task by the lessons script.
+_Avoid_: learning, solution doc
+
+**Guardrail**:
+A row in `memory/guardrails.md` pairing a rule an agent was corrected on with what enforces it.
 
 **Playbook**:
 The one instruction document a mode loads and follows.

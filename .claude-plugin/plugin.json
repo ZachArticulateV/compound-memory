@@ -1,9 +1,9 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
-  "name": "project-memory",
-  "displayName": "Project Memory",
+  "name": "compound-memory",
+  "displayName": "Compound Memory",
   "version": "1.1.0",
-  "description": "A version-controlled project context architecture for Claude Code and Codex. Keeps project memory accurate, minimal, retrievable, and evidence-backed across fresh sessions, context resets, branches, and worktrees. One skill with eight modes (init, status, sync, handoff, grill, audit, repair, cleanup), a deterministic Node core, two lightweight hooks, a path-scoped writing rule, and an independent auditor that runs on an external model so memory is never graded by the context that wrote it.",
+  "description": "Memory, planning, building, review, verification, shipping, and learning for coding agents in Claude Code and Codex. Twelve skills that each work alone and hand work to one another through files in the repository: project-memory (init, status, sync, handoff, grill, audit, repair, cleanup), plan, prototype, build, debug, review, verify, ship, autopilot, learn, write, and catch-up. Deterministic Node scripts check what must be exact (memory structure, quoted review findings, the ticket graph, lesson lookup, measurement noise), two lightweight hooks signal memory drift, and an independent auditor runs on an external model so memory is never graded by the context that wrote it.",
   "author": {
     "name": "Zachary W.",
     "url": "https://articulatevision.com"
@@ -17,10 +17,14 @@
     "project-context",
     "handoff",
     "codex",
-    "session-continuity",
-    "audit",
+    "planning",
+    "code-review",
+    "verification",
+    "debugging",
+    "tickets",
+    "lessons",
+    "autonomous",
     "evidence",
-    "worktrees",
-    "documentation"
+    "worktrees"
   ]
 }

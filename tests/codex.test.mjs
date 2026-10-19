@@ -53,7 +53,7 @@ test('the Codex manifest opts out of the Claude Code hooks and names itself', ()
   // the opt-out Codex honors; an empty array falls back to the default file.
   const codex = JSON.parse(read(repoRoot, '.codex-plugin', 'plugin.json'))
   assert.deepEqual(codex.hooks, {})
-  assert.equal(codex.interface?.displayName, 'Project Memory')
+  assert.equal(codex.interface?.displayName, 'Compound Memory')
 })
 
 test('AGENTS.md is part of the governed project contract', () => {

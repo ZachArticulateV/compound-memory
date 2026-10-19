@@ -34,13 +34,15 @@ test('description stays under the skill-listing character cap', () => {
   assert.ok(combined.length <= 1536, `description is ${combined.length} chars, cap is 1536`)
 })
 
-test('description carries an explicit non-trigger clause', () => {
+test('description routes ordinary coding work away from memory', () => {
   // The skill stays model-invocable rather than setting
-  // disable-model-invocation, so the only thing keeping routine coding work
-  // from firing an audit is the negative half of the description.
+  // disable-model-invocation, so what keeps routine coding work from firing an
+  // audit is the routing clause in the description. It is written as where
+  // that work goes (the sibling engineering skills), not as a prohibition.
   const description = field('description') ?? ''
-  assert.match(description, /\bDo NOT use\b/)
   assert.match(description, /coding|refactor/i)
+  assert.match(description, /\bgo to this plugin's plan, build, debug, review, and verify skills\b/)
+  assert.match(description, /not a memory operation/)
 })
 
 test('the body routes exactly the eight documented modes', () => {
