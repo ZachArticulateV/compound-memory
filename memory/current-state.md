@@ -80,8 +80,9 @@ with section, and composes through the artifacts in `references/artifacts.md`.
 
 **Not verified:**
 
-- `ship watch` and `ship feedback` against real GitHub, and any run under
-  Codex (no Codex CLI here).
+- `ship watch`'s fix path and `ship feedback`'s reply path against real GitHub
+  (pull request #3 had nothing to fix or answer; both read it correctly), and
+  any run under Codex (no Codex CLI here).
 - The console and component-provenance checks in
   `skills/verify/references/checks.md` (not executed by this repository's
   tests; the generated verification skill's layout check ran).
@@ -118,9 +119,11 @@ hooks (decision 007).
 ## Active workstreams
 
 - Branch claude/serene-faraday-shkcdn: the eleven engineering skills, four
-  scripts, lessons and guardrails in the schema, coverage map, and benchmark
-  notes. Pushed; no pull request opened. Listed under Unreleased in
-  `CHANGELOG.md`.
+  scripts, lessons and guardrails in the schema, coverage map, benchmark notes,
+  and the rename to `compound-memory`. Open as
+  [pull request #3](https://github.com/ZachArticulateV/project-memory/pull/3);
+  CI green on `a439190` (Ubuntu, Windows, manifests), 2026-10-19. Waiting on the
+  owner's review. Listed under Unreleased in `CHANGELOG.md`.
 - Branch claude/kind-ride-kiczmp (code-review fixes, the `cleanup` mode, the
   handoff upgrade) merged to main as pull request #2 (`6d5d858`); still listed
   under Unreleased in `CHANGELOG.md`.
