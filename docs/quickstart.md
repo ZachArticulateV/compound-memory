@@ -2,9 +2,9 @@
 
 Your first project memory, start to finish, in about fifteen minutes.
 
-This guide describes version 1.1.0 or later. `/plugin` shows the installed
-version; on 1.0.0, `grill`, handoff focus, the glossary, and `AGENTS.md`
-support are not available yet. No prior
+This guide describes version 2.0.0 or later. `/plugin` shows the installed
+version; on 1.0.0, `grill`, handoff focus, the glossary, `AGENTS.md`
+support, and the engineering skills are not available yet. No prior
 knowledge of this plugin is assumed. If a word is unfamiliar, it is defined in
 [Words you will see](#words-you-will-see) at the bottom.
 
