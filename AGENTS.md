@@ -1,6 +1,7 @@
 # Agent instructions
 
-This repository is the Project Memory plugin for Claude Code and Codex. The
+This repository is the Compound Memory plugin for Claude Code and Codex: a
+memory skill and eleven engineering skills under `skills/`. The
 same rules apply to every agent working here; `.claude/CLAUDE.md` carries the
 full set of commands and invariants and is worth reading once.
 

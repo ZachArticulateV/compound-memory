@@ -75,6 +75,9 @@ const signal = (id, artifact, message, extra = {}) => ({ signal: id, artifact, m
 
 const memoryRel = (name) => `${MEMORY_DIRNAME}/${name}`
 const isArchive = (rel) => rel.startsWith(`${MEMORY_DIRNAME}/archive/`)
+// Lessons are reached through scripts/lessons.mjs, which matches them to the
+// task at hand, not through links, so an unlinked lesson is not unreachable.
+const isLesson = (rel) => rel.startsWith(`${MEMORY_DIRNAME}/lessons/`)
 
 // ---------------------------------------------------------------------------
 // Entry point
@@ -404,7 +407,7 @@ export function unreachableFiles(root, texts, memory) {
   }
 
   return memory.markdownFiles
-    .filter((rel) => !known.has(rel) && !isArchive(rel) && !reached.has(rel))
+    .filter((rel) => !known.has(rel) && !isArchive(rel) && !isLesson(rel) && !reached.has(rel))
     .map((rel) => signal('unreachable-file', rel, 'no memory or contract file links here, so no session will read it'))
 }
 

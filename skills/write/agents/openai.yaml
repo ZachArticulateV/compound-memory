@@ -1,0 +1,3 @@
+interface:
+  display_name: "Write"
+  short_description: "Docs for people, instructions for agents, and plain explanations"

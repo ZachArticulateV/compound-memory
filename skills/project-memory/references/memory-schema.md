@@ -30,6 +30,9 @@ memory/
 ├── bugs-and-risks.md
 ├── acceptance-criteria.md  (when the project has features worth verifying)
 ├── glossary.md             (when the project has vocabulary of its own)
+├── guardrails.md           (when an agent was corrected twice on one rule)
+├── lessons/                (when work produced knowledge the code cannot carry)
+│   └── <slug>.md
 ├── decisions/
 │   ├── INDEX.md
 │   └── NNN-slug.md
@@ -339,6 +342,33 @@ make an old choice look like the current one was always intended. When a decisio
 changes: mark the old record superseded, create the replacement, and link them in
 both directions.
 
+### `lessons/`
+
+**Purpose:** Knowledge from past work that the code, tests, and plan do not
+carry, one lesson per file, found per task rather than read at startup.
+
+**Owner:** the `learn` skill writes and refreshes lessons; `plan`, `build`,
+`debug`, and `review` look them up with `scripts/lessons.mjs`, which matches a
+task's words and changed paths against each lesson's title, tags,
+`applies_when`, and `paths`. The shape, with its frontmatter, is in the
+plugin's `../../references/artifacts.md`.
+
+**Checked:** the validator's `lesson-format` check warns when a lesson lacks
+the fields lookup matches on, writes a list in block style, or has no
+`## Do this` section.
+
+**Lifecycle:** updated in place when a later lesson overlaps; marked `stale`
+or `retired` rather than deleted, so lookup stops serving it while the history
+stays.
+
+### `guardrails.md`
+
+**Purpose:** Each rule an agent was corrected on, paired with what enforces it
+(a check, a test, a type, or judgment). Read during review.
+
+**Owner:** `learn correct`. A rule enforced only by judgment that is broken
+again moves to a check; a row whose mistake can no longer happen is removed.
+
 ### `archive/`
 
 **Purpose:** Retired content that is worth keeping but not worth loading.
@@ -364,6 +394,8 @@ file carrying a statement is often not the file that should.
 | Continuation state for this workstream | the active handoff |
 | A durable project invariant | `CLAUDE.md`, mirrored into `AGENTS.md` when the change is to the memory section |
 | What a project term means, or which word to avoid | `glossary.md` |
+| Knowledge from past work that the code cannot carry | a lesson in `lessons/` |
+| A rule agents were corrected on, and what enforces it | `guardrails.md` |
 | Retired content worth keeping but not loading | `archive/` |
 
 A fact belongs in exactly one row. A fact that seems to belong in two is
@@ -385,6 +417,8 @@ two drift the moment one is updated.
 | `bugs-and-risks.md` | Resolved issues archived |
 | `acceptance-criteria.md` | Status advances only with evidence |
 | `glossary.md` | Created lazily; terms replaced, old words move to `_Avoid_` |
+| `guardrails.md` | Created lazily; a row leaves once its mistake cannot happen |
+| `lessons/*` | Updated in place; marked stale or retired rather than deleted |
 | `decisions/*` | Append and supersede; history preserved |
 | `archive/*` | Rarely loaded |
 
@@ -404,7 +438,7 @@ memory/next-actions.md
 ```
 
 `bugs-and-risks.md`, individual decisions, acceptance criteria, the glossary,
-and anything under `archive/` are retrieved when relevant. Archives are effectively never part
+guardrails, lessons, and anything under `archive/` are retrieved when relevant. Archives are effectively never part
 of startup context.
 
 ## Who writes

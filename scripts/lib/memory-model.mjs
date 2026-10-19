@@ -58,7 +58,7 @@ export const CORE_MEMORY_FILES = [
 ]
 
 /** Files the schema creates only when the project calls for them. */
-export const OPTIONAL_MEMORY_FILES = ['acceptance-criteria.md', 'glossary.md']
+export const OPTIONAL_MEMORY_FILES = ['acceptance-criteria.md', 'glossary.md', 'guardrails.md']
 
 export const GLOSSARY_FILENAME = 'glossary.md'
 
@@ -77,6 +77,9 @@ export const SCHEMA_OPTIONAL_TARGETS = new Set([
   // decisions/ yet, while INDEX.md, next-actions.md, and the brief still name it.
   DECISIONS_DIRNAME,
   HANDOFFS_DIRNAME,
+  // Lessons are written by the learn skill on first use and found through
+  // scripts/lessons.mjs, so the index can name the directory before it exists.
+  'lessons',
   ...OPTIONAL_MEMORY_FILES,
 ])
 

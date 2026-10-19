@@ -1,0 +1,3 @@
+interface:
+  display_name: "Plan"
+  short_description: "Brainstorm requirements, decide, write a plan, or split it into tickets"

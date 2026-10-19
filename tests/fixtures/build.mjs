@@ -28,6 +28,21 @@ const GIT_IDENTITY = [
   '-c', 'commit.gpgsign=false',
 ]
 
+/**
+ * The environment for a process a test spawns, without NODE_TEST_CONTEXT.
+ *
+ * `node --test` sets that variable for the files it runs, and a nested
+ * `node --test` that inherits it reports to a parent that is not listening and
+ * exits 0 even when its tests fail. A live run would then see a red fixture as
+ * green, and so would the agent it spawns. Every process the live harnesses
+ * start gets this environment.
+ */
+export function childEnv(env = process.env) {
+  const out = { ...env }
+  delete out.NODE_TEST_CONTEXT
+  return out
+}
+
 /** Create an isolated fixture root whose path contains a space and a non-ASCII character. */
 export function makeTempRoot() {
   return mkdtempSync(join(tmpdir(), TEMP_PREFIX))
