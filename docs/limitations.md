@@ -120,8 +120,9 @@ red before green, synthetic data in evidence, merging only when granted)
 rests on instruction-following. Every mode has been run live in headless
 sessions (`memory/acceptance-criteria.md`): on a Node and a Python sample and a
 web form, across resumed turns with a human answering, and, for `ship watch` and
-`ship feedback`, against both a scripted `gh` and one real pull request. No
-skill has been run under Codex. A few small samples show the paths work; they
+`ship feedback`, against both a scripted `gh` and one real pull request. Under Codex the
+plugin installs and all twelve skills reach the model's prompt, but no skill has
+been run there. A few small samples show the paths work; they
 do not show every project behaves the same.
 
 `tests/acceptance/live-engineering.test.mjs` re-runs six scenarios and checks
