@@ -6,6 +6,12 @@ All notable changes to this plugin are documented here. Format follows
 
 ## [Unreleased]
 
+### Changed (breaking)
+
+- **Renamed to `compound-memory`.** Uninstall `project-memory` and install
+  `compound-memory@zacharticulatev`. The memory skill keeps its name and its
+  modes; engineering skills are `/compound-memory:<skill>`. Decision 010.
+
 ### Added
 
 - **Eleven engineering skills** beside `project-memory`: `plan` (brainstorm,

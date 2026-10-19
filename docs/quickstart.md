@@ -23,7 +23,7 @@ Inside Claude Code, run these two commands:
 
 ```bash
 /plugin marketplace add ZachArticulateV/claude-plugins
-/plugin install project-memory@zacharticulatev
+/plugin install compound-memory@zacharticulatev
 ```
 
 The first makes the plugin available; the second installs it. Restart Claude
@@ -148,18 +148,18 @@ fires, or type it. In Claude Code they are namespaced under the plugin:
 
 | When | Run |
 | --- | --- |
-| You have an idea and want it pinned down | `/project-memory:plan brainstorm <idea>` |
-| You want a plan another agent can build | `/project-memory:plan` |
-| Several agents will share the work | `/project-memory:plan tickets` |
-| You are not sure which design is right | `/project-memory:prototype ui <screen>` |
-| Time to implement | `/project-memory:build` |
-| Something is broken | `/project-memory:debug <symptom>` |
-| Prove it works in the real app | `/project-memory:verify` (once: `verify create`) |
-| Before you merge | `/project-memory:review` |
-| Commit, PR, CI | `/project-memory:ship` |
-| "Do the whole thing" | `/project-memory:autopilot <request>` |
-| An agent repeated a mistake | `/project-memory:learn correct` |
-| "What happened while I was away?" | `/project-memory:catch-up` |
+| You have an idea and want it pinned down | `/compound-memory:plan brainstorm <idea>` |
+| You want a plan another agent can build | `/compound-memory:plan` |
+| Several agents will share the work | `/compound-memory:plan tickets` |
+| You are not sure which design is right | `/compound-memory:prototype ui <screen>` |
+| Time to implement | `/compound-memory:build` |
+| Something is broken | `/compound-memory:debug <symptom>` |
+| Prove it works in the real app | `/compound-memory:verify` (once: `verify create`) |
+| Before you merge | `/compound-memory:review` |
+| Commit, PR, CI | `/compound-memory:ship` |
+| "Do the whole thing" | `/compound-memory:autopilot <request>` |
+| An agent repeated a mistake | `/compound-memory:learn correct` |
+| "What happened while I was away?" | `/compound-memory:catch-up` |
 
 Each one works without the others, and better with them: `build` reads the plan
 `plan` wrote, `review` checks the change against it, and `debug` starts from the

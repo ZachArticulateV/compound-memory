@@ -1,4 +1,4 @@
-# Project Memory (the plugin)
+# Compound Memory (the plugin)
 
 ## Purpose
 
