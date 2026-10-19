@@ -22,7 +22,7 @@ Each item names an observable outcome. "Improve the backend" is not an action.
 ## Next
 
 - [ ] Push the `v2.0.0` tag on `b2419f6`, the release merge commit (owner; the tag push was not available)
-- [ ] Merge the marketplace rename (claude-plugins pull request #1) once the tag exists (decision 010)
+- [x] Rename the marketplace entry to `compound-memory` (claude-plugins pull request #1, merged 2026-10-19; decision 010)
   - Done when: `/plugin install compound-memory@zacharticulatev` installs it and `/compound-memory:plan` and `/project-memory grill` both route
   - Out of scope: other plugins in that marketplace
 
