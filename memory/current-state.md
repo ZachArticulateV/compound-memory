@@ -4,7 +4,7 @@ What is true about this project right now. A snapshot, not a journal — obsolet
 state is replaced here rather than appended to. History lives in Git and in
 `decisions/`.
 
-Updated: 2026-10-18
+Updated: 2026-10-19
 
 ## Skill and modes
 
@@ -69,10 +69,11 @@ with section, and composes through the artifacts in `references/artifacts.md`.
   button on the broken page and passed the clean one, 2026-10-18.
 
 - Every engineering mode met its Done when line in live headless runs,
-  2026-10-18: on a Node sample, on a Python sample (`autopilot`), across three
-  resumed turns with a human answering (`plan brainstorm`), and for `ship watch`
-  and `ship feedback` against a scripted `gh`. Results, and the two fixes the
-  runs drove, are in `acceptance-criteria.md` (Engineering skills, live).
+  2026-10-18 and 2026-10-19: on a Node sample, on a Python sample and a web
+  form (`autopilot`), across three resumed turns with a human answering
+  (`plan brainstorm`), and for `ship watch` and `ship feedback` against a
+  scripted `gh`. Results, and the four fixes the runs drove, are in
+  `acceptance-criteria.md` (Engineering skills, live).
 - `tests/acceptance/live-engineering.test.mjs` re-runs six of those scenarios
   and checks their artifacts with the plugin's scripts; off by default. It
   passed 6 of 6, and the memory live tier passed every scenario this machine
