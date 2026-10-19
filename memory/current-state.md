@@ -81,7 +81,9 @@ with section, and composes through the artifacts in `references/artifacts.md`.
 
 **Not verified:**
 
-- Any run under Codex (no Codex CLI here). `ship watch`'s fix path and
+- Any skill run under Codex: no Codex model access. Codex 0.163.0 did
+  install 2.0.0 from the marketplace and listed all twelve skills in its
+  model-visible prompt. `ship watch`'s fix path and
   `ship feedback`'s reply path now ran on real GitHub (scratch pull request #4,
   closed unmerged; `acceptance-criteria.md`).
 - The console and component-provenance checks in
