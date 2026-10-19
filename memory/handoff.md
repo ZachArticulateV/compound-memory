@@ -1,11 +1,11 @@
 # Active Handoff
 
-Updated: 2026-10-18
+Updated: 2026-10-19
 Branch: claude/serene-faraday-shkcdn
-HEAD: a439190
-Working tree: the pull-request record commit, made directly on top of HEAD
+HEAD: e910db0 (main, after pull request #3 merged)
+Working tree: the 2.0.0 release commit, made directly on top of HEAD
 Work type: code change
-Next session focus: ship watch and feedback on a real PR, and Codex
+Next session focus: tag v2.0.0, rename the marketplace entry, and Codex
 
 ## Objective
 
@@ -58,8 +58,8 @@ trust the model, with deterministic scripts for what must be exact.
 ## Current problem
 
 None blocking. Both live tiers pass what this machine can run; what remains
-needs a Codex CLI, the owner's merge of pull request #3, and then the
-marketplace rename.
+is the 2.0.0 release (this branch, then the `v2.0.0` tag), the marketplace
+rename that pins to that tag, and a Codex run on the owner's machine.
 
 ## Evidence collected
 
