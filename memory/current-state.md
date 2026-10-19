@@ -81,9 +81,9 @@ with section, and composes through the artifacts in `references/artifacts.md`.
 
 **Not verified:**
 
-- `ship watch`'s fix path and `ship feedback`'s reply path against real GitHub
-  (pull request #3 had nothing to fix or answer; both read it correctly), and
-  any run under Codex (no Codex CLI here).
+- Any run under Codex (no Codex CLI here). `ship watch`'s fix path and
+  `ship feedback`'s reply path now ran on real GitHub (scratch pull request #4,
+  closed unmerged; `acceptance-criteria.md`).
 - The console and component-provenance checks in
   `skills/verify/references/checks.md` (not executed by this repository's
   tests; the generated verification skill's layout check ran).
