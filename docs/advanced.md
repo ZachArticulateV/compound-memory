@@ -60,6 +60,12 @@ whether the two sections match.
   playbooks carry the same discipline.
 - The skill's `$0` and `${CLAUDE_SKILL_DIR}` are not substituted by Codex; the
   skill tells the agent how to resolve them itself.
+- The eleven engineering skills install with the same plugin and are invoked
+  as `$plan`, `$review`, `$verify`, and so on. Each carries
+  `agents/openai.yaml` for the skill picker and the same note on resolving its
+  variables. Where a skill offers a second opinion from another model, the
+  other model from a Codex session is Claude (for example a Claude Code
+  subagent or `claude -p`).
 
 **Handing work to Codex.** From a Claude Code session:
 

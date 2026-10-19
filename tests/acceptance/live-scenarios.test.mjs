@@ -54,7 +54,7 @@ import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { dirname, join, resolve, sep } from 'node:path'
 
-import { cleanupAfter, gitAvailable } from '../fixtures/build.mjs'
+import { childEnv, cleanupAfter, gitAvailable, writeTree } from '../fixtures/build.mjs'
 import { CONTRADICTED_INSTRUCTION, PRESERVED_RULES, emptyRepo, existingClaudeMdRepo, matureRepo } from '../fixtures/repos.mjs'
 import { INJECTED_STRINGS, SECRET_NAMES, SECRET_VALUES, externalTrackerRepo, injectionRepo, secretsRepo } from '../fixtures/hostile.mjs'
 import {
@@ -145,6 +145,7 @@ function spawnCli(name, args, { cwd, timeout = TIMEOUT_MS }) {
   try {
     const stdout = execFileSync(file, argv, {
       cwd,
+      env: childEnv(),
       timeout,
       encoding: 'utf8',
       windowsHide: true,
@@ -174,6 +175,10 @@ function runMode(root, mode, { sessionId = null, resume = null, extraPrompt = ''
   const args = [
     '-p',
     '--plugin-dir', PLUGIN_DIR,
+    // The playbooks and templates live in the plugin, outside the fixture's
+    // working directory. Claude Code 2.1.3xx refuses reads outside it under
+    // acceptEdits in a headless run, so the plugin directory is granted.
+    '--add-dir', PLUGIN_DIR,
     '--permission-mode', PERMISSION_MODE,
     '--allowedTools', 'Bash(node *)',
     '--output-format', 'json',
@@ -446,11 +451,18 @@ test(label('F'), live(), (t) => {
 // Scenario H — External task tracker
 // ---------------------------------------------------------------------------
 
+// A one-commit fixture reads as a new project, so init interviews before it
+// writes. A headless run cannot answer, so the scenarios whose subject is not
+// the interview (H, J) say so, the way an unattended run would.
+const UNATTENDED =
+  'No human is available to answer questions. Record each question you would ask as unresolved, ' +
+  'with your recommended answer, and write the memory tree.'
+
 test(label('H'), live(), (t) => {
   const root = externalTrackerRepo({ git: gitAvailable() })
   cleanupAfter(t, root)
 
-  runMode(root, 'init')
+  runMode(root, 'init', { extraPrompt: UNATTENDED })
   assertInitialized(root)
 
   const nextActions = readIf(root, 'memory/next-actions.md')
@@ -463,8 +475,10 @@ test(label('H'), live(), (t) => {
   )
 
   // Does not duplicate the tracker: the punch list stays a local punch list.
-  const issueKeys = (nextActions.match(/\bENG-\d+\b/g) || []).length
-  assert.ok(issueKeys <= 2, `next-actions.md mirrors the issue tracker (${issueKeys} issue keys)`)
+  // Distinct keys, not mentions: naming the one issue the repository cites in a
+  // task and in a blocked item is a pointer, not a mirror.
+  const issueKeys = new Set(nextActions.match(/\bENG-\d+\b/g) || []).size
+  assert.ok(issueKeys <= 2, `next-actions.md mirrors the issue tracker (${issueKeys} distinct issue keys)`)
 })
 
 // ---------------------------------------------------------------------------
@@ -504,7 +518,7 @@ test(label('J', 'refusal half'), live(), (t) => {
   const root = secretsRepo({ git: gitAvailable() })
   cleanupAfter(t, root)
 
-  runMode(root, 'init')
+  runMode(root, 'init', { extraPrompt: UNATTENDED })
 
   const persisted = persistedText(root)
   for (const value of SECRET_VALUES) {
@@ -573,6 +587,13 @@ test(label('K'), live(), (t) => {
 // ---------------------------------------------------------------------------
 
 test('U8 live: the shipped bridge reaches the Codex tier and finds the drift', live(), async (t) => {
+  // A machine without the Codex CLI cannot exercise this tier. That is
+  // reported as a skip with its reason, never as a pass, and not as a failure
+  // of the bridge.
+  if (findExecutable('codex') === null) {
+    t.skip('codex is not on PATH; the Codex tier cannot be exercised on this machine')
+    return
+  }
   const root = staleMemoryRepo({ git: gitAvailable() })
   cleanupAfter(t, root)
   assertTempFixture(root)
@@ -655,7 +676,12 @@ test(label('G', 'write half'), live(), (t) => {
   const otherHandoff = join(root, 'memory', 'handoffs', `${branchA}.md`)
   const before = readFileSync(otherHandoff, 'utf8')
 
-  runMode(worktree, 'handoff')
+  // A worktree with no work of its own gives the model nothing to hand off,
+  // and it may rightly ask what the work is rather than write an empty
+  // handoff (it did in 3 of 9 runs). Give it a change and a focus, as a real
+  // handoff would have.
+  writeTree(worktree, { 'src/auth.mjs': 'export const refreshToken = () => null // retry pending\n' })
+  const { text: reply } = runMode(worktree, 'handoff finish the refresh-token retry')
 
   assert.equal(
     readFileSync(otherHandoff, 'utf8'),
@@ -666,7 +692,7 @@ test(label('G', 'write half'), live(), (t) => {
   // And branchB's own handoff must exist and declare the right branch -- a
   // handoff written into the wrong file is the same failure wearing a mask.
   const mine = join(worktree, 'memory', 'handoffs', `${branchB}.md`)
-  assert.ok(existsSync(mine), `no handoff was written for ${branchB}`)
+  assert.ok(existsSync(mine), `no handoff was written for ${branchB}. The run said:\n${String(reply).slice(0, 2500)}`)
   const declared = readFileSync(mine, 'utf8').replace(/\s+/g, ' ')
   assert.ok(
     declared.includes(`Branch: ${branchB}`),
