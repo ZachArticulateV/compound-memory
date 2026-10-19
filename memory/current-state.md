@@ -123,9 +123,15 @@ hooks (decision 007).
   `compound-memory` merged to main as
   [pull request #3](https://github.com/ZachArticulateV/project-memory/pull/3)
   (`e910db0`, 2026-10-19), with CI green on its last commit.
-- Release 2.0.0 (the rename, plus 1.1.0, which was never tagged) is prepared on
-  branch claude/serene-faraday-shkcdn: both manifests at 2.0.0 and the changelog
-  dated. Not yet tagged or published; the marketplace entry follows the tag.
+- Release 2.0.0 (the rename, plus 1.1.0, which was never tagged) merged to main
+  as [pull request #5](https://github.com/ZachArticulateV/project-memory/pull/5)
+  (`b2419f6`, 2026-10-19), CI green. The `v2.0.0` tag is not pushed: the
+  session proxy refused it, so the owner pushes it.
+- The marketplace rename to `compound-memory`, pinned to `b2419f6` and
+  `v2.0.0`, is open as
+  [claude-plugins pull request #1](https://github.com/ZachArticulateV/claude-plugins/pull/1).
+  Installed from that branch, it reported version 2.0.0 and loaded all twelve
+  skills, 2026-10-19.
 
 ## Intentionally deferred
 
