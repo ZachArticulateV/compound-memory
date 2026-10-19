@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
-  "name": "project-memory",
-  "displayName": "Project Memory",
+  "name": "compound-memory",
+  "displayName": "Compound Memory",
   "version": "1.1.0",
   "description": "Memory, planning, building, review, verification, shipping, and learning for coding agents in Claude Code and Codex. Twelve skills that each work alone and hand work to one another through files in the repository: project-memory (init, status, sync, handoff, grill, audit, repair, cleanup), plan, prototype, build, debug, review, verify, ship, autopilot, learn, write, and catch-up. Deterministic Node scripts check what must be exact (memory structure, quoted review findings, the ticket graph, lesson lookup, measurement noise), two lightweight hooks signal memory drift, and an independent auditor runs on an external model so memory is never graded by the context that wrote it.",
   "author": {

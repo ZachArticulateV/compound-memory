@@ -11,10 +11,6 @@ Each item names an observable outcome. "Improve the backend" is not an action.
   - Done when: each met its Done when line, recorded in `acceptance-criteria.md` (Engineering skills, live)
   - Out of scope: changing a skill's wording before the run shows a problem
 
-- [ ] Decide whether the plugin keeps the name `project-memory` now that it ships engineering skills
-  - Done when: the owner chose, and either nothing changes or the manifests, README install lines, and marketplace entry carry the new name
-  - Out of scope: splitting the plugin
-
 - [ ] Run `cleanup` and `handoff close` live on a sample repository with seeded rot (a checked task, a duplicated sentence, a merged-branch handoff)
   - Done when: each seeded item is reported, nothing is written before approval, and the result is recorded in `acceptance-criteria.md`
   - Out of scope: changing the rot signals
@@ -26,8 +22,8 @@ Each item names an observable outcome. "Improve the backend" is not an action.
 ## Next
 
 - [ ] Tag `v1.1.0` on main (merged 2026-09-29, untagged as of 2026-10-17) and set its changelog date
-- [ ] Point the ZachArticulateV/claude-plugins marketplace entry at `v1.1.0`
-  - Done when: `/plugin install project-memory@zacharticulatev` installs 1.1.0 and `/project-memory grill` routes
+- [ ] Rename the ZachArticulateV/claude-plugins marketplace entry to `compound-memory` and point it at the next release (decision 010)
+  - Done when: `/plugin install compound-memory@zacharticulatev` installs it and `/compound-memory:plan` and `/project-memory grill` both route
   - Out of scope: other plugins in that marketplace
 
 ## Blocked

@@ -48,8 +48,8 @@ ticket graphs, lesson lookup, measurement noise) are bundled read-only scripts.
   skill's non-trigger clause exists to keep coding work out of it.
 - Separate plugins per area: the owner asked for one plugin, and shared
   artifacts would cross plugin boundaries.
-- Renaming the plugin: breaks the published install path. Left as an open
-  question for the owner.
+- Renaming the plugin: deferred here, then chosen by the owner in decision 010
+  (`compound-memory`).
 
 ## Consequences
 
