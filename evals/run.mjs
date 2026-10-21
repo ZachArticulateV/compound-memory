@@ -11,6 +11,11 @@
 //   baseline  the plugin as it is at --baseline-ref (extracted with git archive)
 //   revised   the plugin in this checkout
 //
+// With --invoke, plugin runs start the prompt with the task's skill command
+// (`/compound-memory:<skill>`), so the skill's own instructions are compared;
+// `none` has no such command and is skipped. Without it, the prompt is plain
+// and the model decides whether to use a skill, as a user's request would be.
+//
 // Every run uses the same model, permission mode, turn and budget limits, and
 // prompt, and loads no user or MCP configuration (--setting-sources
 // project,local, --strict-mcp-config), so the plugin is the only difference.
@@ -46,10 +51,11 @@ const { values } = parseArgs({
     'timeout-min': { type: 'string', default: '15' },
     out: { type: 'string' },
     keep: { type: 'boolean', default: false },
+    invoke: { type: 'boolean', default: false },
   },
 })
 
-const configs = values.configs.split(',')
+const configs = values.configs.split(',').filter((c) => !(values.invoke && c === 'none'))
 const tasks = values.tasks.split(',').map((id) => {
   const task = TASKS.find((t) => t.id === id)
   if (!task) throw new Error(`no task ${id}`)
@@ -113,7 +119,7 @@ function runOne(task, config, trial) {
       env.PATH = `${binDir}${process.platform === 'win32' ? ';' : ':'}${env.PATH}`
     }
     const args = [
-      '-p', `${task.prompt}\n\n${RESULT_LINE}`,
+      '-p', `${values.invoke && pluginDirs[config] ? `/compound-memory:${task.skill} ` : ''}${task.prompt}\n\n${RESULT_LINE}`,
       '--model', values.model,
       '--permission-mode', 'bypassPermissions',
       '--max-turns', values['max-turns'],
@@ -220,15 +226,15 @@ for (const config of configs) {
 }
 
 const stamp = new Date().toISOString().slice(0, 10)
-const outBase = values.out ?? join(here, 'results', `${stamp}-${values.model}`)
+const outBase = values.out ?? join(here, 'results', `${stamp}-${values.model}${values.invoke ? '-invoked' : ''}`)
 mkdirSync(dirname(outBase), { recursive: true })
-const meta = { date: new Date().toISOString(), model: values.model, trials, configs, tasks: tasks.map((t) => t.id), baselineRef: values['baseline-ref'], baselineSha, revisedSha, revisedDirty, maxTurns: values['max-turns'], maxBudgetUsd: values['max-budget-usd'], node: process.version, claude: spawnSync('claude', ['--version'], { encoding: 'utf8' }).stdout.trim() }
+const meta = { date: new Date().toISOString(), model: values.model, invoke: values.invoke, trials, configs, tasks: tasks.map((t) => t.id), baselineRef: values['baseline-ref'], baselineSha, revisedSha, revisedDirty, maxTurns: values['max-turns'], maxBudgetUsd: values['max-budget-usd'], node: process.version, claude: spawnSync('claude', ['--version'], { encoding: 'utf8' }).stdout.trim() }
 writeFileSync(`${outBase}.json`, `${JSON.stringify({ meta, summary, rows }, null, 2)}\n`)
 
 const md = [
   `# Agent-task eval, ${stamp}`,
   '',
-  `Model \`${values.model}\` (${meta.claude}), ${trials} trial(s) per task and configuration. Baseline: \`${values['baseline-ref']}\` (${baselineSha?.slice(0, 7) ?? 'not run'}). Revised: ${revisedSha.slice(0, 7)}${revisedDirty ? ' plus uncommitted changes' : ''}. Same prompt, limits, and settings in every run; no user settings or MCP servers loaded.`,
+  `Model \`${values.model}\` (${meta.claude}), ${trials} trial(s) per task and configuration, ${values.invoke ? 'each prompt starting with the task\'s skill command' : 'plain prompts (the model chooses whether to use a skill)'}. Baseline: \`${values['baseline-ref']}\` (${baselineSha?.slice(0, 7) ?? 'not run'}). Revised: ${revisedSha.slice(0, 7)}${revisedDirty ? ' plus uncommitted changes' : ''}. Same prompt, limits, and settings in every run; no user settings or MCP servers loaded.`,
   '',
   '| Config | Correct | False success | Missed faults | Needless questions | Errors | Mean s | Mean $ | Mean input tok | Mean output tok | Small: correct | Small: mean s | Small: mean $ |',
   '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |',
