@@ -5,11 +5,16 @@ lessons that are true.
 
 ## Steps
 
-1. **List them,** including stale and retired ones:
+1. **List them,** including stale and retired ones, then the active ones whose
+   code moved since they were written (a path gone, or commits to their paths):
 
    ```bash
    node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" --all --limit 0
+   node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" --drift
    ```
+
+   Check the drifted ones first. A small refresh (after one change) checks only
+   those.
 
 2. **Check each lesson:**
    - do the paths, commands, and commits it names still exist?
@@ -30,7 +35,8 @@ lessons that are true.
    A claim you cannot check is unverified, not false. Age alone does not make a
    lesson stale; changed code does.
 4. **Delete** a lesson only when it is retired, nothing links to it, and the
-   user agrees.
+   user agrees. A lesson whose mistake a check now prevents is retired with a
+   pointer to the check; the check is the lesson now.
 5. **Validate** with `memory-validate.mjs`.
 
 Report each lesson and its class, with the evidence for every change.

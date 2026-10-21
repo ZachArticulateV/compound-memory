@@ -21,6 +21,12 @@ parallel subagents and keep only their conclusions:
 
 Follow the plan shape in `../../references/artifacts.md`.
 
+- **Terms** define only the words a reader could take two ways ("active
+  client", "review due"), in the project's glossary words when
+  `memory/glossary.md` has them. Skip the section when no word is ambiguous.
+- **Requirements** say what is true when the work is done, each one
+  observable ("the list shows only reviews due this week"), not an activity
+  ("improve the list").
 - **Decisions** carry an ID, the choice, the reason, and who settled it (the
   user, or you, marked as a recommendation). Only a user's decision is settled.
 - **Units** carry an ID, a goal, the files they touch, the approach, a
@@ -38,10 +44,18 @@ file.
 
 ## Readiness check
 
-- Every requirement is covered by at least one unit.
-- Every unit has a `Verify` that could fail.
-- No unit says "TBD"; each open question is answered or explicitly deferred.
-- The plan names what is out of scope.
+Run the part code can check:
+
+```bash
+node "${CLAUDE_SKILL_DIR}/../../scripts/plan-check.mjs" <plan file>
+```
+
+It exits 1 when a requirement has no unit, a unit has no `Verify` or still says
+TBD, Out of scope is missing, an open question is not marked answered,
+deferred, or assumed, or two IDs collide. Then judge the rest yourself:
+
+- Every unit's `Verify` could fail (a command that always passes proves
+  nothing).
 - No two decisions contradict each other.
 - Every claim that existing behavior "does not change" has a unit whose
   `Verify` compares the old and the new code across many inputs (a property or

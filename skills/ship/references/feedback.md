@@ -4,7 +4,10 @@ Answer every open review comment on a PR, fixing what is right and explaining
 what is not.
 
 1. **Collect** the unresolved threads and review summaries (`gh pr view
-   --comments`, `gh api` for review threads, or the host's GitHub tool).
+   --comments`, `gh api` for review threads, or the host's GitHub tool). Keep a
+   ledger, one open item per thread in the run record
+   (`run-record.mjs note --open "thread <id>: <claim>"`), so a resumed session
+   knows which threads are still open.
 2. **Verify each claim** against the code before acting. A comment is a claim
    to check, whether a person or a bot wrote it.
 3. **Decide per comment:**
@@ -18,7 +21,11 @@ what is not.
 4. **Fix** in one commit per concern, run the checks, push.
 5. **Reply on each thread** with what was done, naming the commit, and resolve
    the threads you addressed. Re-request review from anyone who requested
-   changes.
+   changes. Close each ledger item (`--resolve`) only after the reply is
+   posted.
+6. **Confirm** by reading the threads again: each one you answered shows your
+   reply, and `pr-state.mjs --threads` counts what is still unresolved. A fix
+   commit moves the head, so `watch` runs again.
 
 Report each thread and its outcome: fixed (commit), replied (why), or waiting
 on the user.

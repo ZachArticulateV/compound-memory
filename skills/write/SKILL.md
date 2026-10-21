@@ -2,6 +2,7 @@
 name: write
 description: "Write and edit prose its reader understands on the first read: docs, READMEs, guides, reports, PR descriptions, and commit messages for people; skills, CLAUDE.md, AGENTS.md, and prompts for agents; or a plain explanation of something that did not land. Use when the user asks to write, edit, tighten, or check documentation or agent instructions, or says they did not follow something."
 argument-hint: "[docs|agents|plain] [text, file path, or nothing for the last message]"
+allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/rewrite-check.mjs" *)
 ---
 
 # Write
@@ -10,8 +11,10 @@ Prose that does its job for one named reader on the first read, with every
 fact from the source still in it.
 
 **Done when:** the text passes the checks in the mode's reference, every fact,
-number, name, path, and command in the source survives, and nothing was added
-that the source or the user did not supply.
+number, name, path, command, and stated doubt in the source survives, and
+nothing was added that the source or the user did not supply. For an edit of
+existing text, `rewrite-check.mjs` reports nothing lost or added, or each item
+it reports was changed on purpose and you can say why.
 
 ## Modes
 
@@ -32,6 +35,17 @@ less like a machine" is `plain`.
   command, never a synonym for it.
 - **Keep facts exact.** Code blocks, quotes, identifiers, link targets, and
   numbers are copied, not reworded.
+- **Keep the doubt.** "Not verified", "may", "failed", and "unknown" stay as
+  strong as the source has them. A plainer sentence must not be a surer one.
+- **Check an edit in code** when the source is a file:
+
+  ```bash
+  node "${CLAUDE_SKILL_DIR}/../../scripts/rewrite-check.mjs" --before <original> --after <rewrite>
+  ```
+
+  It lists code, commands, paths, links, numbers, and words of doubt the
+  rewrite lost, and identifiers it added. It cannot tell whether the meaning
+  held; read it.
 - **Edit the user's own writing lightly.** Keep their voice; change only what
   fails a check.
 - **This skill is the plugin's writing standard.** Other skills point here

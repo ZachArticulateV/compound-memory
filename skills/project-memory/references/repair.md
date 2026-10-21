@@ -49,11 +49,14 @@ unmentioned comes back identically on every future audit.
 Carry the audit's provenance into this decision. A finding is only as good as the
 evaluator that produced it, and `audit` reports which tier ran.
 
-A Codex-tier finding comes from a different model architecture that read the
-repository under a read-only sandbox. A subagent-tier finding comes from the same
-architecture as whatever wrote the memory, so it shares the blind spots — treat it
-as a prompt to go look, not as a settled result, and verify the evidence yourself
-before acting on anything that would remove content.
+A Codex-tier finding comes from a separate process that read the repository
+under a read-only sandbox, on whatever model Codex is configured to run; it is
+a second model's reading only when that model differs from the writer's. A
+subagent-tier finding comes from a fresh context on the writer's own host; on
+the same model, it shares the blind spots — treat it as a prompt to go look,
+not as a settled result, and verify the evidence yourself before acting on
+anything that would remove content. The same caution applies to a Codex
+finding when the memory was written under Codex.
 
 Two situations reach the weakest tier and they are not equally informative. Check
 `demotions`:
