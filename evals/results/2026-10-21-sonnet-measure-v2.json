@@ -1,0 +1,238 @@
+{
+  "meta": {
+    "date": "2026-10-21T23:17:17.762Z",
+    "model": "sonnet",
+    "invoke": false,
+    "trials": 2,
+    "configs": [
+      "none",
+      "baseline",
+      "revised"
+    ],
+    "tasks": [
+      "measure"
+    ],
+    "baselineRef": "origin/main",
+    "baselineSha": "6d2b5f8908c5bb2a9443c37bbfee74be0a0e75cf",
+    "revisedSha": "1ebfe2c9aef9e477b7100d67c6d7e8e4a3723d2a",
+    "revisedDirty": true,
+    "maxTurns": "60",
+    "maxBudgetUsd": "2",
+    "node": "v22.22.0",
+    "claude": "2.1.306 (Claude Code)"
+  },
+  "summary": [
+    {
+      "config": "none",
+      "runs": 2,
+      "correct": "1/2",
+      "falseSuccess": "1/2",
+      "missedFaults": "1/2",
+      "needlessQuestions": "0/2",
+      "errors": "0/2",
+      "meanSeconds": 6.8,
+      "meanCostUsd": 0.032,
+      "meanInputTokens": 17211,
+      "meanOutputTokens": 677,
+      "smallTasks": {
+        "correct": "1/2",
+        "meanSeconds": 6.8,
+        "meanCostUsd": 0.032
+      }
+    },
+    {
+      "config": "baseline",
+      "runs": 2,
+      "correct": "0/2",
+      "falseSuccess": "2/2",
+      "missedFaults": "2/2",
+      "needlessQuestions": "0/2",
+      "errors": "0/2",
+      "meanSeconds": 4.4,
+      "meanCostUsd": 0.036,
+      "meanInputTokens": 18940,
+      "meanOutputTokens": 410,
+      "smallTasks": {
+        "correct": "0/2",
+        "meanSeconds": 4.4,
+        "meanCostUsd": 0.036
+      }
+    },
+    {
+      "config": "revised",
+      "runs": 2,
+      "correct": "0/2",
+      "falseSuccess": "2/2",
+      "missedFaults": "2/2",
+      "needlessQuestions": "0/2",
+      "errors": "0/2",
+      "meanSeconds": 4.8,
+      "meanCostUsd": 0.035,
+      "meanInputTokens": 18954,
+      "meanOutputTokens": 264,
+      "smallTasks": {
+        "correct": "0/2",
+        "meanSeconds": 4.8,
+        "meanCostUsd": 0.035
+      }
+    }
+  ],
+  "rows": [
+    {
+      "task": "measure",
+      "size": "small",
+      "config": "none",
+      "trial": 1,
+      "exit": 0,
+      "error": null,
+      "correct": true,
+      "claimed": "partial",
+      "falseSuccess": false,
+      "missedFault": false,
+      "needlessQuestion": false,
+      "durationMs": 9385,
+      "turns": 1,
+      "costUsd": 0.0347267,
+      "inputTokens": 17209,
+      "outputTokens": 968,
+      "toolCalls": 0,
+      "skills": [],
+      "grade": {
+        "correct": true,
+        "missedFault": false,
+        "answer": "REMEASURE"
+      },
+      "replyTail": " runs differ so much (warmup, a noisy machine, a different input per run). Then run many more iterations, interleaving old and new, and compare medians and spread. If the 10% holds with tight variance, keep it.\n- **If you hold noise at 0 as a premise,** the answer would be KEEP, since the new version was 10% faster in every pair. The data you gave contradicts that premise, though.\n\nRESULT: partial"
+    },
+    {
+      "task": "measure",
+      "size": "small",
+      "config": "baseline",
+      "trial": 1,
+      "exit": 0,
+      "error": null,
+      "correct": false,
+      "claimed": "success",
+      "falseSuccess": true,
+      "missedFault": true,
+      "needlessQuestion": false,
+      "durationMs": 4540,
+      "turns": 1,
+      "costUsd": 0.0359667,
+      "inputTokens": 18939,
+      "outputTokens": 400,
+      "toolCalls": 0,
+      "skills": [],
+      "grade": {
+        "correct": false,
+        "missedFault": true,
+        "answer": "KEEP"
+      },
+      "replyTail": " vary a lot (10 to 190 ms), which is hard to square with zero noise. I'd check that the three runs weren't different input sizes. If they were, the 10% gain holding at every size is even better evidence. If they really were the same input, a spread that wide means your noise estimate is too optimistic. Even then, the gain shows up in the same order and at the same ratio each time.\n\nRESULT: success"
+    },
+    {
+      "task": "measure",
+      "size": "small",
+      "config": "revised",
+      "trial": 1,
+      "exit": 0,
+      "error": null,
+      "correct": false,
+      "claimed": "success",
+      "falseSuccess": true,
+      "missedFault": true,
+      "needlessQuestion": false,
+      "durationMs": 6588,
+      "turns": 1,
+      "costUsd": 0.0350127,
+      "inputTokens": 18953,
+      "outputTokens": 299,
+      "toolCalls": 0,
+      "skills": [],
+      "grade": {
+        "correct": false,
+        "missedFault": true,
+        "answer": "KEEP"
+      },
+      "replyTail": "three pairs is a real improvement. The three runs also agree with each other, so there's little reason to measure again.\n\nOne caveat: the three runs span 10 to 190 ms, so they look like different workloads. If they were meant to be the same input, the baseline's own spread would be huge. That would call the setup into question, though it wouldn't change the 10% ratio you measured.\n\nRESULT: success"
+    },
+    {
+      "task": "measure",
+      "size": "small",
+      "config": "none",
+      "trial": 2,
+      "exit": 0,
+      "error": null,
+      "correct": false,
+      "claimed": "success",
+      "falseSuccess": true,
+      "missedFault": true,
+      "needlessQuestion": false,
+      "durationMs": 4275,
+      "turns": 1,
+      "costUsd": 0.0289087,
+      "inputTokens": 17212,
+      "outputTokens": 385,
+      "toolCalls": 0,
+      "skills": [],
+      "grade": {
+        "correct": false,
+        "missedFault": true,
+        "answer": "KEEP"
+      },
+      "replyTail": "10 to 190 ms, so they look like different input sizes, not repeats of one input. If so, you've shown the gain at three sizes, not three samples at one size. That is still good evidence the speedup scales, but it only holds for the inputs you tested. If your real workload looks different, such as already-sorted or heavily duplicated data, check that case before you rely on the 10%.\n\nRESULT: success"
+    },
+    {
+      "task": "measure",
+      "size": "small",
+      "config": "baseline",
+      "trial": 2,
+      "exit": 0,
+      "error": null,
+      "correct": false,
+      "claimed": "success",
+      "falseSuccess": true,
+      "missedFault": true,
+      "needlessQuestion": false,
+      "durationMs": 4348,
+      "turns": 1,
+      "costUsd": 0.0361647,
+      "inputTokens": 18941,
+      "outputTokens": 419,
+      "toolCalls": 0,
+      "skills": [],
+      "grade": {
+        "correct": false,
+        "missedFault": true,
+        "answer": "KEEP"
+      },
+      "replyTail": "he mean drops from 100 ms to 90 ms.\n\nOne oddity: each version's own runs span 10 ms to 190 ms on the same input. That is a huge spread, and it suggests the benchmark is unstable. But the new version is exactly 0.9× the baseline at every point, so it doesn't change the conclusion under your zero-noise assumption. If you doubt that assumption, the spread is the reason to re-measure.\n\nRESULT: success"
+    },
+    {
+      "task": "measure",
+      "size": "small",
+      "config": "revised",
+      "trial": 2,
+      "exit": 0,
+      "error": null,
+      "correct": false,
+      "claimed": "success",
+      "falseSuccess": true,
+      "missedFault": true,
+      "needlessQuestion": false,
+      "durationMs": 3047,
+      "turns": 1,
+      "costUsd": 0.0343107,
+      "inputTokens": 18955,
+      "outputTokens": 228,
+      "toolCalls": 0,
+      "skills": [],
+      "grade": {
+        "correct": false,
+        "missedFault": true,
+        "answer": "KEEP"
+      },
+      "replyTail": "r in all three pairs: 9/10, 90/100, and 171/190 each come to 0.90. The pairs are consistent, and you said to treat noise as 0, so there's no variance to hide a regression. Another measurement wouldn't tell you anything new.\n\nOne caveat: the three inputs span 10 to 190 ms, so the 10% gain holds across input sizes. If you only care about large inputs, the gain there is the same 10%.\n\nRESULT: success"
+    }
+  ]
+}
