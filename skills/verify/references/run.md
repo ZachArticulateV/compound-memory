@@ -18,8 +18,9 @@ Prove a change works in the running app and keep the evidence.
    belongs to this run (a process you started, on a port you chose). When two
    apps could answer on one port (a dev server and Storybook), check which one
    did. Record what you matched.
-4. **Start or continue the run record** when the result goes on to review or
-   ship:
+4. **Record into the run** when the result goes on to review or ship. Inside
+   a larger run (autopilot names its run id), add to that one with
+   `--run <id>`. Start a record only when this work has none:
 
    ```bash
    node "${CLAUDE_SKILL_DIR}/../../scripts/run-record.mjs" start --task "verify <change>" --skill verify --env app=<url>,build=<id>

@@ -38,7 +38,7 @@ report when there is no PR):
 ## Resuming
 
 When a run stops partway, the files say where it got to: the run record
-(`run-record.mjs gate --run latest` lists what passed, what is stale, the open
+(`run-record.mjs gate --run <id>`, or `--run latest` when the id is lost, lists what passed, what is stale, the open
 items, and the next action), the plan, the tickets' status lines, the commits,
 and the PR (`pr-state.mjs`). A new run picks up at the first stage whose gate
 is not yet met, and re-runs a passed check only when `gate` says it is stale.

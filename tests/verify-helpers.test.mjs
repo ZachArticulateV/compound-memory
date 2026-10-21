@@ -51,7 +51,7 @@ test('a helper without Playwright exits 3, not checked, with the install command
   const env = { ...process.env }
   delete env.NODE_PATH
   for (const name of ['layout-check.mjs', 'console-check.mjs']) {
-    const res = run(name, [join(root, 'clean.html'), '--out', join(root, 'out')], root, env)
+    const res = run(name, [join(root, 'clean.html'), '--out', join(root, '.verify', 'out')], root, env)
     if (res.status === 0 || res.status === 1) t.skip('Playwright resolves without NODE_PATH here, so the missing case cannot be staged')
     assert.equal(res.status, 3, res.stdout + res.stderr)
     assert.match(res.stdout, /NOT CHECKED: .*npm i -D playwright/)
@@ -60,43 +60,49 @@ test('a helper without Playwright exits 3, not checked, with the install command
 
 test('layout: a control clipped by its container fails, with a screenshot and a report', browser(), (t) => {
   const root = pages(t)
-  const res = run('layout-check.mjs', [join(root, 'clipped.html'), '--widths', '375', '--out', join(root, 'out')], root)
+  const res = run('layout-check.mjs', [join(root, 'clipped.html'), '--widths', '375', '--out', join(root, '.verify', 'out')], root)
   assert.equal(res.status, 1, res.stdout + res.stderr)
   assert.match(res.stdout, /cut off by its container <form>/)
-  assert.ok(existsSync(join(root, 'out', 'layout-375.png')))
-  assert.equal(JSON.parse(readFileSync(join(root, 'out', 'layout.json'), 'utf8')).passed, false)
+  assert.ok(existsSync(join(root, '.verify', 'out', 'layout-375.png')))
+  assert.equal(JSON.parse(readFileSync(join(root, '.verify', 'out', 'layout.json'), 'utf8')).passed, false)
 })
 
 test('layout: a wide table inside a scroll area passes', browser(), (t) => {
   // The earlier snippet reported "Delete row" as cut off and past the viewport.
   const root = pages(t)
-  const res = run('layout-check.mjs', [join(root, 'scroll.html'), '--widths', '375', '--out', join(root, 'out')], root)
+  const res = run('layout-check.mjs', [join(root, 'scroll.html'), '--widths', '375', '--out', join(root, '.verify', 'out')], root)
   assert.equal(res.status, 0, res.stdout + res.stderr)
+})
+
+test('a helper refuses to write evidence outside .verify/', browser(), (t) => {
+  const root = pages(t)
+  const res = run('layout-check.mjs', [join(root, 'clean.html'), '--widths', '375', '--out', join(root, '..', 'escaped')], root)
+  assert.equal(res.status, 2, res.stdout + res.stderr)
 })
 
 test('layout: a clean form passes at every default width', browser(), (t) => {
   const root = pages(t)
-  const res = run('layout-check.mjs', [join(root, 'clean.html'), '--out', join(root, 'out')], root)
+  const res = run('layout-check.mjs', [join(root, 'clean.html'), '--out', join(root, '.verify', 'out')], root)
   assert.equal(res.status, 0, res.stdout + res.stderr)
-  for (const w of [375, 768, 1280]) assert.ok(existsSync(join(root, 'out', `layout-${w}.png`)))
+  for (const w of [375, 768, 1280]) assert.ok(existsSync(join(root, '.verify', 'out', `layout-${w}.png`)))
 })
 
 test('console: a page load alone passes but says no journey was driven', browser(), (t) => {
   const root = pages(t)
-  const res = run('console-check.mjs', [join(root, 'console.html'), '--out', join(root, 'out')], root)
+  const res = run('console-check.mjs', [join(root, 'console.html'), '--out', join(root, '.verify', 'out')], root)
   assert.equal(res.status, 0, res.stdout + res.stderr)
   assert.match(res.stdout, /page load only; no journey was driven/)
-  assert.equal(JSON.parse(readFileSync(join(root, 'out', 'console.json'), 'utf8')).journeyDriven, false)
+  assert.equal(JSON.parse(readFileSync(join(root, '.verify', 'out', 'console.json'), 'utf8')).journeyDriven, false)
 })
 
 test('console: the journey drives the page and its console error fails the check, with evidence', browser(), (t) => {
   const root = pages(t)
-  const res = run('console-check.mjs', [join(root, 'console.html'), '--journey', join(root, 'journey.mjs'), '--out', join(root, 'out')], root)
+  const res = run('console-check.mjs', [join(root, 'console.html'), '--journey', join(root, 'journey.mjs'), '--out', join(root, '.verify', 'out')], root)
   assert.equal(res.status, 1, res.stdout + res.stderr)
   assert.match(res.stdout, /save failed: 500/)
-  const report = JSON.parse(readFileSync(join(root, 'out', 'console.json'), 'utf8'))
+  const report = JSON.parse(readFileSync(join(root, '.verify', 'out', 'console.json'), 'utf8'))
   assert.equal(report.journeyDriven, true)
-  assert.ok(existsSync(join(root, 'out', 'console-final.png')))
-  const allowed = run('console-check.mjs', [join(root, 'console.html'), '--journey', join(root, 'journey.mjs'), '--allow', 'save failed', '--out', join(root, 'out2')], root)
+  assert.ok(existsSync(join(root, '.verify', 'out', 'console-final.png')))
+  const allowed = run('console-check.mjs', [join(root, 'console.html'), '--journey', join(root, 'journey.mjs'), '--allow', 'save failed', '--out', join(root, '.verify', 'out2')], root)
   assert.equal(allowed.status, 0, allowed.stdout)
 })

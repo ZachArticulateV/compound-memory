@@ -47,8 +47,13 @@ required check passed on the code and environment as they are now with its
 output still on disk; a later edit makes a passed check stale. An optional
 check that could not run is listed as unchecked and does not block. A failed
 required check blocks any success claim, and three failures of one check mean
-stop and report. Lasting facts from a run go to memory through their owners;
-the record itself stays in `.verify/`.
+stop and report. A check named in `--require` stays required however it is
+recorded, and an optional check that ran and failed blocks like any other.
+`gate` takes an explicit `--run <id>` (or `--run latest` on purpose), and a
+stage inside a larger run records into that run instead of starting its own.
+The fingerprint covers tracked and new files; files Git ignores (`.env`) are
+not in it, so name what matters there in `--env`. Lasting facts from a run go
+to memory through their owners; the record itself stays in `.verify/`.
 
 ## Plan
 

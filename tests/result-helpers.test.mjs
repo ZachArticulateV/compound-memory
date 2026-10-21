@@ -6,17 +6,18 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
-import { readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, rmSync, statSync, utimesSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 
 import { cleanupAfter, commitAll, git, gitAvailable, initRepo, makeTempRoot, writeTree } from './fixtures/build.mjs'
 import { addCheck, addNote, gateRun, latestRunId, readRecord, startRun } from '../scripts/run-record.mjs'
-import { codeFingerprint } from '../scripts/lib/changes.mjs'
+import { codeFingerprint, stagedSnapshot } from '../scripts/lib/changes.mjs'
 import { reviewScope, checkStaged } from '../scripts/changes.mjs'
 import { classifyCheck, prState } from '../scripts/pr-state.mjs'
 import { checkPlan } from '../scripts/plan-check.mjs'
 import { compareRewrite } from '../scripts/rewrite-check.mjs'
+import { checkFindings } from '../scripts/findings-check.mjs'
 import { lessonDrift, lessonsWithDrift } from '../scripts/lessons.mjs'
 import { parseLesson } from '../scripts/lib/lessons.mjs'
 
@@ -125,6 +126,29 @@ test('run record: a new untracked file changes the fingerprint; output under .ve
   assert.notEqual(codeFingerprint(root).fingerprint, before)
 })
 
+test('run record: a same-size edit in the same second as the commit is still seen a second later', async (t) => {
+  // Git trusts a file's stat data only when the file is older than the index.
+  // A copied index stamped "now" made this edit invisible, so a stale check
+  // read as passed. The copy now keeps the original index's times.
+  const root = repo(t)
+  const before = codeFingerprint(root).fingerprint
+  const index = join(root, '.git', 'index')
+  writeFileSync(join(root, 'lib', 'a.mjs'), 'export const a = 9\n')
+  const { mtime } = statSync(index)
+  utimesSync(join(root, 'lib', 'a.mjs'), mtime, mtime)
+  await new Promise((r) => setTimeout(r, 1100))
+  assert.notEqual(codeFingerprint(root).fingerprint, before)
+})
+
+test('run record: committing unchanged work does not make its checks stale', (t) => {
+  const root = repo(t)
+  writeTree(root, { 'lib/a.mjs': 'export const a = 2\n' })
+  const { record } = startRun(root, { task: 't', require: ['tests'] })
+  addCheck(root, record, { name: 'tests', exit: 0, output: saved(root, record, 'tests') })
+  commitAll(root, 'the same work, committed')
+  assert.equal(gateRun(root, record).verdict, 'passed')
+})
+
 test('run record: works outside Git by hashing the files', (t) => {
   const root = makeTempRoot()
   cleanupAfter(t, root)
@@ -147,7 +171,8 @@ test('run record: the CLI refuses a result without saved output, and exits by th
   assert.equal(node([script('run-record.mjs'), 'add', '--run', 'latest', '--check', 'tests', '--exit', '0', '--output', '.verify/evidence/r1/tests.log', '--cwd', root], root).status, 0)
   assert.equal(node([script('run-record.mjs'), 'gate', '--run', 'r1', '--cwd', root], root).status, 0)
   writeTree(root, { 'lib/a.mjs': 'changed\n' })
-  const stale = node([script('run-record.mjs'), 'gate', '--cwd', root], root)
+  const stale = node([script('run-record.mjs'), 'gate', '--run', 'latest', '--cwd', root], root)
+  assert.equal(node([script('run-record.mjs'), 'gate', '--cwd', root], root).status, 2, 'gate names its run')
   assert.equal(stale.status, 1)
   assert.match(stale.stdout, /Do not report success/)
   assert.equal(node([script('run-record.mjs'), 'start', '--task', 'x', '--run', '../escape', '--cwd', root], root).status, 2)
@@ -372,4 +397,132 @@ test('lesson drift: a path that no longer exists is reported, and an uncommitted
   assert.deepEqual(lessonDrift(root, parsed).missing, ['app/gone/'])
   const fresh = parseLesson('memory/lessons/new.md', lesson('[app/]'))
   assert.equal(lessonDrift(root, fresh).checked, false)
+})
+
+// ---------------------------------------------------------------------------
+// Regressions from the independent review of this work (2026-10-21). Each
+// input is the one the reviewer used to make the earlier code give a wrong
+// answer.
+// ---------------------------------------------------------------------------
+
+test('review 1: a stage cannot silently gate a different run, or restart an existing one', (t) => {
+  const root = repo(t)
+  assert.equal(node([script('run-record.mjs'), 'start', '--task', 'autopilot', '--run', 'auto', '--require', 'tests,verify', '--cwd', root], root).status, 0)
+  assert.equal(node([script('run-record.mjs'), 'start', '--task', 'verify', '--run', 'auto', '--cwd', root], root).status, 2, 'restarting the run would drop its required checks')
+  writeTree(root, { '.verify/evidence/auto/v.log': 'ok\n' })
+  node([script('run-record.mjs'), 'add', '--run', 'auto', '--check', 'verify', '--exit', '0', '--output', '.verify/evidence/auto/v.log', '--cwd', root], root)
+  assert.equal(node([script('run-record.mjs'), 'gate', '--run', 'auto', '--cwd', root], root).status, 1, 'tests never ran')
+  assert.equal(node([script('run-record.mjs'), 'gate', '--cwd', root], root).status, 2, 'no implicit run')
+})
+
+test('review 2: a required check recorded as optional, an optional failure, and nothing passed all block', (t) => {
+  const root = repo(t)
+  const demoted = startRun(root, { task: 't', require: ['tests'] }).record
+  addCheck(root, demoted, { name: 'tests', status: 'unchecked', reason: 'skip', optional: true })
+  assert.equal(gateRun(root, demoted).mayClaimSuccess, false)
+
+  const onlyOptional = startRun(root, { task: 't2', runId: 'only-optional' }).record
+  addCheck(root, onlyOptional, { name: 'browser', status: 'unchecked', reason: 'no Playwright', optional: true })
+  assert.equal(gateRun(root, onlyOptional).verdict, 'incomplete')
+
+  const optionalFail = startRun(root, { task: 't3', runId: 'optional-fail' }).record
+  addCheck(root, optionalFail, { name: 'tests', exit: 0, output: saved(root, optionalFail, 'tests') })
+  addCheck(root, optionalFail, { name: 'layout', exit: 1, optional: true, output: saved(root, optionalFail, 'layout', 'clipped\n') })
+  assert.equal(gateRun(root, optionalFail).verdict, 'failed')
+})
+
+test('review 3: work staged before the snapshot with no changed lines is still caught', (t) => {
+  const root = repo(t, { 'src/logo.png': Buffer.from([0, 1, 2, 3]).toString('latin1'), 'src/old.js': 'x\n', 'src/app.js': 'a\n' })
+  writeFileSync(join(root, 'src', 'logo.png'), Buffer.from([0, 9, 9, 9]))
+  git(root, ['add', 'src/logo.png'])
+  git(root, ['mv', 'src/old.js', 'src/moved.js'])
+  writeTree(root, { 'src/empty.txt': '' })
+  git(root, ['add', 'src/empty.txt'])
+  const before = JSON.parse(JSON.stringify(stagedSnapshot(root)))
+  writeTree(root, { 'src/app.js': 'mine\n' })
+  git(root, ['add', 'src/app.js'])
+  const res = checkStaged(root, { intended: ['src'], baseline: before })
+  assert.deepEqual(res.problems.filter((p) => p.id === 'staged-before').map((p) => p.file).sort(), ['src/empty.txt', 'src/logo.png', 'src/moved.js', 'src/old.js'])
+})
+
+test('review 4: changes.mjs refuses to write outside .verify/', (t) => {
+  const root = repo(t)
+  writeTree(root, { 'lib/a.mjs': 'changed\n' })
+  const outside = `outside-${process.pid}-${Date.now()}`
+  t.after(() => rmSync(join(root, '..', `${outside}.patch`), { force: true }))
+  for (const args of [['review', '--write', `../${outside}.patch`], ['review', '--write', join(root, 'lib', 'x.patch')], ['snapshot', '--out', `../${outside}.json`]]) {
+    const res = node([script('changes.mjs'), ...args, '--cwd', root], root)
+    assert.equal(res.status, 2, `${args.join(' ')}: ${res.stdout}${res.stderr}`)
+  }
+  assert.equal(existsSync(join(root, '..', `${outside}.patch`)), false)
+  assert.equal(existsSync(join(root, '..', `${outside}.json`)), false)
+  assert.equal(existsSync(join(root, 'lib', 'x.patch')), false)
+})
+
+test('review 7: a common line in the agent\'s own hunk is not mistaken for the user\'s', (t) => {
+  const root = repo(t, { 'f.js': 'function a() {\n}\n' })
+  writeTree(root, { 'f.js': 'function a() {\n}\nfunction b() {\n}\n' })
+  git(root, ['add', 'f.js'])
+  const before = stagedSnapshot(root)
+  // The agent sets the user's change aside and stages its own instead.
+  git(root, ['reset', '-q', '--', 'f.js'])
+  writeTree(root, { 'f.js': 'function c() {\n}\nfunction a() {\n}\n' })
+  git(root, ['add', 'f.js'])
+  const res = checkStaged(root, { intended: ['f.js'], baseline: before })
+  assert.equal(res.ok, true, JSON.stringify(res.problems))
+})
+
+test('review 8: a diff prefix setting in the user\'s config does not blind the staged check', (t) => {
+  const lines = Array.from({ length: 20 }, (_, i) => `line ${i + 1}`)
+  const root = repo(t, { 'a.txt': `${lines.join('\n')}\n` })
+  git(root, ['config', 'diff.noprefix', 'true'])
+  git(root, ['config', 'diff.mnemonicPrefix', 'true'])
+  lines[0] = 'user'
+  writeTree(root, { 'a.txt': `${lines.join('\n')}\n` })
+  git(root, ['add', 'a.txt'])
+  const before = stagedSnapshot(root)
+  lines[19] = 'agent'
+  writeTree(root, { 'a.txt': `${lines.join('\n')}\n` })
+  git(root, ['add', 'a.txt'])
+  const res = checkStaged(root, { intended: ['a.txt'], baseline: before })
+  assert.deepEqual(res.problems.map((p) => p.id), ['staged-before'])
+})
+
+test('review 9: duplicate findings that disagree on the verdict are not safe to fix', (t) => {
+  const root = makeTempRoot()
+  cleanupAfter(t, root)
+  writeTree(root, { 'q.mjs': 'export const retry = (job) => job()\n' })
+  const f = { lens: 'correctness', severity: 'P1', confidence: 100, file: 'q.mjs', line: 1, quote: 'job()', title: 'Retry runs twice' }
+  for (const pair of [['confirmed', 'unresolved'], ['unresolved', 'confirmed'], ['confirmed', 'disproved'], ['confirmed', undefined]]) {
+    const r = checkFindings(root, { findings: pair.map((verdict) => ({ ...f, verdict })) }, { final: true })
+    assert.equal(r.counts.fixable, 0, `${pair} was listed as safe to fix`)
+  }
+  assert.equal(checkFindings(root, { findings: [{ ...f, verdict: 'confirmed' }, { ...f, verdict: 'confirmed' }] }, { final: true }).counts.fixable, 1)
+})
+
+test('review 10a: a directory ending in " b" keeps its path', (t) => {
+  const root = repo(t)
+  writeTree(root, { 'dir b/c.txt': 'x\n' })
+  git(root, ['add', 'dir b/c.txt'])
+  assert.equal(checkStaged(root, { intended: ['dir b'] }).ok, true)
+})
+
+test('review 10c: plan-check accepts numbered requirements, a Verify on the next line, and the word TODO in prose', () => {
+  const plan = PLAN
+    .replace('- R1. A case manager', '1. R1. A case manager')
+    .replace('- R2. Marking', '2. R2. Marking')
+    .replace('### U1. Query due reviews\n- **Verify:** `npm test -- due`', '### U1. Query due reviews\nReplace the TODO stub in the query.\n- **Verify:**\n  `npm test -- due`')
+  assert.deepEqual(checkPlan(plan).problems, [])
+})
+
+test('pr-state: a re-run check counts by its newest run, and a partial thread page is not ready', () => {
+  const rerun = [
+    { name: 'test', status: 'COMPLETED', conclusion: 'FAILURE', completedAt: '2026-10-21T10:00:00Z' },
+    { name: 'test', status: 'COMPLETED', conclusion: 'SUCCESS', completedAt: '2026-10-21T10:05:00Z' },
+  ]
+  assert.equal(prState(pr({ statusCheckRollup: rerun })).checksPassed, true)
+  const undated = rerun.map(({ completedAt, ...c }) => c)
+  assert.equal(prState(pr({ statusCheckRollup: undated })).checksPassed, false, 'without times, the failure is not hidden')
+  const partial = { data: { repository: { pullRequest: { reviewThreads: { nodes: [], pageInfo: { hasNextPage: true } } } } } }
+  assert.equal(prState(pr(), { threads: partial }).readyToMerge, false)
 })

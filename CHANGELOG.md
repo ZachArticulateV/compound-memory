@@ -26,6 +26,17 @@ All notable changes to this plugin are documented here. Format follows
 - `autopilot` re-runs the checks a review fix made stale, `verify` included.
 - `ship` reports PR created, checks passed (on the current head), and ready to
   merge as separate states; an explained red check stays red.
+- An independent review of this work found ten defects in the new helpers,
+  each fixed with a test that fails on the earlier code: `gate` could pass a
+  run whose required checks were recorded as optional or never run, or pick up
+  another stage's record; the staged check missed pre-staged binary files,
+  renames, deletions, and empty files, confused common lines, broke under
+  `diff.noprefix`, and misread paths with " b/" in them; `changes.mjs` and the
+  verify helpers could write outside `.verify/`; committing unchanged work made
+  every check stale (the fingerprint is now content-based); disagreeing
+  duplicate verdicts merged to "confirmed"; `plan-check` rejected numbered
+  requirements; `pr-state` counted a superseded run of a re-run check and
+  ignored a partial page of review threads.
 - The Codex auditor tier is no longer described as a different model
   architecture (Codex runs whatever model it is configured with), and host
   limits cite the hosts' sources.

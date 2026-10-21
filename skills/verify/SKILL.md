@@ -2,7 +2,7 @@
 name: verify
 description: "Prove software works the way a user experiences it: generate a project verification skill that launches and drives the real app, run it to capture evidence for a change, or keep its feature map current. Use when the user asks to verify a change, test it in the real app, prove something works, check a UI for clipped or broken layout, or set up repeatable verification."
 argument-hint: "[create|run|maintain] [feature, change, or URL]"
-allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/run-record.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/verify/layout-check.mjs" *)
+allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/run-record.mjs" *)
 ---
 
 # Verify

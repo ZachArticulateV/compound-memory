@@ -90,6 +90,11 @@ export async function main(argv = process.argv.slice(2)) {
   }
   const url = toUrl(positionals[0])
   const dir = evidenceDir(values.out, '.verify/evidence/layout')
+  if (dir === null) {
+    await browser.close()
+    process.stderr.write(`${'layout-check'}: the evidence directory must be under .verify/ in the working directory\n`)
+    return USAGE
+  }
   const report = { url, widths: [], passed: true }
   try {
     for (const width of widths) {

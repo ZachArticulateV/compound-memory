@@ -16,12 +16,13 @@
 // Every Git call goes through runGit (array argv, never throws). `.verify/` is
 // left out of every answer: it holds this plugin's own run output.
 
+import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { readdirSync, readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { copyFileSync, existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, utimesSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join, resolve } from 'node:path'
 
 import { runGit } from './git.mjs'
-import { isFile } from './fs-utils.mjs'
 
 export const SCRATCH_DIR = '.verify'
 /** Git's empty tree: the base for a repository with no commits. */
@@ -167,59 +168,89 @@ export function fullDiff(root, { base, paths = [], untracked = [] } = {}) {
   return { ok: true, patch: tracked.stdout + untracked.map((rel) => newFileDiff(root, rel)).join('') }
 }
 
+/** Flags every diff the scripts parse: fixed prefixes, whatever the user's diff config says. */
+const DIFF_FLAGS = ['--no-ext-diff', '--no-color', '--src-prefix=a/', '--dst-prefix=b/']
+
+/** `git diff --raw -z` records: path to { status, blob }. */
+export function parseRaw(text) {
+  const out = new Map()
+  const parts = text.split('\0')
+  for (let i = 0; i + 1 < parts.length; i += 2) {
+    const meta = parts[i].replace(/^\n/, '')
+    if (!meta.startsWith(':')) break
+    const [, , , dst, status] = meta.slice(1).split(' ')
+    out.set(parts[i + 1].split('\\').join('/'), { status: status[0], blob: dst })
+  }
+  return out
+}
+
 /**
- * Changed lines per file, as a multiset of "+text" / "-text" keys. Comparing
- * lines rather than hunks keeps the answer stable when a later edit merges
- * into a neighbouring hunk.
+ * Hunks of a zero-context diff, keyed by their position in the old file and
+ * their changed lines. Both the snapshot and the later check diff the index
+ * against HEAD, so a hunk keeps its key while other hunks come and go, and a
+ * common line (`}`) in two different hunks is not mistaken for the same change.
  */
-export function changedLines(patch) {
-  const files = new Map()
+export function hunkKeys(patch) {
+  const keys = []
   let current = null
   for (const line of patch.split(/\r?\n/)) {
-    const header = /^diff --git a\/(.+?) b\/(.+)$/.exec(line)
-    if (header) {
-      current = header[2]
-      if (!files.has(current)) files.set(current, new Map())
+    const h = /^@@ -(\d+(?:,\d+)?) \+\d+(?:,\d+)? @@/.exec(line)
+    if (h) {
+      current = { at: h[1], body: [] }
+      keys.push(current)
       continue
     }
-    if (current === null || line.startsWith('+++') || line.startsWith('---')) continue
-    if ((line.startsWith('+') || line.startsWith('-')) && line.length > 0) {
-      const bag = files.get(current)
-      bag.set(line, (bag.get(line) ?? 0) + 1)
-    }
+    if (current !== null && (line.startsWith('+') || line.startsWith('-')) && !line.startsWith('+++') && !line.startsWith('---')) current.body.push(line)
   }
-  return files
+  return keys.map((k) => `${k.at}|${k.body.join('\n')}`)
 }
 
-/** Staged and unstaged changed lines, per file. */
+/**
+ * The index against HEAD, per path: status, staged blob, and hunks; plus the
+ * paths with unstaged changes and the untracked files. Paths come from
+ * NUL-separated output, so spaces and odd characters are safe.
+ */
 export function indexState(root, { paths = [] } = {}) {
   const head = headOf(root)
-  const staged = git(root, ['diff', '--cached', '--no-ext-diff', '--no-color', '-U0', ...(head === null ? [EMPTY_TREE] : []), '--', ...pathspec(paths)])
-  const unstaged = git(root, ['diff', '--no-ext-diff', '--no-color', '-U0', '--', ...pathspec(paths)])
+  const against = head === null ? [EMPTY_TREE] : []
+  const raw = git(root, ['diff', '--cached', '--raw', '--no-renames', '--no-abbrev', '-z', ...against, '--', ...pathspec(paths)])
+  const unstaged = git(root, ['diff', '--name-only', '--no-renames', '-z', '--', ...pathspec(paths)])
   const untracked = git(root, ['ls-files', '--others', '--exclude-standard', '-z', '--', ...pathspec(paths)])
-  if (!staged.ok || !unstaged.ok || !untracked.ok) return { ok: false, error: (staged.error ?? unstaged.error ?? untracked.error) || 'git failed' }
-  return { ok: true, staged: changedLines(staged.stdout), unstaged: changedLines(unstaged.stdout), untracked: nulList(untracked.stdout) }
+  if (!raw.ok || !unstaged.ok || !untracked.ok) return { ok: false, error: (raw.error ?? unstaged.error ?? untracked.error) || 'git failed' }
+  const staged = new Map()
+  for (const [path, entry] of parseRaw(raw.stdout)) {
+    const diff = git(root, ['diff', '--cached', ...DIFF_FLAGS, '-U0', ...against, '--', path])
+    staged.set(path, { ...entry, hunks: diff.ok ? hunkKeys(diff.stdout) : [] })
+  }
+  return { ok: true, staged, unstaged: new Set(nulList(unstaged.stdout)), untracked: nulList(untracked.stdout) }
 }
-
-const toObject = (files) => Object.fromEntries([...files].map(([f, bag]) => [f, Object.fromEntries(bag)]))
-export const fromObject = (obj) => new Map(Object.entries(obj ?? {}).map(([f, bag]) => [f, new Map(Object.entries(bag))]))
 
 /** What is staged right now, in a form that can be saved and compared later. */
 export function stagedSnapshot(root) {
   const state = indexState(root)
   if (!state.ok) return state
-  return { ok: true, head: headOf(root), staged: toObject(state.staged) }
+  return { ok: true, head: headOf(root), staged: Object.fromEntries(state.staged) }
 }
 
-/** Lines staged before the work began that are still staged now. */
+export const fromObject = (obj) => new Map(Object.entries(obj ?? {}))
+
+/**
+ * Work staged before the snapshot that is still staged now: a path whose
+ * staged blob is exactly as it was (this covers binary files, deletions,
+ * renames, and empty files, which have no changed lines), or a hunk that is
+ * still in the index at the same place.
+ */
 export function stillStaged(before, now) {
   const out = []
-  for (const [file, bag] of before) {
-    const current = now.get(file)
-    if (!current) continue
-    let count = 0
-    for (const [key, n] of bag) count += Math.min(n, current.get(key) ?? 0)
-    if (count > 0) out.push({ file, lines: count })
+  for (const [file, was] of before) {
+    const cur = now.get(file)
+    if (!cur) continue
+    if (cur.status === was.status && cur.blob === was.blob) {
+      out.push({ file, whole: true })
+      continue
+    }
+    const kept = (was.hunks ?? []).filter((k) => cur.hunks.includes(k)).length
+    if (kept > 0) out.push({ file, whole: false, hunks: kept })
   }
   return out
 }
@@ -246,10 +277,56 @@ function walk(root, rel = '', out = []) {
   return out
 }
 
+/** Run git with extra environment (a temporary index); never throws. */
+function gitWith(root, args, env) {
+  try {
+    const stdout = execFileSync('git', ['-c', 'core.quotepath=false', ...args], {
+      cwd: root, encoding: 'utf8', env: { ...process.env, ...env }, stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 64 * 1024 * 1024, windowsHide: true, timeout: 60_000,
+    })
+    return { ok: true, stdout }
+  } catch (err) {
+    return { ok: false, error: err.message }
+  }
+}
+
 /**
- * The version of the code a check ran against: HEAD plus every uncommitted
- * change (staged, unstaged, and new files) under the given paths. Two runs
- * with the same fingerprint saw the same files.
+ * The tree the working files would make if every change were committed: the
+ * real index copied to a temporary one, every change under the paths added to
+ * it, and the tree written. The real index is never touched. Content decides
+ * the answer, so committing unchanged files does not change it.
+ */
+export function workingTree(root, { paths = [] } = {}) {
+  const dir = mkdtempSync(join(tmpdir(), 'cm-index-'))
+  const env = { GIT_INDEX_FILE: join(dir, 'index') }
+  try {
+    const where = git(root, ['rev-parse', '--git-path', 'index'])
+    const realIndex = where.ok ? resolve(root, where.stdout.trim()) : null
+    if (realIndex !== null && existsSync(realIndex)) {
+      copyFileSync(realIndex, env.GIT_INDEX_FILE)
+      // Git trusts a file's stat data only when the file is older than the
+      // index. A copy stamped "now" would make an edit made in the same
+      // second as the last index write look unchanged, so the copy keeps the
+      // original's times.
+      const st = statSync(realIndex)
+      utimesSync(env.GIT_INDEX_FILE, st.atime, st.mtime)
+    }
+    // `git add` refuses a pathspec that names an ignored path, so the
+    // `.verify/` exclusion is passed only when Git does not already ignore it.
+    const spec = scratchIgnored(root) ? pathspec(paths).filter((p) => p !== EXCLUDE_SCRATCH) : pathspec(paths)
+    const add = gitWith(root, ['add', '-A', '--', ...spec], env)
+    if (!add.ok) return { ok: false, error: add.error }
+    const tree = gitWith(root, ['write-tree'], env)
+    return tree.ok ? { ok: true, tree: tree.stdout.trim() } : { ok: false, error: tree.error }
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+}
+
+/**
+ * The version of the code a check ran against: the content of every tracked
+ * and new file under the given paths (staged, unstaged, or committed alike).
+ * Two runs with the same fingerprint saw the same files. Files Git ignores
+ * (`.env`, build output) are not part of it, and neither is `.verify/`.
  *
  * Without Git, the fingerprint hashes the files themselves.
  */
@@ -268,33 +345,18 @@ export function codeFingerprint(root, { paths = [] } = {}) {
     return { ok: true, git: false, head: null, branch: null, dirty: null, paths, fingerprint: hash.digest('hex').slice(0, 16) }
   }
   const head = headOf(root)
-  const spec = pathspec(paths)
-  const diff = git(root, ['diff', '--no-ext-diff', '--no-color', '--binary', head ?? EMPTY_TREE, '--', ...spec])
-  const untracked = git(root, ['ls-files', '--others', '--exclude-standard', '-z', '--', ...spec])
-  if (!diff.ok || !untracked.ok) return { ok: false, error: diff.error ?? untracked.error ?? 'git failed' }
-  // With no paths, HEAD pins the committed code. With paths, a commit outside
-  // them must not count as a change, so the scoped tree stands in for HEAD.
-  if (paths.length === 0 || head === null) hash.update(`${head ?? 'no-commits'}\0`)
-  else {
-    const tree = git(root, ['ls-tree', '-r', head, '--', ...paths])
-    hash.update(tree.ok ? tree.stdout : '')
+  const work = workingTree(root, { paths })
+  if (!work.ok) return { ok: false, error: work.error }
+  const scoped = (tree) => {
+    if (tree === null) return ''
+    if (paths.length === 0) return tree
+    const res = git(root, ['ls-tree', '-r', tree, '--', ...paths])
+    return res.ok ? res.stdout : ''
   }
-  hash.update(diff.stdout)
-  const newFiles = nulList(untracked.stdout).sort()
-  for (const f of newFiles) {
-    hash.update(`\0new:${f}\0`)
-    const abs = join(root, ...f.split('/'))
-    if (isFile(abs)) {
-      try {
-        hash.update(readFileSync(abs))
-      } catch {
-        /* unreadable: its name still counts */
-      }
-    }
-  }
-  const dirty = diff.stdout.trim() !== '' || newFiles.length > 0
-  const fingerprint = hash.digest('hex').slice(0, 16)
-  return { ok: true, git: true, head, branch: branchOf(root), dirty, paths, fingerprint }
+  const headTree = head === null ? null : git(root, ['rev-parse', `${head}^{tree}`]).stdout.trim()
+  const now = scoped(work.tree)
+  hash.update(now)
+  return { ok: true, git: true, head, branch: branchOf(root), dirty: now !== scoped(headTree), paths, fingerprint: hash.digest('hex').slice(0, 16) }
 }
 
 /** True when `.verify/` is ignored, so run output cannot be committed by accident. */
