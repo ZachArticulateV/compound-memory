@@ -116,12 +116,15 @@ whether to heed it. What their scripts establish, and nothing more:
   ran, lost its saved output, or ran on code or an environment that has since
   changed. It never runs the check: the exit code is the one the agent
   recorded, and the environment it compares is Node, the platform, and the
-  pairs the agent names. Re-running the recorded command is how to confirm a
-  result.
+  pairs the agent names. Files Git ignores (`.env`, local configuration) are
+  not part of the code fingerprint. Re-running the recorded command is how to
+  confirm a result.
 - `changes.mjs` lists every change in scope and, before a commit, the staged
   lines that were staged before the work began or fall outside the intended
-  paths. It compares changed lines, so a line the user and the agent both
-  staged with the same text counts once. It never stages or commits.
+  paths. It compares each file's staged blob and each hunk's position and
+  text against the snapshot, so a hunk the user and the agent staged
+  identically at the same place counts as the user's. It never stages or
+  commits.
 - `pr-state.mjs` classifies what GitHub reported at the moment it was fetched.
   It does not fetch, and it cannot see a required check GitHub has not yet
   created.

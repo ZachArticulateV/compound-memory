@@ -222,7 +222,8 @@ export function gateRun(root, record, { env = null, attemptLimit = ATTEMPT_LIMIT
     } else if (c.reason) why.push(c.reason)
     rows.push({
       name,
-      required: c.required,
+      // A check named at start stays required however it was recorded later.
+      required: c.required || record.required.includes(name),
       state,
       exit: c.exit,
       output: c.output?.path ?? null,
@@ -236,16 +237,16 @@ export function gateRun(root, record, { env = null, attemptLimit = ATTEMPT_LIMIT
     if (!latest.has(name)) rows.push({ name, required: true, state: 'not-run', exit: null, output: null, attempts: 0, failures: 0, overLimit: false, why: ['required at the start of the run and never recorded'] })
   }
 
-  const blocking = rows.filter((r) => r.required && r.state !== 'passed')
-  const verdict = rows.length === 0
-    ? 'incomplete'
-    : blocking.some((r) => r.state === 'failed')
-      ? 'failed'
-      : blocking.some((r) => r.state === 'stale')
-        ? 'stale'
-        : blocking.length > 0
-          ? 'incomplete'
-          : 'passed'
+  // Optional means "may be unable to run": an optional check that ran and
+  // failed still failed, and blocks like any other.
+  const blocking = rows.filter((r) => r.state !== 'passed' && (r.required || r.state === 'failed'))
+  const verdict = blocking.some((r) => r.state === 'failed')
+    ? 'failed'
+    : blocking.some((r) => r.state === 'stale')
+      ? 'stale'
+      : blocking.length > 0 || !rows.some((r) => r.state === 'passed')
+        ? 'incomplete'
+        : 'passed'
   return {
     schemaVersion: RECORD_SCHEMA_VERSION,
     runId: record.runId,
@@ -267,6 +268,7 @@ export function gateRun(root, record, { env = null, attemptLimit = ATTEMPT_LIMIT
 function renderGate(g) {
   const out = [`Run ${g.runId}: ${g.task}`, `Scope: ${g.scope}`, `Code now ${g.code.now}${g.code.dirty ? ' (uncommitted changes)' : ''}`, '']
   if (g.checks.length === 0) out.push('No checks recorded.')
+  else if (g.passed.length === 0) out.push('No check has passed.')
   for (const c of g.checks) {
     const tag = c.required ? '' : ' (optional)'
     out.push(`  ${c.state.toUpperCase().padEnd(14)} ${c.name}${tag}${c.output ? `  → ${c.output}` : ''}`)
@@ -290,6 +292,9 @@ const USAGE = `Usage:
   run-record.mjs add   --run <id|latest> --check <name> --status unchecked --reason "<why>" [--optional]
   run-record.mjs note  --run <id|latest> [--open "<item>"] [--resolve "<item>"] [--next "<action>"]
   run-record.mjs gate  --run <id|latest> [--env k=v,...] [--json]
+
+A stage inside a larger run (verify inside autopilot) records into that run
+with --run <id>; it starts its own record only when there is none.
   run-record.mjs show  --run <id|latest>
 
 Records live at ${EVIDENCE_DIR}/<run-id>/${RECORD_FILE}. Save each check's output in
@@ -342,6 +347,9 @@ export function main(argv = process.argv.slice(2)) {
   if (pairs.error) return fail(pairs.error)
 
   if (mode === 'start') {
+    if (values.run !== undefined && RUN_ID.test(values.run) && existsSync(join(runDir(absRoot, values.run), RECORD_FILE))) {
+      return fail(`run ${values.run} already exists: record into it with add --run ${values.run}`)
+    }
     const r = startRun(absRoot, {
       task: values.task, scope: values.scope ?? null, paths: list(values.paths), require: list(values.require),
       skill: values.skill ?? null, runId: values.run ?? null, env: pairs.pairs,
@@ -355,7 +363,10 @@ export function main(argv = process.argv.slice(2)) {
     return 0
   }
 
-  const id = values.run === 'latest' || values.run === undefined ? latestRunId(absRoot) : values.run
+  // Name the run, or say `latest` on purpose: a stage that silently picked up
+  // another stage's newer record could pass a gate it never had to meet.
+  if (values.run === undefined) return fail('--run <id> is required (or --run latest for the newest record)')
+  const id = values.run === 'latest' ? latestRunId(absRoot) : values.run
   if (id === null) return fail('no run record found; start one first')
   const read = readRecord(absRoot, id)
   if (read.error) return fail(read.error)

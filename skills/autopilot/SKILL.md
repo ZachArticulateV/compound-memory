@@ -54,8 +54,10 @@ Start a run record before the first stage and keep it to the end:
 node "${CLAUDE_SKILL_DIR}/../../scripts/run-record.mjs" start --task "<the request>" --skill autopilot --require <the checks this run must pass>
 ```
 
-Each stage records its checks there. It is how a resumed session finds where
-the run stopped, and how the end of the run knows what still holds.
+Pass its id to every stage, and have each stage record its checks there
+(`--run <id>`) rather than start its own: a stage's own record would not
+carry this run's required checks. It is how a resumed session finds where the
+run stopped, and how the end of the run knows what still holds.
 
 1. **Work source:** an implementation-ready plan (from `plan`), or a fixed
    defect (from `debug`). Large plans go through `plan tickets`.

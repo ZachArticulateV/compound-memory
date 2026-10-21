@@ -52,13 +52,32 @@ export function classifyCheck(c) {
   else if (conclusion) result = PASS.has(conclusion) ? 'passed' : FAIL.has(conclusion) ? 'failed' : 'pending'
   else result = 'pending'
   const sha = c.headSha ?? c.head_sha ?? c.commit?.oid ?? c.sha ?? null
-  return { name, result, sha, url: c.detailsUrl ?? c.targetUrl ?? c.html_url ?? null }
+  const at = c.completedAt ?? c.completed_at ?? c.startedAt ?? c.started_at ?? c.createdAt ?? null
+  return { name, result, sha, at, url: c.detailsUrl ?? c.targetUrl ?? c.html_url ?? null }
+}
+
+/**
+ * One result per check name: a re-run check appears twice in the rollup, and
+ * only its newest run counts. Without timestamps both are kept, so a failure
+ * is never hidden by guessing.
+ */
+export function latestPerName(checks) {
+  const byName = new Map()
+  for (const c of checks) {
+    const prev = byName.get(c.name)
+    if (prev === undefined) byName.set(c.name, [c])
+    else if (c.at && prev.every((p) => p.at)) byName.set(c.name, [prev[0].at >= c.at ? prev[0] : c])
+    else prev.push(c)
+  }
+  return [...byName.values()].flat()
 }
 
 function threadList(input) {
   if (input === null || input === undefined) return null
-  const nodes = Array.isArray(input) ? input : input?.data?.repository?.pullRequest?.reviewThreads?.nodes ?? input?.reviewThreads?.nodes ?? input?.nodes ?? null
-  return Array.isArray(nodes) ? nodes : null
+  const conn = input?.data?.repository?.pullRequest?.reviewThreads ?? input?.reviewThreads ?? input
+  const nodes = Array.isArray(input) ? input : conn?.nodes ?? null
+  if (!Array.isArray(nodes)) return null
+  return { nodes, partial: conn?.pageInfo?.hasNextPage === true }
 }
 
 export function prState(pr, { localHead = null, threads = null } = {}) {
@@ -78,7 +97,7 @@ export function prState(pr, { localHead = null, threads = null } = {}) {
   const raw = pr.statusCheckRollup ?? pr.checks ?? []
   const all = (Array.isArray(raw) ? raw : raw?.contexts?.nodes ?? []).map(classifyCheck)
   const forOther = all.filter((c) => c.sha !== null && head !== null && c.sha !== head)
-  const checks = all.filter((c) => !forOther.includes(c))
+  const checks = latestPerName(all.filter((c) => !forOther.includes(c)))
   if (forOther.length > 0) notes.push(`${forOther.length} check result(s) are for another commit and were ignored`)
 
   const failed = checks.filter((c) => c.result === 'failed')
@@ -106,12 +125,14 @@ export function prState(pr, { localHead = null, threads = null } = {}) {
   const review = up(pr.reviewDecision)
   if (review === 'CHANGES_REQUESTED') mergeBlockers.push('a reviewer requested changes')
   if (review === 'REVIEW_REQUIRED') mergeBlockers.push('a required review is missing')
-  const nodes = threadList(threads)
+  const list = threadList(threads)
+  const nodes = list?.nodes ?? null
   let unresolved = null
   if (nodes === null) notes.push('review threads not checked (pass --threads)')
   else {
     unresolved = nodes.filter((t) => t.isResolved !== true && t.resolved !== true).length
     if (unresolved > 0) mergeBlockers.push(`${unresolved} review thread(s) unresolved`)
+    if (list.partial) mergeBlockers.push('more review threads exist than were fetched (hasNextPage); fetch every page')
   }
 
   const checksPassed = stage === 'checks-passed'

@@ -21,10 +21,11 @@
 // 2026-10-21 audit and are pinned in tests/audit-regressions.test.mjs.
 //
 // It never stages, commits, or resets: the agent keeps the method. `snapshot`
-// writes only under `.verify/`; the other two are read-only.
+// and `review --write` write only under `.verify/` (any other path is
+// refused); `staged` is read-only.
 
 import { fileURLToPath } from 'node:url'
-import { dirname, isAbsolute, join, resolve } from 'node:path'
+import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 
 import {
@@ -33,11 +34,19 @@ import {
 } from './lib/changes.mjs'
 import { USAGE_EXIT_CODE, emit, parseCliArgs } from './lib/report.mjs'
 
-export const CHANGES_SCHEMA_VERSION = 1
+export const CHANGES_SCHEMA_VERSION = 2
 const DEFAULT_SNAPSHOT = `${SCRATCH_DIR}/staged-before.json`
 
 const list = (raw) => (raw ?? '').split(',').map((s) => s.trim()).filter(Boolean)
 const abs = (root, p) => (isAbsolute(p) ? p : join(root, ...p.split('/')))
+
+/** A path this script may write: inside the checkout's .verify/ and nowhere else. */
+export function scratchPath(root, p) {
+  const target = resolve(abs(root, p))
+  const rel = relative(resolve(root, SCRATCH_DIR), target)
+  if (rel === '' || rel.startsWith('..') || isAbsolute(rel) || rel.split(sep).includes('..')) return null
+  return target
+}
 
 /** The review scope: base, commits, and every changed file by where it lives. */
 export function reviewScope(root, { base = null, paths = [], write = null } = {}) {
@@ -67,9 +76,10 @@ export function reviewScope(root, { base = null, paths = [], write = null } = {}
     scratchIgnored: scratchIgnored(root),
   }
   if (write) {
+    const target = scratchPath(root, write)
+    if (target === null) return { error: `--write must name a file under ${SCRATCH_DIR}/, not ${write}` }
     const diff = fullDiff(root, { base: b.sha, paths, untracked: sets.untracked })
     if (!diff.ok) return { error: diff.error }
-    const target = abs(root, write)
     mkdirSync(dirname(target), { recursive: true })
     writeFileSync(target, diff.patch, 'utf8')
     result.patch = write.replace(/\\/g, '/')
@@ -91,19 +101,23 @@ export function checkStaged(root, { intended = [], baseline = null } = {}) {
   const outside = intended.length === 0 ? [] : staged.filter((f) => !intended.some((p) => underPath(p, f)))
   for (const file of outside) problems.push({ id: 'unintended-file', file, message: `${file} is staged but is not among the intended paths` })
 
-  let preStaged = []
   if (baseline !== null) {
-    preStaged = stillStaged(fromObject(baseline.staged), state.staged)
-    for (const { file, lines } of preStaged) {
-      problems.push({ id: 'staged-before', file, message: `${lines} line(s) in ${file} were staged before this work began and are still staged` })
+    for (const r of stillStaged(fromObject(baseline.staged), state.staged)) {
+      problems.push({
+        id: 'staged-before',
+        file: r.file,
+        message: r.whole
+          ? `${r.file} is staged exactly as it was before this work began`
+          : `${r.hunks} hunk(s) in ${r.file} were staged before this work began and are still staged`,
+      })
     }
   }
 
   const mixed = staged.filter((f) => state.unstaged.has(f))
   for (const file of mixed) {
-    notes.push({ id: 'partial-file', file, message: `${file} has staged and unstaged lines; only the staged lines go in this commit` })
+    notes.push({ id: 'partial-file', file, message: `${file} has staged and unstaged changes; only the staged ones go in this commit` })
   }
-  const pending = [...new Set([...state.unstaged.keys(), ...state.untracked])]
+  const pending = [...new Set([...state.unstaged, ...state.untracked])]
     .filter((f) => !state.staged.has(f) && intended.some((p) => underPath(p, f)))
   for (const file of pending) notes.push({ id: 'intended-not-staged', file, message: `${file} is under an intended path but nothing in it is staged` })
 
@@ -199,7 +213,11 @@ export function main(argv = process.argv.slice(2)) {
       return USAGE_EXIT_CODE
     }
     const target = values.out ?? DEFAULT_SNAPSHOT
-    const file = abs(absRoot, target)
+    const file = scratchPath(absRoot, target)
+    if (file === null) {
+      process.stderr.write(`changes: --out must name a file under ${SCRATCH_DIR}/, not ${target}\n`)
+      return USAGE_EXIT_CODE
+    }
     mkdirSync(dirname(file), { recursive: true })
     writeFileSync(file, `${JSON.stringify({ schemaVersion: CHANGES_SCHEMA_VERSION, ...snap }, null, 2)}\n`, 'utf8')
     const count = Object.keys(snap.staged).length
@@ -223,6 +241,10 @@ export function main(argv = process.argv.slice(2)) {
       baseline = JSON.parse(readFileSync(abs(absRoot, values.baseline), 'utf8'))
     } catch (err) {
       process.stderr.write(`changes: cannot read the baseline ${values.baseline}: ${err.message}\n`)
+      return USAGE_EXIT_CODE
+    }
+    if (baseline.schemaVersion !== CHANGES_SCHEMA_VERSION) {
+      process.stderr.write(`changes: ${values.baseline} was written by another version; take a new snapshot\n`)
       return USAGE_EXIT_CODE
     }
   }

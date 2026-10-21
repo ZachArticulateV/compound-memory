@@ -71,6 +71,11 @@ export async function main(argv = process.argv.slice(2)) {
   }
   const url = toUrl(positionals[0])
   const dir = evidenceDir(values.out, '.verify/evidence/console')
+  if (dir === null) {
+    await browser.close()
+    process.stderr.write(`${'console-check'}: the evidence directory must be under .verify/ in the working directory\n`)
+    return USAGE
+  }
   const problems = []
   const ignored = []
   const note = (text) => (allow && allow.test(text) ? ignored : problems).push(text)

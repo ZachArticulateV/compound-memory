@@ -172,10 +172,11 @@ export function mergeFindings(findings) {
       group.line = f.line
     }
     if (f.evidence === 'checked') group.evidence = 'checked'
-    // The most cautious verdict wins: one reader who could not settle it, or
-    // who confirmed it, outweighs one who disproved it.
-    const rank = { confirmed: 0, unresolved: 1, disproved: 2 }
-    if (f.verdict !== undefined && (group.verdict === undefined || rank[f.verdict] < rank[group.verdict])) group.verdict = f.verdict
+    // Readers who disagree have not settled it: any two different verdicts
+    // merge to unresolved, so neither "confirmed" nor "disproved" survives a
+    // dissent, and only a unanimous confirmation reaches the safe-to-fix list.
+    if (f.verdict !== undefined) group.verdict = group.verdict === undefined || group.verdict === f.verdict ? f.verdict : 'unresolved'
+    else if (group.verdict !== undefined) group.verdictMissing = true
   }
   // Reviewers on one model agreeing is one reading repeated. Only agreement
   // across different models, on a quote that checks out, raises confidence.
@@ -210,6 +211,8 @@ export function checkFindings(root, input, { final = false } = {}) {
   }
   const disproved = final ? passing.filter((f) => f.verdict === 'disproved') : []
   const kept = passing.filter((f) => !disproved.includes(f))
+  // A duplicate with no verdict means one reading was never challenged.
+  for (const f of kept) if (f.verdictMissing && f.verdict === 'confirmed') f.verdict = 'unresolved'
   const missingVerdict = final ? kept.filter((f) => CHALLENGED.includes(f.severity) && f.verdict === undefined) : []
   // Safe to fix: real code is quoted, and a serious finding survived the
   // attempt to disprove it.
