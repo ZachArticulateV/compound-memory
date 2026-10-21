@@ -44,7 +44,7 @@ making small tasks heavier, and test the plugin as a working system.
 - Codex: no credentials here; host facts were read from Codex source.
 - The verify helpers' browser tests skip on CI (no Playwright there); they ran
   here under Playwright 1.56.1, after the review fixes that confined their
-  evidence to `.verify/` and removed their pre-approval.
+  evidence to the ignored .verify directory and removed their pre-approval.
 
 ## Current problem
 
