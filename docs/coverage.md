@@ -38,7 +38,7 @@ Reviewed at `d1715e0` (2026-10-17).
 | --- | --- | --- |
 | `create-verification-skill` | `verify create` | Writes to `.claude/skills/` or `.agents/skills/`; requires synthetic data where personal or health data is possible |
 | `maintain-verification-skill` | `verify maintain` | Keeps the per-feature source wave, the required live pass, and the clean, changed, or blocked outcome |
-| `principle-prove-it-works` | `verify run` | Backed by scripted checks (clipped layout, console errors, component provenance) in `verify`'s `references/checks.md` |
+| `principle-prove-it-works` | `verify run` | Backed by shipped helpers (clipped layout, console errors during a journey) under `scripts/verify/`, and results kept in the run record |
 | `principle-prove-it-works` | `references/principles.md` | One principle, shared by every skill |
 | `correct` | `learn correct` | The guardrails table moves to `memory/guardrails.md`, read in review rather than loaded every session |
 | `principle-encode-lessons-in-structure` | `learn correct` | The procedure behind the principle |
@@ -66,17 +66,17 @@ Reviewed at `2e41b44` (v3.31.0, 2026-10-17).
 | `ce-compound-refresh` | `learn refresh` | Lookup skips stale and retired lessons, which upstream marks but still serves |
 | `ce-debug` | `debug` | Reads `memory/bugs-and-risks.md` and the lessons before investigating, which upstream skips |
 | `ce-pov` | `plan decide` | Keeps the two evidence floors and the frozen first position |
-| `ce-optimize` | `build optimize` | One-metric decision script with an explicit noise floor |
+| `ce-optimize` | `build optimize` | One-metric decision script; a supplied noise can raise the floor, never lower it below the samples' spread; a correctness gate per candidate |
 | `ce-prototype` | `prototype` | Merged with Matt's `prototype` |
-| `ce-commit` | `ship commit` | |
+| `ce-commit` | `ship commit` | A script checks the index for staged work the agent did not make, including other hunks of a file it changed |
 | `ce-commit-push-pr` | `ship pr` | Pushes to the branch's upstream remote instead of always `origin` |
-| `ce-babysit-pr` | `ship watch` | Three fix rounds by default; "flaky" must be measured |
+| `ce-babysit-pr` | `ship watch` | No persistent watcher; `pr-state.mjs` ties checks to the current head and separates checks passed from ready to merge; three fix rounds by default; "flaky" must be measured |
 | `ce-resolve-pr-feedback` | `ship feedback` | |
 | `lfg` | `autopilot` | Stages joined through files, each with a gate |
 | `ce-handoff` | `project-memory handoff` | Already covered, evidence-gated |
 | `ce-noslop` | `write plain` | |
 | `wtf` | `write plain` | |
-| `ce-test-browser` | `verify run` | |
+| `ce-test-browser` | `verify run` | Checks the instance's identity and version before driving, rather than trusting a port |
 | `ce-worktree` | `build work` | Worktrees for parallel workers |
 | `ce-explain` | not adopted | Explaining how code works is default model behavior; a skill for it would be a no-op |
 | `ce-ideate` | not adopted | Idea generation sits before this plugin's loop; `plan brainstorm` starts once there is an idea |
