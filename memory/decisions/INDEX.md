@@ -12,3 +12,4 @@
 | 008 | [Cleanup is an eighth mode, separate from audit](008-cleanup-as-a-mode.md) | accepted |
 | 009 | [The plugin ships engineering skills beside memory](009-engineering-skills.md) | accepted |
 | 010 | [The plugin is renamed compound-memory](010-rename-compound-memory.md) | accepted |
+| 011 | [Runs share one temporary result record, checked by code](011-run-record.md) | accepted |
