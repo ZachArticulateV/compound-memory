@@ -1,97 +1,63 @@
 # Active Handoff
 
-Updated: 2026-10-19
-Branch: claude/serene-faraday-shkcdn
-HEAD: b2419f6 (main, after pull request #5 merged)
-Working tree: the release-state record, made directly on top of HEAD
+Updated: 2026-10-21
+Branch: claude/busy-fermat-zzwb7r
+HEAD: see `git log -1` on the branch (audit hardening, after `6d2b5f8` on main)
+Working tree: committed and pushed
 Work type: code change
-Next session focus: the v2.0.0 tag and Codex
+Next session focus: open the pull request and get it reviewed
 
 ## Objective
 
-Grow the plugin from memory alone into memory plus engineering: eleven skills
-that do what the reviewed upstream skills do (Compound Engineering,
-mattpocock/skills, pstack), each usable alone or with the others, written to
-trust the model, with deterministic scripts for what must be exact.
+Act on the owner-supplied 2026-10-21 source audit: confirm each finding
+against this checkout, fix the confirmed faults with regression tests, add one
+shared result format the skills can trust, strengthen each skill without
+making small tasks heavier, and test the plugin as a working system.
 
 ## Completed
 
-- Eleven engineering skills under `skills/`, the shared
-  `references/artifacts.md` and `references/principles.md`, decision 009.
-- Four read-only scripts: `scripts/lessons.mjs`, `scripts/findings-check.mjs`,
-  `scripts/tickets-check.mjs`, `scripts/measure.mjs`, with
-  `tests/engineering-scripts.test.mjs`.
-- Lessons and guardrails in the memory schema, the `lesson-format` check, and
-  the hygiene exemption for lessons.
-- `docs/coverage.md`, two benchmark notes, README, architecture, limitations,
-  and quickstart updates; the first lesson in `memory/lessons/`.
-- A two-lens review of the branch (scripts; skill coherence) found 21 issues,
-  all fixed: 10 script bugs, each pinned by a regression test, and 11
-  instruction gaps (path lists, default-branch commits, the findings file's
-  location and checkout, the noise ratio, transcript redaction, artifact
-  readers, coverage wording).
-- The previous handoff (claude/kind-ride-kiczmp) is retired: pull request #2
-  merged it to main (`6d5d858`), recorded in `current-state.md`.
+- Work plan with every confirmed gap, fix, and check:
+  `docs/plans/2026-10-21-audit-hardening.md`.
+- Confirmed and fixed: review scope missed uncommitted work; commits could take
+  someone else's staged work; `--noise` could hide sample spread; unproved P0
+  findings were unlabelled; the verify snippets did not run as shipped and
+  flagged scroll areas; autopilot never re-verified after review fixes; ship
+  blurred PR created, checks passed, and ready to merge; the Codex tier was
+  called a different model; the 8,000-byte figure was called Codex's limit.
+- New scripts: `scripts/changes.mjs`, `scripts/run-record.mjs` (decision
+  011), `scripts/pr-state.mjs`, `scripts/plan-check.mjs`,
+  `scripts/rewrite-check.mjs`, the `scripts/verify/` helpers, and lesson drift
+  in `scripts/lessons.mjs`.
+- `evals/`: a repeatable agent-task comparison, run once (see
+  `acceptance-criteria.md`, Audit hardening).
 
 ## Verified
 
-- `node --test`: 654 passed, 0 failed, 15 skipped (669 tests), 2026-10-18.
-- The 11 regression tests fail on `277e8f2` and pass with the fixes.
-- `claude plugin validate . --strict` passed on the same tree.
-- The verify layout check ran under Playwright on two fixture pages and told
-  the clipped page from the clean one.
-- `scripts/tickets-check.mjs` caught its own bug in a test (an empty field
-  read the next line); fixed and recorded as a lesson.
-
-- Live headless runs of every engineering mode met their Done when lines, on
-  Node, Python, and web-form samples, and `ship watch` and `ship feedback` also
-  on a real scratch pull request (#4, closed unmerged). The runs drove four
-  fixes: autopilot's stage sizing, plan's readiness rule for "does not change"
-  claims, autopilot keeping its verify evidence, and autopilot branching and
-  keeping evidence out of Git on every route; each re-run and confirmed. Details:
-  `acceptance-criteria.md`.
+- See `current-state.md` for the suite count on this branch, strict plugin
+  validation, and the memory validator.
 
 ## Unverified
 
-- Codex.
+- Codex: no credentials here; host facts were read from Codex source.
+- The verify helpers' browser tests skip on CI (no Playwright there); they ran
+  here under Playwright 1.56.1.
 
 ## Current problem
 
-None blocking. Both live tiers pass what this machine can run; what remains
-is the owner pushing the `v2.0.0` tag (the marketplace rename is merged and
-installs by commit) and a Codex run on the owner's machine.
-
-## Evidence collected
-
-- Upstream reviews: `docs/benchmark/compound-engineering.md`,
-  `docs/benchmark/skill-candidates-2026-10.md`.
-
-## Unverified hypotheses
-
-- None open.
+None blocking.
 
 ## Pointers
 
-- `memory/decisions/009-engineering-skills.md`: why separate skills, and the
-  trust posture.
-- `references/artifacts.md`: the files the skills hand to each other.
-- `docs/coverage.md`: each upstream skill and where it lives here.
-- `CHANGELOG.md`, Unreleased: everything this branch adds.
+- `docs/plans/2026-10-21-audit-hardening.md`: units U1 to U10.
+- `references/artifacts.md`: the run record and the findings verdicts.
+- `evals/README.md`: how to re-run the agent comparison.
 
 ## Continue here
 
-1. Do the first Now item in `memory/next-actions.md`: `ship watch` and `ship
-   feedback` on a real pull request, and a Codex run.
-2. Pull request #3 is open with green CI and waits on the owner's review;
-   after it merges, rename the marketplace entry (`memory/next-actions.md`).
-
-## Suggested commands
-
-- `node scripts/lessons.mjs` to list this repository's lessons.
-- `/compound-memory:review code` on this branch once the plugin is installed
-  from it.
+1. Open the pull request from this branch and watch CI.
+2. Run `node evals/run.mjs --invoke` again after any skill wording change.
 
 ## Do not assume
 
-- That any engineering skill behaves as written: no live run yet.
-- That CI passes for this branch until a run is observed.
+- That a plain request triggers a plugin skill: in the 2026-10-21 eval no
+  plain-prompt run invoked one.

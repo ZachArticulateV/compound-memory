@@ -23,6 +23,16 @@ _Avoid_: subcommand
 **Artifact contract**:
 The table in `references/artifacts.md` naming every file the skills hand to each other, with its default path, its one producer, and its readers.
 
+**Run record**:
+The temporary JSON file a run keeps at `.verify/evidence/<run-id>/record.json`: task, scope, code version, checks with saved output, open items. Never part of the memory tree.
+_Avoid_: run log, result file
+
+**Stale check**:
+A recorded check whose code or environment fingerprint no longer matches the current one; it does not count as passed.
+
+**Unproved finding**:
+A kept review finding whose quoted line is not in the cited file.
+
 **Lesson**:
 One file under `memory/lessons/` holding knowledge from past work that the code cannot carry, found per task by the lessons script.
 _Avoid_: learning, solution doc

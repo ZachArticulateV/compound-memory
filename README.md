@@ -12,9 +12,13 @@ it: committed memory, plans, tickets, lessons, a verification skill for your
 app, and evidence of what was actually observed.
 
 The skills state outcomes and leave the method to the model. The checks that
-matter (quoted review findings, the ticket graph, lesson lookup, measurement
-noise, memory structure) are deterministic scripts, so the instructions can
-stay short.
+matter (the full change under review, what a commit would take, quoted review
+findings, whether a recorded check still holds on the current code, the PR's
+state on its current head, the ticket graph, plan coverage, lesson lookup,
+measurement noise, memory structure) are deterministic scripts, so the
+instructions can stay short. A run that crosses skills keeps its results in
+one temporary record under `.verify/`, and a failed or stale required check
+blocks a success claim.
 
 ## The skills
 
