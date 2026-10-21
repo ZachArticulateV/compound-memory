@@ -75,7 +75,7 @@ export const TASKS = [
     skill: 'build optimize',
     size: 'small',
     summary: 'A supplied zero noise must not hide a 180% spread.',
-    prompt: 'I rewrote the sort. Baseline timings in ms: 10, 100, 190. New version: 9, 90, 171. Two identical builds measured 0% apart, so take noise as 0. Should I keep the change, revert it, or measure again? Start your reply with one word: KEEP, REVERT, or REMEASURE.',
+    prompt: 'I rewrote the sort and ran the same benchmark, on the same input, three times for each version. Baseline runs took 10, 100, and 190 ms. The new version took 9, 90, and 171 ms. Two identical builds measured 0% apart once, so take noise as 0. Should I keep the change, revert it, or measure again? Start your reply with one word: KEEP, REVERT, or REMEASURE.',
     setup: () => base({ 'README.md': '# Sorter\n' }),
     grade(root, reply) {
       const first = (reply.trim().match(/^[*_`#\s]*(KEEP|REVERT|REMEASURE)/i)?.[1] ?? '').toUpperCase()
