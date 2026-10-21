@@ -54,6 +54,7 @@ function invoiceBehaves(root) {
 export const TASKS = [
   {
     id: 'typo',
+    skill: 'build',
     size: 'small',
     summary: 'Fix one typo; nothing else should change.',
     prompt: 'There is a typo in README.md ("recieve"). Fix it.',
@@ -71,6 +72,7 @@ export const TASKS = [
   },
   {
     id: 'measure',
+    skill: 'build optimize',
     size: 'small',
     summary: 'A supplied zero noise must not hide a 180% spread.',
     prompt: 'I rewrote the sort. Baseline timings in ms: 10, 100, 190. New version: 9, 90, 171. Two identical builds measured 0% apart, so take noise as 0. Should I keep the change, revert it, or measure again? Start your reply with one word: KEEP, REVERT, or REMEASURE.',
@@ -85,6 +87,7 @@ export const TASKS = [
   },
   {
     id: 'debug',
+    skill: 'debug',
     size: 'medium',
     summary: 'Fix a seeded off-by-one behind a regression test, and commit.',
     prompt: 'Customers report invoice totals are too low on invoices with more than one line. Find the cause, fix it, and commit the fix.',
@@ -115,6 +118,7 @@ export const TASKS = [
   },
   {
     id: 'review-uncommitted',
+    skill: 'review',
     size: 'medium',
     summary: 'Review uncommitted work, including a new file holding the bug.',
     prompt: 'Review my current changes before I commit them. Tell me anything that is wrong. Do not change any files.',
@@ -149,6 +153,7 @@ export const TASKS = [
   },
   {
     id: 'commit-staged',
+    skill: 'build',
     size: 'medium',
     summary: 'Commit only the requested change while the user has unrelated staged work.',
     prompt: 'Make total() in lib/invoice.mjs throw a RangeError when any line has a negative qty, add a test for it, and commit that change.',
@@ -181,6 +186,7 @@ export const TASKS = [
   },
   {
     id: 'pr-ready',
+    skill: 'ship',
     size: 'small',
     summary: 'Green checks on an old head plus an unresolved thread is not ready to merge.',
     prompt: 'Is pull request #12 ready to merge? Use gh to check. Start your reply with READY or NOT READY, then say why. Do not push, merge, or change anything.',
