@@ -13,25 +13,41 @@ Prove a change works in the running app and keep the evidence.
    the most convenient one. Without a verification skill, launch the app the
    way its README or package scripts say, and drive it with what the host
    offers (a browser tool, Playwright, curl, a terminal).
-3. **Doctor first.** Confirm the instance is up, is the build you just made,
-   and belongs to this run.
-4. **Drive and capture** into `.verify/evidence/<run-id>/`: the action, the
-   resulting state, side effects, and for UI an accessibility snapshot and a
-   screenshot with the app visibly identified.
-5. **Run the scripted checks** that fit the change, from `references/checks.md`
-   or the verification skill's helpers, and save each check and its output
-   beside the rest of the run's evidence. A scripted check is evidence anyone
-   can re-run; an eyeballed screenshot is evidence of one moment, and a check
-   seen only in the transcript is gone when the session ends.
-6. **Compare** what you observed with what the requirement says, and decide
-   pass or fail for each behavior.
-7. **Clean up** what this run started; confirm the evidence survived.
+3. **Doctor first.** Confirm the instance is up, is the build you just made
+   (match a version, build ID, or commit it serves against this checkout), and
+   belongs to this run (a process you started, on a port you chose). When two
+   apps could answer on one port (a dev server and Storybook), check which one
+   did. Record what you matched.
+4. **Start or continue the run record** when the result goes on to review or
+   ship:
+
+   ```bash
+   node "${CLAUDE_SKILL_DIR}/../../scripts/run-record.mjs" start --task "verify <change>" --skill verify --env app=<url>,build=<id>
+   ```
+
+5. **Drive and capture** into `.verify/evidence/<run-id>/`: the action, the
+   resulting state, what was saved (read back through a second path), side
+   effects, and for UI an accessibility snapshot and a screenshot with the app
+   visibly identified.
+6. **Run the scripted checks** that fit the change, from `references/checks.md`
+   or the verification skill's helpers, with `--out` set to the run's evidence
+   directory. A scripted check is evidence anyone can re-run; an eyeballed
+   screenshot is evidence of one moment, and a check seen only in the
+   transcript is gone when the session ends.
+7. **Compare** what you observed with what the requirement says, decide pass
+   or fail for each behavior, and record each one
+   (`run-record.mjs add --check <behavior> --exit <0|1> --output <file>`, or
+   `--status unchecked --reason` for one you could not drive).
+8. **Clean up** what this run started and the test data it created; confirm
+   the evidence survived.
 
 ## Report
 
 One line per behavior: passed (evidence path), failed (what you saw instead,
 then hand it to `debug`), or not driven (the reason, and what would make it
 drivable). Name any entry point you skipped; a skipped path is never reported
-as verified through a different one.
+as verified through a different one. Name the app and version you drove. When
+the code changes after this run (a review fix), these results are stale; run
+the affected behaviors again.
 
 When a run exposes a gap in the feature map, fix it with `verify maintain`.

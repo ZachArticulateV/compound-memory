@@ -2,7 +2,7 @@
 name: autopilot
 description: "Take a request from idea or bug report to a reviewed, verified pull request without stopping, by running this plugin's skills in order: plan or debug, build, simplify, verify, review, learn, and ship. Use when the user asks for hands-off, end-to-end, or autonomous work, such as \"take it all the way\", \"just do it\", or \"lfg\"."
 argument-hint: "[feature, bug, issue, or plan path]"
-allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/tickets-check.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/findings-check.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/memory-validate.mjs" *)
+allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/tickets-check.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/findings-check.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/memory-validate.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/run-record.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/pr-state.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/changes.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/plan-check.mjs" *)
 ---
 
 # Autopilot
@@ -12,9 +12,11 @@ change, an open pull request with CI decided, the change verified and
 reviewed, and everything unresolved written where the user will see it.
 
 **Done when:** every stage below ran or is named in the report with the reason
-it did not, and the PR is open with its URL in hand, CI green or each red check
-explained, and open items in the PR body; or the run stopped, said why, and
-pushed nothing that was not already pushed.
+it did not; `run-record.mjs gate` passes on the final code; and the PR is
+created, with its checks passed on the current head and open items in its
+body. Or the run stopped, said why and which state the PR is in (created,
+checks failed, checks pending), and pushed nothing that was not already
+pushed. A red check is never reported as a pass, explained or not.
 
 ## Route by what the request is
 
@@ -43,31 +45,48 @@ report, with the reason.
 
 Whatever the route, the run's commits land on a branch off the default branch,
 and `.verify/` is in `.gitignore` before the first commit: the default branch
-and the history stay as the user left them.
+and the history stay as the user left them. Staged work the user left is not
+the run's (`ship commit` sets it aside).
+
+Start a run record before the first stage and keep it to the end:
+
+```bash
+node "${CLAUDE_SKILL_DIR}/../../scripts/run-record.mjs" start --task "<the request>" --skill autopilot --require <the checks this run must pass>
+```
+
+Each stage records its checks there. It is how a resumed session finds where
+the run stopped, and how the end of the run knows what still holds.
 
 1. **Work source:** an implementation-ready plan (from `plan`), or a fixed
    defect (from `debug`). Large plans go through `plan tickets`.
 2. **Build:** `build work` on the plan or tickets.
 3. **Simplify:** `build simplify` on the branch diff, unless it is a few lines.
 4. **Verify:** `verify run` for every user-facing behavior.
-5. **Review:** `review code` against the plan; apply the findings its fix rule
-   allows, and keep the rest as open items.
-6. **Learn:** `learn capture` when the run produced a lesson the code, tests,
+5. **Review:** `review code` against the plan; apply the findings on its
+   safe-to-fix list, and keep the rest as open items.
+6. **Re-check:** when review changed code, the earlier checks are stale. Run
+   `run-record.mjs gate`; re-run each check it names stale, `verify` included,
+   until it passes. A required check that fails three times stops the run.
+7. **Learn:** `learn capture` when the run produced a lesson the code, tests,
    and plan do not carry.
-7. **Ship:** `ship commit`, `ship pr`, then `ship watch` until CI is decided.
-   With no Git remote, stop at local commits.
-8. **Report** with `catch-up chat`.
+8. **Ship:** `ship commit`, `ship pr`, then `ship watch` until `pr-state.mjs`
+   reports checks passed or the fix rounds run out. With no Git remote, stop
+   at local commits.
+9. **Report** with `catch-up chat`, using the three PR states from `ship`.
 
 ## Working without a user
 
-Ask questions only in `plan brainstorm`, and only when the user is present.
-Otherwise decide, record the decision and its reason as an open item, and keep
-going: reversible work is done and shown for correction afterward. Stop, and
-say why, when the work source cannot be produced, a stage returns without the
-evidence its gate asks for, a decision the user settled turns out to be wrong,
-or the next step cannot be undone and the user has not granted it (a merge, a
-force-push, deleting data). Merging stays with the user unless they granted it
-for this run.
+Ask questions only in `plan brainstorm`, only when the user is present, and
+only when the answer would change what gets built. Otherwise decide, record
+the decision and its reason as an open item, and keep going: reversible work
+is done and shown for correction afterward. Permission the user gave at the
+start (to push, to open a PR) holds for the whole run. Stop, and say why, when
+the work source cannot be produced, a stage returns without the evidence its
+gate asks for, a decision the user settled turns out to be wrong, or the next
+step cannot be undone and the user has not granted it (a merge, a force-push,
+deleting data). A missing optional tool is not a reason to stop: take the
+fallback the stage names and record the gap. Merging stays with the user
+unless they granted it for this run.
 
 ## Works with
 

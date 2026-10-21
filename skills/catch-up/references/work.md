@@ -20,13 +20,16 @@ read another project's history without being asked.
 
 2. **Git and the forge:** branches with recent commits, open and recently
    merged PRs and their checks, reverts.
-3. **Tickets:** for a plan with tickets, the frontier and what is done.
+3. **Run records:** `.verify/evidence/*/record.json` hold in-flight runs (the
+   task, the checks, the open items, the next action). `run-record.mjs gate`
+   on one says which results still hold on the code as it is now.
+4. **Tickets:** for a plan with tickets, the frontier and what is done.
 
    ```bash
    node "${CLAUDE_SKILL_DIR}/../../scripts/tickets-check.mjs" --dir <tickets dir>
    ```
 
-4. **Transcripts,** when memory is missing or does not cover the topic.
+5. **Transcripts,** when memory is missing or does not cover the topic.
    Claude Code keeps them in `~/.claude/projects/<slug>/<session>.jsonl`
    (the workspace path with each `/` and `.` turned into `-`); Codex in
    `~/.codex/sessions/`. Order by modification time, search the topic first,
@@ -34,14 +37,15 @@ read another project's history without being asked.
    slice to a subagent on a fast model; each returns, per session: the goal,
    decisions, open threads, corrections, and artifacts (PRs, branches,
    tickets).
-5. **The wider record,** when the topic names a feature or bug: issues and
+6. **The wider record,** when the topic names a feature or bug: issues and
    their comments, fixes that shipped and were reverted, errors still
    reported. Say which sources were unavailable.
 
 ## 3. Verify
 
 Check every PR, branch, and ticket the reading surfaced against its live state.
-Memory and transcripts say what was true then.
+Memory and transcripts say what was true then. When the state probe reports a
+memory file stale, say which claim it may have outlived.
 
 ## 4. Write the brief
 

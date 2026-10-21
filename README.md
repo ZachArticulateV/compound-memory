@@ -218,8 +218,10 @@ plugin, delete the directory.
   runtime evidence, and Git before they are relied on.
 - **Confirmed causes and hypotheses are never conflated.** A suspected cause stays
   labelled as one until evidence confirms it.
-- **The auditor is not the author.** Audits run on an external model where one is
-  available, so memory is never graded by the context that wrote it.
+- **The auditor is not the author.** Audits run in a separate read-only Codex
+  process where one is available, so memory is not graded by the context that
+  wrote it. That process is a different model only when Codex is configured
+  with one.
 - **Many readers, one writer.** Subagents gather evidence; only the coordinating
   session writes canonical memory.
 - **Secrets never enter memory.** Variable names are recorded; values are not.

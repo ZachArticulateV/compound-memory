@@ -16,11 +16,39 @@ artifact you write.
 | Tickets | `docs/plans/<slug>/tickets/NN-<slug>.md` | `plan tickets` | `build`, `autopilot`, `catch-up` |
 | Prototype | branch `prototype/<slug>` | `prototype` | `plan`, `build` |
 | Verification skill | `.claude/skills/verify-<app>/` | `verify create` | `verify run`, `build`, `review`, `autopilot` |
+| Run record | `.verify/evidence/<run-id>/record.json` (not committed) | the skill that starts the run (`build`, `verify`, `review`, `autopilot`) | every later stage of that run, `ship pr`, `catch-up` |
 | Evidence | `.verify/evidence/<run-id>/` (not committed) | `verify run` | `review`, `ship pr`, `catch-up` |
 | Review report | the reply, plus `.verify/review-findings.json` | `review` | `build`, `ship pr`, `autopilot` |
 | Lessons | `memory/lessons/<slug>.md` | `learn capture` | `plan`, `debug`, `review`, `build` |
 | Guardrails table | `memory/guardrails.md` | `learn correct` | `review`, `learn correct` |
 | Writing standard | `skills/write/references/` | `write` | every skill that writes prose |
+
+## Run record
+
+The one shared result format. A run that hands work to another stage, or may
+be resumed in another session, keeps one record; a small task finished and
+reported in one sitting does not need one. `scripts/run-record.mjs` writes and
+checks it:
+
+```bash
+node "<plugin>/scripts/run-record.mjs" start --task "<what>" --require tests,verify
+<run the check> > .verify/evidence/<run-id>/tests.log 2>&1; echo "exit $?"
+node "<plugin>/scripts/run-record.mjs" add --run <run-id> --check tests --exit <code> --output .verify/evidence/<run-id>/tests.log --command "npm test"
+node "<plugin>/scripts/run-record.mjs" add --run <run-id> --check browser --status unchecked --reason "Playwright not installed" --optional
+node "<plugin>/scripts/run-record.mjs" note --run <run-id> --open "P2 finding not applied" --next "re-run verify"
+node "<plugin>/scripts/run-record.mjs" gate --run <run-id>
+```
+
+It holds the task and scope, the code version at the start (HEAD plus a
+fingerprint of every uncommitted change), the environment, the required
+checks, each check's command, result, saved output, and the code version it
+ran on, and the open items and next action. `gate` exits 0 only when every
+required check passed on the code and environment as they are now with its
+output still on disk; a later edit makes a passed check stale. An optional
+check that could not run is listed as unchecked and does not block. A failed
+required check blocks any success claim, and three failures of one check mean
+stop and report. Lasting facts from a run go to memory through their owners;
+the record itself stays in `.verify/`.
 
 ## Plan
 
@@ -32,6 +60,7 @@ IDs let later work cite the plan without copying it.
 # <Title>
 
 ## Goal
+## Terms               only the words a reader could take two ways
 ## Requirements        R1, R2, ... (behavior, user's words)
 ## Out of scope
 ## Decisions           D1, D2, ... (choice, reason, who settled it)
@@ -42,7 +71,9 @@ IDs let later work cite the plan without copying it.
 ```
 
 A plan carries no status field and no checkboxes. Progress lives in Git and in
-the tickets.
+the tickets. `scripts/plan-check.mjs <plan>` checks the links: every
+requirement covered by a unit, every unit with a Verify, Out of scope present,
+open questions marked answered, deferred, or assumed.
 
 ## Tickets
 
@@ -119,6 +150,13 @@ them through `scripts/findings-check.mjs`:
 { "findings": [
   { "lens": "correctness", "severity": "P1", "confidence": 75,
     "file": "lib/queue.ts", "line": 42, "quote": "retry(job)",
-    "title": "Retry runs a non-idempotent job twice", "model": "claude" }
+    "title": "Retry runs a non-idempotent job twice", "model": "claude",
+    "verdict": "confirmed" }
 ] }
 ```
+
+A kept finding whose quote is not in the file is marked `unproved`, whatever
+its severity. `verdict` (confirmed, disproved, or unresolved) is added by the
+attempt to disprove each P0 and P1; `findings-check.mjs --final` exits 1
+while one is missing, and lists the findings safe to fix. `model` is a label
+the reviewer writes, not a proof of which model ran.

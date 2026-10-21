@@ -191,9 +191,9 @@ lessons `learn` saved. When memory exists, all of them read it first.
   loads only while you edit certain files, here only memory files.
 - **Subagent**: a helper Claude session that searches or checks things and
   reports back. Subagents may read memory but never write it.
-- **Audit**: an independent check of memory against the code, run by a
-  different model where one is installed, so memory is never graded by the
-  session that wrote it.
+- **Audit**: a check of memory against the code, run in a separate read-only
+  Codex process when Codex is installed (a fresh subagent otherwise), so
+  memory is not graded by the session that wrote it.
 - **Glossary**: `memory/glossary.md`, the project's own words and the
   synonyms to avoid. Created only once there is a term worth defining.
 - **Lesson**: one file in `memory/lessons/` holding something past work taught

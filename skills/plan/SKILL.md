@@ -2,7 +2,7 @@
 name: plan
 description: "Shape and plan software work: settle requirements through an interview, make a judgment call with evidence, write an implementation-ready plan, or split a plan into dependency-ordered tickets. Use when the user wants to plan a feature, think through requirements, choose between approaches, or break work into tasks or tickets."
 argument-hint: "[brainstorm|decide|plan|tickets] [idea, question, plan path, or issue]"
-allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/tickets-check.mjs" *)
+allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/tickets-check.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/plan-check.mjs" *)
 ---
 
 # Plan
@@ -36,7 +36,8 @@ request to decide it, use `plan`. Read only the reference for the mode you run.
    ```
 
 2. **Run the mode** from its reference. Ask the user only what the repository
-   cannot answer, with your recommended answer attached.
+   cannot answer and what would change the plan, with your recommended answer
+   attached. A small change gets its plan in the reply, not a file.
 3. **Write the artifact** in the shape `../../references/artifacts.md` gives.
    One plan file grows from brainstorm to plan; edit it in place.
 4. **Check it** against the mode's done check before handing it on.

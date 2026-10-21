@@ -36,15 +36,18 @@ sections, each filled from what the interview found:
   usable, not just that a process answers. Launch works from an empty data
   directory, including migrations and seed data. Include teardown.
 - **Doctor:** one read-only check that this instance is worth driving: process
-  up, right build, port owned by this run, login valid.
+  up, right build (a version, build ID, or commit the app serves, matched to
+  the checkout), port owned by this run, login valid.
 - **Drive:** the harness recipe with this repository's real selectors and
   commands. Prefer stable handles (accessible names, data attributes, routes)
   over coordinates.
 - **Evidence:** what to capture for a proof and where (`.verify/evidence/<run-id>/`).
-- **Cleanup:** stop what this run started; never kill by process name. Remove
-  scratch state, keep the evidence.
+- **Cleanup:** stop what this run started; never kill by process name. Delete
+  the test data the run created (named with the run ID), remove scratch state,
+  keep the evidence.
 - **Helpers:** any script the skill ships, executable, with its invocation
-  shown. Copy the checks from `references/checks.md` that fit the surface.
+  shown. Point at the plugin's helpers in `references/checks.md`, or copy them
+  into the skill when it must work without the plugin installed.
 
 Add `.verify/` to `.gitignore`.
 

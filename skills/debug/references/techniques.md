@@ -40,7 +40,14 @@ splits the remaining possibilities most evenly.
   hottest frame's code.
 - **Production-only failures.** Read the logs and traces around the first
   occurrence; add the instrumentation you wish you had, ship it, and wait for
-  the next occurrence rather than guessing.
+  the next occurrence rather than guessing. Say in the report that the cause
+  is a hypothesis until that occurrence confirms it.
+- **Rare or slow failures.** Raise the rate before chasing the cause: run in
+  parallel, add load, shorten timeouts, repeat the suspect operation, or pin
+  the seed that failed. Record runs and failures (12 of 200) so the after-fix
+  number has a before to compare with. Run enough after the fix that the old
+  rate would almost surely have shown a failure (at 1 in 20, about 60 clean
+  runs).
 - **Fails only after a restart.** Suspect persisted state first: configuration
   files, caches, lock files, serialized state.
 - **Suspect the observation.** When the evidence contradicts the code, check
