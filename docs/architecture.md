@@ -477,9 +477,10 @@ All are read-only except where they write their own output: `run-record.mjs`
 writes the run record, `changes.mjs snapshot` and `review --write` write under
 `.verify/`, and the verify helpers write screenshots and reports to the
 evidence directory. None stages, commits, pushes, or runs a command it was
-given; a pre-approved script that ran arbitrary commands would be a shell grant.
-`console-check.mjs` loads a journey module the agent wrote, so it is not
-pre-approved. `scripts/lib/lessons.mjs` is the
+given, and each refuses an output path outside `.verify/`; a pre-approved
+script that ran arbitrary commands would be a shell grant. The verify helpers
+load the project's own Playwright (and `console-check.mjs` a journey module the
+agent wrote), so they run project code and are not pre-approved. `scripts/lib/lessons.mjs` is the
 one lesson reader, shared by `lessons.mjs` and the validator's `lesson-format`
 check, so a lesson the validator accepts is one lookup can find.
 

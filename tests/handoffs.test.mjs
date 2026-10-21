@@ -75,7 +75,7 @@ test('interrupted work: a new session resumes from the record, keeping what stil
   check(root, 'r', 'tests', true)
   cli(root, 'run-record.mjs', 'note', '--run', 'r', '--open', 'P2: name the magic 100', '--next', 'run verify on the invoice page')
   // The session ends here. A new one knows nothing but the files.
-  const resumed = JSON.parse(cli(root, 'run-record.mjs', 'gate', '--json').out)
+  const resumed = JSON.parse(cli(root, 'run-record.mjs', 'gate', '--run', 'latest', '--json').out)
   assert.equal(resumed.runId, 'r')
   assert.deepEqual(resumed.passed, ['tests'], 'the passing test still holds: the code did not change')
   assert.deepEqual(resumed.unchecked.sort(), ['ci', 'verify'])

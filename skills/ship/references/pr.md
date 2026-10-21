@@ -33,8 +33,8 @@ minute.
    ```
 
    State each check's result as observed, with the code version it ran on.
-   When there is a run record, take the results from
-   `node "${CLAUDE_SKILL_DIR}/../../scripts/run-record.mjs" gate --run latest`:
+   When there is a run record for this work, take the results from
+   `node "${CLAUDE_SKILL_DIR}/../../scripts/run-record.mjs" gate --run <id>`:
    a stale or failed check is listed as such, never as passing.
 4. **Open it** (`gh pr create`, or the host's GitHub tool) as a draft when the
    work is not ready for review. For an existing PR, update the body and say

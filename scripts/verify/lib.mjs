@@ -2,12 +2,13 @@
 //
 // The helpers run against the project being verified, so Playwright is
 // resolved from that project (its node_modules, or NODE_PATH), never from the
-// plugin. When it is missing, a helper exits NOT_CHECKED with the install
+// plugin. That means a helper runs the project's own Playwright code, which
+// is why no helper is pre-approved in allowed-tools. When it is missing, a helper exits NOT_CHECKED with the install
 // command: the check did not run, which is different from passing or failing.
 
 import { createRequire } from 'node:module'
 import { mkdirSync, writeFileSync } from 'node:fs'
-import { join, resolve } from 'node:path'
+import { isAbsolute, join, relative, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
 
@@ -37,9 +38,15 @@ export async function launch(chromium) {
   }
 }
 
-/** The evidence directory: --out, then EVIDENCE_DIR, then a default under .verify/. */
+/**
+ * The evidence directory: --out, then EVIDENCE_DIR, then a default under
+ * .verify/. It must sit under .verify/ in the working directory; anything else
+ * is refused (null), so a helper never writes elsewhere.
+ */
 export function evidenceDir(out, fallback) {
   const dir = resolve(out ?? process.env.EVIDENCE_DIR ?? fallback)
+  const rel = relative(resolve('.verify'), dir)
+  if (rel.startsWith('..') || isAbsolute(rel)) return null
   mkdirSync(dir, { recursive: true })
   return dir
 }

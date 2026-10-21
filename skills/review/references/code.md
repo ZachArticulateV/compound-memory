@@ -101,5 +101,5 @@ is mechanical. Run the tests after each fix, and commit as
 `fix(review): <what>`. Every fix makes the earlier checks stale: re-run the
 ones the fix touches, `verify` included for a user-facing path, and record
 them in the run when there is one
-(`node "${CLAUDE_SKILL_DIR}/../../scripts/run-record.mjs" gate --run latest`
+(`node "${CLAUDE_SKILL_DIR}/../../scripts/run-record.mjs" gate --run <id>`
 names what is stale). List the findings you did not apply.

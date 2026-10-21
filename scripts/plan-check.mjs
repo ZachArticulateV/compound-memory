@@ -56,6 +56,8 @@ const find = (secs, name) => {
   return null
 }
 const ids = (text, letter) => [...text.matchAll(new RegExp(`\\b${letter}(\\d+)\\b`, 'g'))].map((m) => `${letter}${m[1]}`)
+/** A list item or table row that starts with an ID: `- R1`, `1. R1`, `| R1`, `- **R1**`. */
+const itemWith = (letter) => new RegExp(`^\\s*(?:[-*]|\\d+[.)]|\\|)\\s*\\**${letter}\\d+`)
 const meaningful = (body) => (body ?? []).some((l) => l.trim() !== '' && !/^<!--.*-->$/.test(l.trim()))
 
 /** Units from a table or from one block per unit. */
@@ -80,15 +82,26 @@ export function parseUnits(body) {
   }
   let current = null
   for (const line of body) {
-    const start = /^\s*(?:#{2,4}\s+|[-*]\s+(?:\*\*)?)(U\d+)\b/.exec(line)
+    const start = /^\s*(?:#{2,4}\s+|(?:[-*]|\d+[.)])\s+(?:\*\*)?)(U\d+)\b/.exec(line)
     if (start) {
       current = { id: start[1], verify: null, covers: [], text: line }
       units.push(current)
     }
     if (current === null) continue
     if (current.text !== line) current.text += `\n${line}`
-    const v = /\bVerify\b\**\s*:?\**\s*(.*)$/i.exec(line)
-    if (v && current.verify === null) current.verify = v[1].replace(/^\**:?\s*/, '').trim()
+    const v = /\bVerify\b\**\s*:\**\s*(.*)$/i.exec(line)
+    if (v && current.verify === null) {
+      current.verify = v[1].replace(/^\**:?\s*/, '').trim()
+      current.verifyOpen = current.verify === ''
+    } else if (current.verifyOpen && line.trim() !== '') {
+      // The command sits on the lines under `Verify:` (an indented block or a
+      // fence); take the first one.
+      if (/^\s*(?:[-*]\s+\**[A-Z][a-z]+\**\s*:|#{2,4}\s)/.test(line)) current.verifyOpen = false
+      else if (!/^\s*```/.test(line)) {
+        current.verify = line.trim()
+        current.verifyOpen = false
+      }
+    }
     const c = /\bCovers\b\**\s*:?\**\s*(.*)$/i.exec(line)
     if (c) current.covers.push(...ids(c[1], 'R'))
   }
@@ -102,9 +115,10 @@ export function checkPlan(text, { stage = 'plan' } = {}) {
 
   const reqBody = find(secs, 'requirements')
   if (reqBody === null) add('no-requirements', 'no Requirements section')
-  const requirements = [...new Set(ids((reqBody ?? []).filter((l) => /^\s*(?:[-*]|\|)\s*\**R\d+/.test(l)).join('\n'), 'R'))]
+  const reqLines = (reqBody ?? []).filter((l) => itemWith('R').test(l))
+  const requirements = [...new Set(reqLines.map((l) => /R\d+/.exec(l)[0]))]
   if (reqBody !== null && requirements.length === 0) add('no-requirements', 'the Requirements section names no R1, R2, ... IDs')
-  const reqDupes = ids((reqBody ?? []).filter((l) => /^\s*(?:[-*]|\|)\s*\**R\d+/.test(l)).map((l) => /R\d+/.exec(l)[0]).join(' '), 'R')
+  const reqDupes = reqLines.map((l) => /R\d+/.exec(l)[0])
   for (const dupe of reqDupes.filter((id, i) => reqDupes.indexOf(id) !== i)) add('duplicate-id', `requirement ${dupe} is listed twice`)
 
   if (!meaningful(find(secs, 'out of scope'))) add('no-out-of-scope', 'Out of scope is missing or empty')
@@ -126,13 +140,13 @@ export function checkPlan(text, { stage = 'plan' } = {}) {
       seen.add(u.id)
       if (u.verify === null || u.verify.trim() === '') add('no-verify', `${u.id} has no Verify`)
       else if (TBD.test(u.verify)) add('no-verify', `${u.id}'s Verify is not decided: ${u.verify.slice(0, 80)}`)
-      if (TBD.test(u.text) && !(u.verify && TBD.test(u.verify))) add('tbd', `${u.id} still says TBD`)
+      if (/\bTBD\b|\?\?\?/.test(u.text) && !(u.verify && TBD.test(u.verify))) add('tbd', `${u.id} still says TBD`)
       for (const r of u.covers) if (!requirements.includes(r)) add('unknown-requirement', `${u.id} covers ${r}, which the Requirements section does not list`)
       if (u.covers.length === 0) add('covers-nothing', `${u.id} covers no requirement`)
     }
     const covered = new Set(units.flatMap((u) => u.covers))
     for (const r of requirements) if (!covered.has(r)) add('uncovered', `${r} is covered by no unit`)
-    const decisions = ids((find(secs, 'decisions') ?? []).filter((l) => /^\s*(?:[-*]|\|)\s*\**D\d+/.test(l)).map((l) => /D\d+/.exec(l)[0]).join(' '), 'D')
+    const decisions = (find(secs, 'decisions') ?? []).filter((l) => itemWith('D').test(l)).map((l) => /D\d+/.exec(l)[0])
     for (const dupe of decisions.filter((id, i) => decisions.indexOf(id) !== i)) add('duplicate-id', `decision ${dupe} is listed twice`)
     if (!meaningful(find(secs, 'verification'))) add('no-verification', 'Verification is missing or empty')
   }

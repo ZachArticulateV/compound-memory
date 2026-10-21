@@ -11,7 +11,9 @@ page another way (the host's browser tool, a screenshot read by eye) when the
 behavior still needs proof. The helpers resolve Playwright from the project
 being verified (`npm i -D playwright`, then `npx playwright install chromium`).
 Evidence goes to `--out`, else `$EVIDENCE_DIR`, else a folder under
-`.verify/evidence/`.
+`.verify/evidence/`; it must be under `.verify/`. The helpers load the
+project's own Playwright, so they run project code and ask for permission
+like any project command.
 
 ## Clipped or overflowing layout
 
@@ -22,7 +24,7 @@ a control cuts off its own text, at each width. A control inside a scroll area
 full-page screenshot per width and `layout.json`.
 
 ```bash
-node "${CLAUDE_SKILL_DIR}/../../scripts/verify/layout-check.mjs" <url-or-file> --widths 375,768,1280 --out .verify/evidence/<run-id>/layout
+node "${CLAUDE_SKILL_DIR}/../../scripts/verify/layout-check.mjs" <url-or-file> --widths 375,768,1280 --out .verify/evidence/<run-id>/layout # not pre-approved: it loads the project's Playwright
 ```
 
 Add `--wait-for <selector>` when the page renders after load.
