@@ -104,7 +104,9 @@ None.
 
 **Attempted fixes:**
 
-None; the not-checked path (exit 3) runs everywhere.
+None; the not-checked path (exit 3) and the refusal to write outside
+`.verify/` are tested everywhere, and the six browser cases pass locally on
+`1ebfe2c`.
 
 **Verification status:**
 

@@ -28,8 +28,11 @@ making small tasks heavier, and test the plugin as a working system.
   011), `scripts/pr-state.mjs`, `scripts/plan-check.mjs`,
   `scripts/rewrite-check.mjs`, the `scripts/verify/` helpers, and lesson drift
   in `scripts/lessons.mjs`.
-- `evals/`: a repeatable agent-task comparison, run once (see
-  `acceptance-criteria.md`, Audit hardening).
+- An independent review of the new scripts found ten defects; each is fixed
+  with a test that fails on the earlier commit (`1ebfe2c`, CHANGELOG).
+- `evals/`: a repeatable agent-task comparison, run plain and with the skill
+  invoked (`evals/results/2026-10-21-summary.md`; `acceptance-criteria.md`,
+  Audit hardening).
 
 ## Verified
 
@@ -40,7 +43,8 @@ making small tasks heavier, and test the plugin as a working system.
 
 - Codex: no credentials here; host facts were read from Codex source.
 - The verify helpers' browser tests skip on CI (no Playwright there); they ran
-  here under Playwright 1.56.1.
+  here under Playwright 1.56.1, after the review fixes that confined their
+  evidence to `.verify/` and removed their pre-approval.
 
 ## Current problem
 
