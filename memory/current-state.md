@@ -4,7 +4,7 @@ What is true about this project right now. A snapshot, not a journal — obsolet
 state is replaced here rather than appended to. History lives in Git and in
 `decisions/`.
 
-Updated: 2026-10-19
+Updated: 2026-10-21
 
 ## Skill and modes
 
@@ -102,7 +102,10 @@ checks, including `avoided-term`, `glossary-format`, and `lesson-format`), `scri
 fallback), `scripts/memory-hygiene.mjs` (eight rot signals for `cleanup`;
 always exits 0), four engineering scripts (`scripts/lessons.mjs`,
 `scripts/findings-check.mjs`, `scripts/tickets-check.mjs`,
-`scripts/measure.mjs`), and two Claude Code
+`scripts/measure.mjs`), the audit-hardening scripts on branch
+claude/busy-fermat-zzwb7r (`scripts/changes.mjs`, `scripts/run-record.mjs`,
+`scripts/pr-state.mjs`, `scripts/plan-check.mjs`, `scripts/rewrite-check.mjs`,
+and the `scripts/verify/` helpers; decision 011), and two Claude Code
 hooks. `AGENTS.md` is governed alongside the
 two `CLAUDE.md` forms by every component. The Codex manifest opts out of the
 hooks (decision 007).
@@ -120,6 +123,15 @@ hooks (decision 007).
 - Filesystem case detection is untested on a real case-insensitive macOS disk.
 
 ## Active workstreams
+
+- Audit hardening on branch claude/busy-fermat-zzwb7r, not yet merged: every
+  confirmed fault from the 2026-10-21 source audit fixed with a regression
+  test, a shared run record (decision 011), and an agent-task eval under
+  `evals/`. `node --test`: 749 tests, 728 passed, 0 failed, 21 skipped, on
+  `1ebfe2c`, 2026-10-21; `claude plugin validate . --strict` and the memory
+  validator passed on the same tree. Eval: with the skill invoked, revised
+  12 of 12 correct and 0 false successes against baseline 7 of 12 and 5;
+  with plain prompts no skill ran (`acceptance-criteria.md`, Audit hardening).
 
 - The GitHub repository was renamed from `project-memory` to
   `compound-memory` on 2026-10-19; links to the old name redirect. The

@@ -114,6 +114,24 @@ in a scratch directory and was not kept.
 | Any skill run under Codex | unverified | No OpenAI credentials here, so no Codex model ran |
 | Live scenarios re-runnable from the suite | verified | `PROJECT_MEMORY_LIVE_ACCEPTANCE=1 node --test tests/acceptance/live-engineering.test.mjs`: 6 of 6 passed in three consecutive full runs (18 of 18), 2026-10-18, after two harness fixes (the inherited `NODE_TEST_CONTEXT`, and a fixture change that did not break its test). The review scenario passed 8 of 9 runs; the miss wrote no findings file, and the skill now says the gate applies when the lenses run inline |
 
+## Audit hardening, 2026-10-21
+
+Script checks are `node --test`; agent results are `evals/results/2026-10-21-summary.md`.
+The two are kept apart.
+
+| Criterion | Status | Evidence |
+| --- | --- | --- |
+| Review covers committed, staged, unstaged, and new files | verified | `tests/audit-regressions.test.mjs`: a fixture whose three-dot diff is empty yields three files and a patch holding the new one |
+| A commit cannot take staged work the agent did not make | verified | Regression and review tests: a pre-staged file, a pre-staged hunk in an intended file, binary, rename, deletion, empty file; `diff.noprefix` set. Agent runs: revised 2 of 2 left the user's note staged, baseline 1 of 2 |
+| A supplied noise never hides the samples' spread | verified | Regression test on the audit's samples; invoked agent runs: revised 2 of 2 said measure again, baseline 0 of 2 |
+| A kept finding with a missing quote is labelled unproved, and serious findings are challenged before a fix | verified | Regression tests on `scripts/findings-check.mjs`, including disagreeing duplicates |
+| A check that ran before a later edit cannot support a success claim | verified | `tests/handoffs.test.mjs`: verify then a review fix leaves `gate` stale until verify runs again; committing unchanged work does not |
+| PR created, checks passed, and ready to merge are separate | verified | `scripts/pr-state.mjs` tests; invoked agent runs: revised 2 of 2 said not ready for a PR with an unpushed fix and an open thread, baseline 0 of 2 |
+| The verify helpers run as shipped, keep evidence, and pass a valid scroll area | verified locally | `tests/verify-helpers.test.mjs` under Playwright 1.56.1; the browser cases skip on CI |
+| Small tasks stay small | verified | Invoked `typo` runs: no extra files, 5 and 6 seconds, $0.046 each |
+| A plain request reaches the skills | not met | 0 of 24 plain-prompt plugin runs used a skill (`bugs-and-risks.md`) |
+| Any of this under Codex | unverified | No credentials; Codex facts read from its source |
+
 ## Out of scope for completion
 
 - Live model-behavior evaluation of every playbook.
