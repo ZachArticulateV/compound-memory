@@ -48,8 +48,10 @@ that share paths run one after another.
 4. **Clean up.** Remove temporary logging, debug flags, and scratch files you
    added. Mark any you add with `DEBUG-TEMP` so `git diff | grep DEBUG-TEMP`
    finds them.
-5. **Commit** with a message that names the unit or ticket ID. Mark a ticket
-   done when its `Verify with` passes.
+5. **Commit** with a message that names the unit or ticket ID, following
+   `../ship/references/commit.md` when the index already held staged work
+   before you began: that work is not yours to commit. Mark a ticket done when
+   its `Verify with` passes.
 
 A failing check you cannot explain sends you to `debug`, not to a second
 guess.
