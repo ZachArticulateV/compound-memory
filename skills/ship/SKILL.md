@@ -1,6 +1,6 @@
 ---
 name: ship
-description: "Get finished work merged cleanly: write commits that follow the repository's conventions, open or update a pull request that says how the change was verified, watch CI and fix what fails at the root, and answer review comments. Use when the user asks to commit, push, open or update a PR, check or fix CI, or address PR feedback."
+description: "Get finished work merged cleanly: write commits that follow the repository's conventions, open or update a pull request that says how the change was verified, watch CI and fix what fails at the root, and answer review comments. Use when the user asks to commit, push, open or update a PR, check or fix CI, address PR feedback, or whether a PR is ready to merge."
 argument-hint: "[commit|pr|watch|feedback] [PR number or URL]"
 allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/changes.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/pr-state.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/run-record.mjs" *)
 ---
