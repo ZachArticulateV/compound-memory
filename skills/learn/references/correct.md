@@ -35,7 +35,10 @@ that happened before counts.
 ## 3. Prove each check
 
 Show that each new check fails on a real past instance of the mistake (check
-out the commit, or reproduce the pattern), then passes on the fixed code. Run
+out the commit, or reproduce the pattern), then passes on the fixed code. Keep
+that pair as a test of the check itself (a fixture with the mistake that must
+fail, and one without it that must pass), so the check cannot rot into one
+that passes everything. Run
 it the same way locally and in CI. An exception goes on the offending line with
 a reason, an expiry date, and the name of the person who approved it.
 

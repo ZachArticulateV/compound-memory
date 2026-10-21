@@ -9,7 +9,8 @@ state of each PR, CI run, or agent the chat touched.
 
 ## Write the reply
 
-Keep it under 150 words, not counting pictures.
+Keep it under 150 words, not counting pictures and action items. The action
+items are never cut to fit: when there are many, the reply grows by them.
 
 1. **One opening sentence:** how many things need the user, or that nothing
    does. If nothing happened and nothing waits, say so and stop.
@@ -30,6 +31,7 @@ Keep it under 150 words, not counting pictures.
 6. **A choice between options** goes after the action items: each option with
    what it gets the user and what it costs.
 
-Never give a fact twice. When space runs out, cut from what happened before
-you cut from the action items. Never invent a number or picture a screen you
-did not capture.
+Never give a fact twice. When space runs out, cut from what happened; never
+from the action items. Never invent a number or picture a screen you did not
+capture. A check reported as passed is one you saw pass on the current code;
+a stale or unchecked one is named as such.

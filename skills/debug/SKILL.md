@@ -11,9 +11,11 @@ Explain why the failure happens, from trigger to symptom with no gaps, and
 change the code so it cannot happen again. A fix without an explanation is a
 guess that happened to pass.
 
-**Done when:** a check that reproduced the symptom now passes, a regression
-test failed before the fix and passes after it, and the causal chain is
-written down.
+**Done when:** a check that reproduced the symptom now passes (for a rare bug,
+its measured failure rate dropped to zero over enough runs to show it), a
+regression test failed before the fix and passes after it, or the report says
+why no test could reach it; the temporary instrumentation is gone; and the
+causal chain is written down.
 
 ## Steps
 
@@ -25,15 +27,17 @@ written down.
    node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" --query "<symptom>" --paths <path>,<path>
    ```
 
-2. **Build a tight loop that goes red.** Name one command you have already run
-   that fails on the user's exact symptom (not merely "it errors"), gives the
-   same verdict every run, and finishes in seconds. This is most of the work;
-   `references/techniques.md` lists ways to build one. For a flaky bug, the
-   goal is a high, measured reproduction rate. If you cannot build a loop, say
-   so, list what you tried, and ask for what would make one (access to the
-   failing environment, a captured log or trace). A hypothesis formed before
-   the loop exists is a guess. Redact secrets from every command and output you
-   show.
+2. **Build a loop that goes red.** Name one command you have already run that
+   fails on the user's exact symptom (not merely "it errors"). Best is one that
+   gives the same verdict every run in seconds; `references/techniques.md`
+   lists ways to build one. A rare, slow, or timing bug may only allow a loop
+   that fails some of the time or takes minutes: measure its failure rate and
+   use it. A bug seen only in production may only allow instrumentation and a
+   wait for the next occurrence. If you cannot build any loop, say so, list
+   what you tried, and ask for what would make one (access to the failing
+   environment, a captured log or trace). A hypothesis formed before you can
+   observe the failure is a guess. Redact secrets from every command and
+   output you show.
 3. **Audit assumptions.** List what you believe about the failing path and mark
    each belief verified or assumed. The bug usually lives in an assumed one.
 4. **Compete.** Name your leading hypothesis and at least one rival. Design the
@@ -46,7 +50,11 @@ written down.
    broke the code is legitimate: if it is, handle it where it broke; if it
    should never exist, find what produced it, because a guard there would hide
    the bug. Write the regression test, watch it fail, fix, watch it pass, run
-   the broader suite, and fix every other place with the same fault.
+   the broader suite, and fix every other place with the same fault. Run the
+   original loop again: the user's symptom, not only the new test.
+   Then remove the instrumentation you added (mark it `DEBUG-TEMP` when you add
+   it; `git diff | grep DEBUG-TEMP` finds what is left), unless the signal is
+   worth keeping as a permanent log line.
 7. **After three failed fixes, stop patching.** The model of the system is
    wrong somewhere. Revisit the assumptions, question the design, and tell the
    user what you have ruled out.
@@ -62,7 +70,8 @@ written down.
 **Reproduction:** the check, and its failing output
 **Cause:** the chain from trigger to symptom
 **Fix:** what changed, and why it addresses the cause
-**Proof:** the regression test and suite results, observed
+**Proof:** the regression test and suite results, observed, and the original
+loop's result after the fix
 **Residual risk:** what this fix does not cover
 ```
 

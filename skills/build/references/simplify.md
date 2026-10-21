@@ -19,9 +19,13 @@ without changing what it does.
 
 ## Steps
 
-1. Run the suite and note the result.
+1. Run the suite and save the result. When the code you will touch has no
+   test that would notice a change in what it does, add a characterization
+   test first (inputs through the public interface, today's outputs as the
+   expected values) and see it pass.
 2. Make one kind of simplification at a time.
-3. Run the suite after each; it must stay as it was.
+3. Run the suite after each; the same tests pass and fail as before. A test
+   that changes result means behavior changed: undo the step.
 4. Stop when a pass finds nothing worth removing.
 
 Report what you removed or merged and the suite result before and after.

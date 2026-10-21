@@ -5,7 +5,7 @@
 // and from Codex is structural, so it is pinned here: each skill names its
 // done check, says how it works alone and what it hands off, routes each mode
 // to a reference that exists, reaches only files that exist, pre-approves the
-// scripts it documents, and stays under Codex's prompt budget. A skill added
+// scripts it documents, and stays under the 8,000-byte router ceiling. A skill added
 // without these fails here rather than in someone's session.
 
 import { test } from 'node:test'
@@ -23,8 +23,14 @@ export const SKILLS = [
 ]
 const ENGINEERING = SKILLS.filter((s) => s !== 'project-memory')
 
-/** Codex truncates a skill prompt past this many bytes, measured with CRLF line endings. */
+/**
+ * Codex truncates an explicitly invoked skill's main prompt past this many
+ * bytes for some plugin formats (codex-rs ext/skills/src/render.rs,
+ * MAX_SKILL_PROMPT_BYTES, read 2026-10-21). Kept as this plugin's ceiling,
+ * measured with CRLF line endings, so the router arrives whole either way.
+ */
 const CODEX_SKILL_BYTES = 8000
+/** Codex's skill list truncates a description here; Claude Code at 1,536. */
 const DESCRIPTION_LIMIT = 1024
 
 const read = (...parts) => readFileSync(join(...parts), 'utf8')
@@ -67,10 +73,10 @@ for (const name of SKILLS) {
     assert.ok(skill.field('argument-hint'), 'no argument-hint')
   })
 
-  test(`${name}: SKILL.md fits Codex's prompt budget`, () => {
+  test(`${name}: SKILL.md fits the 8,000-byte router ceiling`, () => {
     const skill = parseSkill(name)
     const bytes = Buffer.byteLength(skill.raw.replace(/\r?\n/g, '\r\n'), 'utf8')
-    assert.ok(bytes <= CODEX_SKILL_BYTES, `${bytes} bytes with CRLF; Codex's limit is ${CODEX_SKILL_BYTES}`)
+    assert.ok(bytes <= CODEX_SKILL_BYTES, `${bytes} bytes with CRLF; this plugin's ceiling is ${CODEX_SKILL_BYTES}`)
   })
 
   test(`${name}: every mode in the table routes to a reference that exists`, () => {
@@ -106,8 +112,8 @@ for (const name of SKILLS) {
         const target = resolve(base, ref)
         assert.ok(existsSync(target), `${name}/${file} names ${ref}, which resolves to nothing`)
       }
-      for (const m of text.matchAll(/scripts\/([a-z-]+\.mjs)/g)) {
-        assert.ok(existsSync(join(repoRoot, 'scripts', m[1])), `${name}/${file} names scripts/${m[1]}, which does not exist`)
+      for (const m of text.matchAll(/scripts\/((?:[a-z-]+\/)?[a-z-]+\.mjs)/g)) {
+        assert.ok(existsSync(join(repoRoot, 'scripts', ...m[1].split('/'))), `${name}/${file} names scripts/${m[1]}, which does not exist`)
       }
     }
   })
@@ -120,6 +126,14 @@ for (const name of SKILLS) {
     for (const [file, text] of skillTexts(name)) {
       for (const m of text.matchAll(/^\s*node "(\$\{CLAUDE_SKILL_DIR\}[^"]+)"(.*)$/gm)) {
         const command = `node "${m[1]}"${m[2]}`.trim()
+        // A helper that runs code the agent supplies (a journey module) is
+        // marked in the text and must stay out of allowed-tools, or the
+        // pre-approval would be a shell grant.
+        if (/# not pre-approved\b/.test(m[2])) {
+          const script = m[1]
+          assert.ok(!rules.some((rule) => rule.startsWith(`node "${script}"`)), `${name}/${file} marks ${script} not pre-approved, but allowed-tools approves it`)
+          continue
+        }
         const covered = rules.some((rule) => rule.endsWith(' *') && (command === rule.slice(0, -2) || command.startsWith(`${rule.slice(0, -2)} `)))
         assert.ok(covered, `${name}/${file} documents \`${command}\`, which no allowed-tools rule covers`)
       }

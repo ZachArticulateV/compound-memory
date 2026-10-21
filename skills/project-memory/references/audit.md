@@ -74,13 +74,17 @@ The bridge selects a tier and reports which one actually produced the result in
 
 | `tier` | Evaluator | Independence |
 | --- | --- | --- |
-| `codex` | Codex CLI, sandboxed read-only | Different model architecture; read-only is enforced by the sandbox |
-| `subagent` | Bundled `memory-auditor` subagent | Same architecture as the writer; read-only is enforced by its tool grant |
+| `codex` | Codex CLI, sandboxed read-only | A separate process in a fresh context, on whatever model the user's Codex configuration names; read-only is enforced by the sandbox |
+| `subagent` | Bundled `memory-auditor` subagent | A fresh context on the same host as the writer; read-only is enforced by its tool grant |
 
 Independence degrades down the list; the capability never disappears. The
-subagent tier is a Claude subagent auditing Claude's work, which is weaker
-evidence than the Codex tier and is worth saying out loud in the report rather
-than presenting the two as equivalent.
+Codex tier is independent of the writer's model only when Codex runs a
+different one: memory written in Claude Code and audited by Codex on its usual
+OpenAI model is read by another model; memory written in a Codex session, or a
+Codex configured to the writer's model, gets only a fresh context. Say which
+case applies when you know it. The subagent tier is a fresh context on the
+writer's own host, weaker evidence than a different model, and worth saying
+out loud in the report rather than presenting the tiers as equivalent.
 
 `writes` is always `none`. The bridge has no path that edits anything.
 

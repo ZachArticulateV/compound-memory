@@ -47,6 +47,7 @@ next reader.
 
 ## Done check
 
+- `plan-check.mjs <plan file> --stage brainstorm` passes, for a plan file.
 - The frontier is empty, or every remaining question is recorded as assumed.
 - The user confirmed the requirements, when a human is present.
 - Every requirement can fail a check someone could write.
