@@ -12,8 +12,20 @@
 // reviewer could quote code that does not exist and keep its confidence. Here
 // the quote is looked up.
 //
+// Severity and confidence never stand in for evidence. A P0 is kept even when
+// its quote does not check out, because dropping a possible outage is worse
+// than reading one more line, but it is kept labelled `unproved`, apart from
+// the findings whose quotes were found.
+//
+// With --final, it also checks the disprove pass: every kept P0 and P1 must
+// carry a `verdict` (confirmed, disproved, or unresolved). Disproved findings
+// are dropped; only findings whose evidence checked out and that are either
+// confirmed or below P1 are listed as safe to fix. A missing verdict exits 1.
+//
 // WHAT THIS IS NOT: a judge of whether a finding is right. A verified quote
-// proves the reviewer looked at real code, not that its reasoning holds.
+// proves the reviewer looked at real code, not that its reasoning holds. The
+// `model` label is whatever the reviewer wrote; nothing here proves which
+// model produced a finding.
 //
 // Read-only.
 
@@ -26,6 +38,9 @@ import { USAGE_EXIT_CODE, emit, parseCliArgs } from './lib/report.mjs'
 
 export const FINDINGS_SCHEMA_VERSION = 1
 export const SEVERITIES = ['P0', 'P1', 'P2', 'P3']
+export const VERDICTS = ['confirmed', 'disproved', 'unresolved']
+/** Severities whose findings must survive a disprove attempt before a fix. */
+export const CHALLENGED = ['P0', 'P1']
 export const CONFIDENCE_LEVELS = [0, 25, 50, 75, 100]
 export const KEEP_CONFIDENCE = 75
 /** How far from the cited line a quote may sit and still count as at that line. */
@@ -113,6 +128,18 @@ export function checkFinding(root, finding, index) {
     }
   }
   out.file = rel
+  // The quote was found in the file (at the cited line or nearby): the
+  // finding points at real code. Anything else is unproved, whatever its
+  // severity or stated confidence.
+  out.evidence = out.quoteStatus === 'at-line' || out.quoteStatus === 'moved' ? 'checked' : 'unproved'
+  if (finding.verdict !== undefined) {
+    const verdict = String(finding.verdict).toLowerCase()
+    if (VERDICTS.includes(verdict)) out.verdict = verdict
+    else {
+      problems.push(`verdict "${finding.verdict}" is not one of ${VERDICTS.join(', ')}; treated as unresolved`)
+      out.verdict = 'unresolved'
+    }
+  }
   out.problems = problems
   return out
 }
@@ -144,6 +171,11 @@ export function mergeFindings(findings) {
       group.quote = f.quote
       group.line = f.line
     }
+    if (f.evidence === 'checked') group.evidence = 'checked'
+    // The most cautious verdict wins: one reader who could not settle it, or
+    // who confirmed it, outweighs one who disproved it.
+    const rank = { confirmed: 0, unresolved: 1, disproved: 2 }
+    if (f.verdict !== undefined && (group.verdict === undefined || rank[f.verdict] < rank[group.verdict])) group.verdict = f.verdict
   }
   // Reviewers on one model agreeing is one reading repeated. Only agreement
   // across different models, on a quote that checks out, raises confidence.
@@ -160,24 +192,46 @@ const order = (a, b) =>
   a.file.localeCompare(b.file) ||
   (a.line ?? 0) - (b.line ?? 0)
 
-export function checkFindings(root, input) {
+export function checkFindings(root, input, { final = false } = {}) {
   const absRoot = resolve(root)
   const list = Array.isArray(input) ? input : Array.isArray(input?.findings) ? input.findings : null
   if (list === null) return { error: 'input must be a JSON array of findings or an object with a "findings" array' }
   const checked = list.map((f, i) => checkFinding(absRoot, f ?? {}, i))
   const merged = mergeFindings(checked).sort(order)
-  const kept = merged.filter((f) => f.confidence >= KEEP_CONFIDENCE || f.severity === 'P0')
-  const suppressed = merged.filter((f) => !kept.includes(f))
+  const passing = merged.filter((f) => f.confidence >= KEEP_CONFIDENCE || f.severity === 'P0')
+  const suppressed = merged.filter((f) => !passing.includes(f))
+  for (const f of passing) f.unproved = f.evidence !== 'checked'
+  // A confirmed verdict cannot rest on a quote that is not in the file.
+  for (const f of passing) {
+    if (f.unproved && f.verdict === 'confirmed') {
+      f.problems = [...f.problems, 'confirmed, but its quote is not in the file; treated as unresolved until it quotes real code']
+      f.verdict = 'unresolved'
+    }
+  }
+  const disproved = final ? passing.filter((f) => f.verdict === 'disproved') : []
+  const kept = passing.filter((f) => !disproved.includes(f))
+  const missingVerdict = final ? kept.filter((f) => CHALLENGED.includes(f.severity) && f.verdict === undefined) : []
+  // Safe to fix: real code is quoted, and a serious finding survived the
+  // attempt to disprove it.
+  const fixable = kept.filter((f) => !f.unproved && (!CHALLENGED.includes(f.severity) || f.verdict === 'confirmed'))
   return {
     schemaVersion: FINDINGS_SCHEMA_VERSION,
     root: absRoot.split('\\').join('/'),
     received: list.length,
     merged: merged.length,
+    final,
     kept,
     suppressed,
+    disproved,
+    missingVerdict: missingVerdict.map((f) => ({ severity: f.severity, title: f.title, file: f.file, line: f.line })),
+    fixable: fixable.map((f) => ({ severity: f.severity, title: f.title, file: f.file, line: f.line })),
     counts: {
       kept: kept.length,
+      unproved: kept.filter((f) => f.unproved).length,
       suppressed: suppressed.length,
+      disproved: disproved.length,
+      missingVerdict: missingVerdict.length,
+      fixable: fixable.length,
       quoteNotFound: checked.filter((f) => f.quoteStatus === 'not-found' || f.quoteStatus === 'file-missing').length,
       promoted: merged.filter((f) => f.promoted).length,
     },
@@ -186,10 +240,24 @@ export function checkFindings(root, input) {
 
 export function renderFindingsText(result) {
   const out = [`Findings — ${result.root}`, '', `${result.received} received, ${result.merged} after merging, ${result.counts.kept} kept.`]
-  for (const f of result.kept) {
-    out.push('', `${f.severity} (${f.confidence}) ${f.title ?? '(untitled)'}`)
-    out.push(`    ${f.file}${f.line ? `:${f.line}` : ''}  [${(f.lenses ?? []).join(', ') || 'no lens'}]${f.promoted ? '  cross-model agreement' : ''}`)
+  const line = (f) => {
+    out.push('', `${f.severity} (${f.confidence}) ${f.title ?? '(untitled)'}${f.verdict ? `  [${f.verdict}]` : ''}`)
+    out.push(`    ${f.file}${f.line ? `:${f.line}` : ''}  [${(f.lenses ?? []).join(', ') || 'no lens'}]${f.promoted ? '  agreement across model labels' : ''}`)
     for (const p of f.problems) out.push(`    note: ${p}`)
+  }
+  for (const f of result.kept.filter((k) => !k.unproved)) line(f)
+  const unproved = result.kept.filter((k) => k.unproved)
+  if (unproved.length > 0) {
+    out.push('', 'UNPROVED — kept for severity, but the quoted evidence is not in the file. Report these as unproved, not as defects:')
+    for (const f of unproved) line(f)
+  }
+  if (result.final) {
+    if (result.disproved.length > 0) out.push('', `Dropped as disproved: ${result.disproved.map((f) => f.title ?? '(untitled)').join('; ')}`)
+    if (result.missingVerdict.length > 0) {
+      out.push('', 'Not yet challenged (P0 and P1 need a verdict before any fix):')
+      for (const f of result.missingVerdict) out.push(`    ${f.severity} ${f.title ?? '(untitled)'} — ${f.file}${f.line ? `:${f.line}` : ''}`)
+    }
+    out.push('', `Safe to fix: ${result.counts.fixable} finding(s).`)
   }
   if (result.suppressed.length > 0) {
     out.push('', `Suppressed below confidence ${KEEP_CONFIDENCE}:`)
@@ -200,15 +268,20 @@ export function renderFindingsText(result) {
   return out.join('\n')
 }
 
-const USAGE = `Usage: findings-check.mjs --input <findings.json> [--json] [--cwd <dir>]
+const USAGE = `Usage: findings-check.mjs --input <findings.json> [--final] [--json] [--cwd <dir>]
 
 Check review findings against the working tree: verify each quoted line, merge
-duplicates, and keep findings at confidence ${KEEP_CONFIDENCE}+ or severity P0.
-Read "-" as the input to read standard input. Read-only. Exits 0 when it ran; 2 on a usage error.
+duplicates, and keep findings at confidence ${KEEP_CONFIDENCE}+ or severity P0. A kept
+finding whose quote is not in the file is labelled unproved.
+--final also checks the disprove pass: each kept P0 and P1 needs a "verdict"
+(${VERDICTS.join(', ')}); disproved ones are dropped and the safe-to-fix list
+is printed.
+Read "-" as the input to read standard input. Read-only. Exits 0 when it ran;
+1 with --final when a kept P0 or P1 has no verdict; 2 on a usage error.
 `
 
 export function main(argv = process.argv.slice(2)) {
-  const { values, root, error } = parseCliArgs(argv, { extraOptions: { input: { type: 'string' } } })
+  const { values, root, error } = parseCliArgs(argv, { extraOptions: { input: { type: 'string' }, final: { type: 'boolean', default: false } } })
   if (error !== null || (!values.help && !values.input)) {
     process.stderr.write(`findings-check: ${error ?? '--input is required'}\n\n${USAGE}`)
     return USAGE_EXIT_CODE
@@ -224,13 +297,13 @@ export function main(argv = process.argv.slice(2)) {
     process.stderr.write(`findings-check: cannot read ${values.input}: ${err.message}\n`)
     return USAGE_EXIT_CODE
   }
-  const result = checkFindings(root, input)
+  const result = checkFindings(root, input, { final: values.final })
   if (result.error) {
     process.stderr.write(`findings-check: ${result.error}\n`)
     return USAGE_EXIT_CODE
   }
   emit(result, renderFindingsText(result), { json: values.json })
-  return 0
+  return result.counts.missingVerdict > 0 ? 1 : 0
 }
 
 const invokedDirectly =
