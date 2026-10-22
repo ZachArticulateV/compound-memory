@@ -72,10 +72,14 @@ guardrail, paired with the positive target.
   at the cost of an always-loaded description. **User-invoked**
   (`disable-model-invocation: true`): no context cost, but the user must
   remember it.
-- A description says what the skill does and when to use it, under about
-  1,000 characters, with a "use when" clause carrying the trigger cases.
-- Keep `SKILL.md` a short router under 8,000 bytes (Codex's limit); move
-  detail to `references/` and load it per mode.
+- A description says what the skill does and when to use it, with a "use
+  when" clause carrying the trigger cases, under 1,024 characters: Codex's
+  skill list cuts descriptions there, and Claude Code at 1,536.
+- Keep `SKILL.md` a short router; move detail to `references/` and load it per
+  mode. Claude Code advises under 500 lines. Codex truncates an explicitly
+  invoked skill's body past 8,000 bytes for some plugin formats, so staying
+  under that keeps the router whole on both hosts. Check host limits against
+  the host's current documentation or source before stating one; they change.
 - Write paths relative to the skill's directory (`${CLAUDE_SKILL_DIR}`), and
   say how a host without that variable resolves it.
 - Facts a script can compute (counts, graphs, matches) belong in a bundled

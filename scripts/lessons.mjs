@@ -7,6 +7,12 @@
 // against title, tags, and applies_when, plus changed paths against the
 // lesson's paths. Stale and retired lessons are skipped unless --all is given.
 //
+// Each returned lesson also says whether the code it names has moved on: a
+// path it lists that no longer exists, or commits to its paths after the
+// lesson was last committed. Such a lesson is a candidate for `learn refresh`;
+// it is still returned, because changed code does not make it false.
+// `--drift` lists every lesson with drift and nothing else.
+//
 // WHAT THIS IS NOT: a judge of relevance. A match is a candidate to read.
 //
 // Read-only.
@@ -16,7 +22,8 @@ import { resolve } from 'node:path'
 
 import { parseArgs } from 'node:util'
 
-import { findProjectRoot, isDirectory, joinRel, listFiles, readTextContained, relPosix } from './lib/fs-utils.mjs'
+import { findProjectRoot, isDirectory, joinRel, listFiles, pathExists, readTextContained, relPosix } from './lib/fs-utils.mjs'
+import { commitsTouchingPathSince, isRepository, lastCommitForPath } from './lib/git.mjs'
 import { LESSONS_REL, lessonProblems, parseLesson, rankLessons } from './lib/lessons.mjs'
 import { USAGE_EXIT_CODE, emit } from './lib/report.mjs'
 
@@ -36,9 +43,41 @@ export function loadLessons(root) {
   return lessons
 }
 
+/**
+ * Has the code a lesson names moved on since the lesson was written? Paths that
+ * no longer exist, and commits to its paths after the lesson's last commit.
+ * `checked: false` with a reason when Git cannot say (no repository, the
+ * lesson is uncommitted, or it names no paths).
+ */
+export function lessonDrift(root, lesson, { git = isRepository(root) } = {}) {
+  const missing = lesson.paths.filter((p) => !pathExists(joinRel(root, p.replace(/\/+$/, ''))))
+  if (lesson.paths.length === 0) return { checked: false, reason: 'names no paths', missing, changed: [] }
+  if (!git) return { checked: false, reason: 'no Git history', missing, changed: [] }
+  const last = lastCommitForPath(root, lesson.path)
+  if (last === null) return { checked: false, reason: 'the lesson is not committed yet', missing, changed: [] }
+  const changed = []
+  for (const p of lesson.paths) {
+    const res = commitsTouchingPathSince(root, last.sha, p.replace(/\/+$/, ''))
+    if (!res.ok) return { checked: false, reason: res.error, missing, changed }
+    if (res.commits.length > 0) changed.push({ path: p, commits: res.commits.length, latest: res.commits[0].sha.slice(0, 12) })
+  }
+  return { checked: true, reason: null, missing, changed }
+}
+
+export function lessonsWithDrift(root) {
+  const absRoot = resolve(root)
+  const git = isRepository(absRoot)
+  return loadLessons(absRoot)
+    .filter((l) => l.status === 'active')
+    .map((l) => ({ path: l.path, title: l.title, drift: lessonDrift(absRoot, l, { git }) }))
+    .filter((l) => l.drift.missing.length > 0 || l.drift.changed.length > 0)
+}
+
 export function findLessons(root, { query = '', paths = [], includeInactive = false, limit = 5 } = {}) {
   const lessons = loadLessons(root)
   const ranked = rankLessons(lessons, { query, paths, includeInactive, limit })
+  const absRoot = resolve(root)
+  const git = ranked.results.length > 0 && isRepository(absRoot)
   return {
     schemaVersion: LESSONS_SCHEMA_VERSION,
     root: resolve(root).split('\\').join('/'),
@@ -58,6 +97,7 @@ export function findLessons(root, { query = '', paths = [], includeInactive = fa
       score,
       matched,
       problems: lessonProblems(lesson),
+      drift: lessonDrift(absRoot, lesson, { git }),
     })),
   }
 }
@@ -76,6 +116,8 @@ export function renderLessonsText(result) {
       out.push(`    ${r.path}`)
       if (r.appliesWhen) out.push(`    applies when: ${r.appliesWhen}`)
       for (const p of r.problems) out.push(`    format: ${p}`)
+      for (const m of r.drift?.missing ?? []) out.push(`    drift: ${m} no longer exists; check the lesson before relying on it`)
+      for (const c of r.drift?.changed ?? []) out.push(`    drift: ${c.path} has ${c.commits} commit(s) since the lesson was written; check it still holds`)
     }
     if (result.matches > result.results.length) out.push('', `${result.matches - result.results.length} more matched; raise --limit to see them.`)
   }
@@ -84,11 +126,13 @@ export function renderLessonsText(result) {
 }
 
 const USAGE = `Usage: lessons.mjs [--query "<words>"] [--paths a,b] [path ...] [--all] [--limit n] [--json] [--cwd <dir>]
+       lessons.mjs --drift [--json] [--cwd <dir>]
 
 Find the lessons under memory/lessons/ that match a task. Paths may be given as
 a comma or space separated --paths value, or as bare arguments. With no query
-and no paths, list the active lessons. Read-only. Exits 0 when it ran; 2 on a
-usage error.
+and no paths, list the active lessons. Each result says whether its paths have
+changed since it was written. --drift lists only the active lessons whose paths
+changed or are gone. Read-only. Exits 0 when it ran; 2 on a usage error.
 `
 
 /**
@@ -108,6 +152,7 @@ export function parseLessonsArgs(argv) {
         paths: { type: 'string', default: '' },
         all: { type: 'boolean', default: false },
         limit: { type: 'string', default: '5' },
+        drift: { type: 'boolean', default: false },
       },
       allowPositionals: true,
       strict: true,
@@ -136,6 +181,14 @@ export function main(argv = process.argv.slice(2)) {
   if (!Number.isInteger(limit) || limit < 0) {
     process.stderr.write(`lessons: --limit must be a whole number\n\n${USAGE}`)
     return USAGE_EXIT_CODE
+  }
+  if (values.drift) {
+    const drifted = lessonsWithDrift(root)
+    const text = drifted.length === 0
+      ? 'No active lesson names a path that changed or disappeared since it was written.'
+      : [`${drifted.length} lesson(s) to re-check with learn refresh:`, ...drifted.map((d) => `    ${d.path}: ${[...d.drift.missing.map((m) => `${m} gone`), ...d.drift.changed.map((c) => `${c.path} +${c.commits} commit(s)`)].join('; ')}`)].join('\n')
+    emit({ schemaVersion: LESSONS_SCHEMA_VERSION, drifted }, text, { json: values.json })
+    return 0
   }
   const result = findLessons(root, { query: values.query, paths, includeInactive: values.all, limit })
   emit(result, renderLessonsText(result), { json: values.json })

@@ -33,13 +33,25 @@ that share paths run one after another.
 
 ## The unit loop
 
-1. **Red.** Write or name the check that proves the unit (a test, a script, a
-   `verify` feature) and watch it fail for the right reason.
+1. **Pick the check.** For new or changed behavior, write or name the check
+   that proves it (a test, a script, a `verify` feature) and watch it fail for
+   the right reason first. For a refactor or other change that must keep
+   behavior, run the existing tests that cover it first; when they are thin,
+   add a characterization test that pins today's output, and see it pass
+   before you change anything. For configuration, build files, or documents,
+   the check is the tool that reads them (the parser, the build, the linter,
+   a link check).
 2. **Build** the smallest change that makes it pass. Reuse what the codebase
    already has.
-3. **Green.** Run the check, then the broader suite around it.
-4. **Commit** with a message that names the unit or ticket ID. Mark a ticket
-   done when its `Verify with` passes.
+3. **Green.** Run the check, then the broader suite around it. Save the output
+   of the checks you will report.
+4. **Clean up.** Remove temporary logging, debug flags, and scratch files you
+   added. Mark any you add with `DEBUG-TEMP` so `git diff | grep DEBUG-TEMP`
+   finds them.
+5. **Commit** with a message that names the unit or ticket ID, following
+   `../ship/references/commit.md` when the index already held staged work
+   before you began: that work is not yours to commit. Mark a ticket done when
+   its `Verify with` passes.
 
 A failing check you cannot explain sends you to `debug`, not to a second
 guess.
@@ -64,5 +76,5 @@ while proving nothing:
 Run the plan's Verification commands. For user-facing behavior, run `verify`
 and keep the evidence path. Then hand the branch to `simplify` or `review`.
 
-Report each unit as built and verified, built and unverified (say why), or not
-built.
+Report each unit as built and verified (the check, and its output's path),
+built and unverified (say why), or not built.

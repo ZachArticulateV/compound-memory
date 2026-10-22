@@ -6,6 +6,60 @@ All notable changes to this plugin are documented here. Format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- `review` now covers staged, unstaged, and new files. The playbook's
+  `git diff <base>...HEAD` was empty for uncommitted work;
+  `scripts/changes.mjs review` lists and saves the whole change.
+- `ship commit` no longer takes staged work the agent did not make:
+  `changes.mjs snapshot` and `staged` catch unintended files and lines staged
+  before the work began, including other hunks of a file the agent changed.
+- `measure.mjs`: a supplied `--noise` can raise the floor but never lower it
+  below the samples' own spread (`--noise 0` turned a 180% spread into keep).
+- `findings-check.mjs` labels a kept finding whose quote is not in the file as
+  unproved, and `--final` refuses to list a P0 or P1 as safe to fix until it
+  carries a disprove verdict.
+- The verification snippets are now shipped helpers
+  (`scripts/verify/layout-check.mjs`, `console-check.mjs`): they run as
+  shipped, write evidence, drive a journey module, exit 3 when Playwright is
+  missing, and no longer flag a control inside a scroll area as clipped.
+- `autopilot` re-runs the checks a review fix made stale, `verify` included.
+- `ship` reports PR created, checks passed (on the current head), and ready to
+  merge as separate states; an explained red check stays red.
+- An independent review of this work found ten defects in the new helpers,
+  each fixed with a test that fails on the earlier code: `gate` could pass a
+  run whose required checks were recorded as optional or never run, or pick up
+  another stage's record; the staged check missed pre-staged binary files,
+  renames, deletions, and empty files, confused common lines, broke under
+  `diff.noprefix`, and misread paths with " b/" in them; `changes.mjs` and the
+  verify helpers could write outside `.verify/`; committing unchanged work made
+  every check stale (the fingerprint is now content-based); disagreeing
+  duplicate verdicts merged to "confirmed"; `plan-check` rejected numbered
+  requirements; `pr-state` counted a superseded run of a re-run check and
+  ignored a partial page of review threads.
+- The Codex auditor tier is no longer described as a different model
+  architecture (Codex runs whatever model it is configured with), and host
+  limits cite the hosts' sources.
+
+### Added
+
+- **Run record** (`scripts/run-record.mjs`, decision 011): one temporary
+  result format under `.verify/` with the task, scope, code fingerprint,
+  checks and their saved output, and open items. `gate` blocks a success
+  claim on a failed, missing, stale, or over-limit check.
+- `scripts/pr-state.mjs`, `scripts/plan-check.mjs`, `scripts/rewrite-check.mjs`,
+  and lesson drift (`lessons.mjs --drift`).
+- Skill changes across the loop: review depth sized to the change; verify
+  checks app identity, saved state, and deletes its test data; build picks a
+  check that fits the change and removes debug code; debug handles rare and
+  slow bugs; prototype names its question and updates the plan it changes;
+  decide asks for outside evidence only when the choice rests on outside
+  facts; catch-up never cuts action items to fit.
+- `tests/audit-regressions.test.mjs`, `tests/handoffs.test.mjs`,
+  `tests/result-helpers.test.mjs`, `tests/verify-helpers.test.mjs`.
+- `evals/`: six agent tasks graded on artifacts, run under no plugin, a
+  baseline ref, and this checkout (`node evals/run.mjs`).
+
 ### Changed
 
 - The repository is now `ZachArticulateV/compound-memory`, matching the plugin

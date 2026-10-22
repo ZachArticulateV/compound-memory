@@ -26,8 +26,10 @@ patterns with evidence pointers for:
 - code and prose standards they cite;
 - process (branches, worktrees, commits, PRs).
 
-Keep a pattern only when it appears in two or more slices. A preference stated
-once and contradicted later is noise.
+Keep a pattern only when it appears in two or more slices, or when the user
+stated it as a rule ("always", "never", "from now on") and nothing later
+contradicts it: one explicit instruction outweighs a habit seen twice. A
+preference stated once and contradicted later is noise.
 
 ## 3. Ask about what history cannot show
 

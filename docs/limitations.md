@@ -65,11 +65,15 @@ An audit compares memory against the repository. It cannot observe:
 `UNVERIFIABLE` is an honest finding, not a soft one. A claim classified that way
 has not been cleared.
 
-The strongest tier is Codex CLI, because a different model architecture is less
-likely to share the writer's blind spots. When it falls back to the bundled
-subagent, the auditor is the same architecture as the writer, and its verdict is
-weaker evidence. The system reports which tier ran, precisely because the two are
-not equivalent.
+The strongest tier is Codex CLI, because a different model is less likely to
+share the writer's blind spots. That holds only when Codex runs a different
+model from the writer: Codex runs whatever its configuration names (`-m`,
+`model` in `config.toml`, or a custom provider), so memory written in a Codex
+session, or a Codex set to the writer's model, gets a separate process and a
+fresh context and nothing more. The bridge does not detect which model Codex
+ran. When it falls back to the bundled subagent, the auditor runs on the
+writer's own host, and its verdict is weaker evidence. The system reports which
+tier ran, precisely because the tiers are not equivalent.
 
 There are only two tiers, so a Codex demotion lands directly on the weaker one.
 That is a real reduction in resilience compared to having a second independent
@@ -99,12 +103,37 @@ by templates whose defaults make the wrong answer awkward to type.
 
 The eleven engineering skills (`plan` through `catch-up`) are written to state
 outcomes and leave the method to the model, by design (decision 009). They add
-no mechanical enforcement of their own. What their four scripts guarantee, and
-nothing more:
+no mechanical enforcement of their own: a script reports, and the model decides
+whether to heed it. What their scripts establish, and nothing more:
 
-- `findings-check.mjs` confirms a quoted line exists near the cited line. It
-  does not confirm the finding is right, and it only sees findings the review
-  writes to its input file.
+- `findings-check.mjs` confirms a quoted line exists near the cited line, labels
+  a kept finding whose quote is not there as unproved, and with `--final`
+  refuses to list a P0 or P1 as safe to fix until it carries a verdict. It
+  does not confirm the finding is right, the verdict is whatever the reviewer
+  wrote, the `model` label is self-reported, and it only sees findings the
+  review writes to its input file.
+- `run-record.mjs` refuses a success claim when a required check failed, never
+  ran, lost its saved output, or ran on code or an environment that has since
+  changed. It never runs the check: the exit code is the one the agent
+  recorded, and the environment it compares is Node, the platform, and the
+  pairs the agent names. Files Git ignores (`.env`, local configuration) are
+  not part of the code fingerprint. Re-running the recorded command is how to
+  confirm a result.
+- `changes.mjs` lists every change in scope and, before a commit, the staged
+  lines that were staged before the work began or fall outside the intended
+  paths. It compares each file's staged blob and each hunk's position and
+  text against the snapshot, so a hunk the user and the agent staged
+  identically at the same place counts as the user's. It never stages or
+  commits.
+- `pr-state.mjs` classifies what GitHub reported at the moment it was fetched.
+  It does not fetch, and it cannot see a required check GitHub has not yet
+  created.
+- `plan-check.mjs` checks the links between requirements and units, not
+  whether a `Verify` could fail or a requirement is testable.
+- `rewrite-check.mjs` compares tokens and words of doubt, not meaning.
+- `scripts/verify/` helpers check layout and console errors on the pages and
+  journeys they are given. A pass on one page at three widths is not a pass on
+  the app.
 - `tickets-check.mjs` reports collisions only between tickets whose `Touches`
   lines overlap. A ticket with no `Touches` line is reported as unknown, not as
   safe.
@@ -113,7 +142,11 @@ nothing more:
   gap but do not close it.
 - `measure.mjs` judges the samples it is given. Too few samples, or samples from
   a noisy machine, make it say `inconclusive`, which is the correct answer and
-  not a result.
+  not a result. A supplied `--noise` can raise the floor, never lower it below
+  the samples' own spread.
+- `lessons.mjs` reports a lesson whose paths changed or disappeared since it
+  was last committed. Changed code does not make a lesson false, and a lesson
+  that names no path cannot be checked this way.
 
 Everything else in those skills (running lenses in parallel, the disprove pass,
 red before green, synthetic data in evidence, merging only when granted)
@@ -293,11 +326,21 @@ credential that reached memory; it does not make putting one there safe.
 - `codex` is optional. Without it, `audit` falls back to the bundled subagent.
   A recent Codex is needed for the tier to run at all: the invocation passes
   `--ignore-rules`, and a CLI that predates that flag rejects it and demotes.
-- Under Codex, the hooks do not run (the Codex manifest opts out; see decision
-  007 in this repository's `memory/decisions/`), the path-scoped writing rule does not
-  load (Codex reads no `.claude/rules/`), and `${CLAUDE_SKILL_DIR}` and `$0` are
-  resolved by the agent following an instruction in `SKILL.md`, not substituted
-  by the harness. Staleness is surfaced only when `status` is run.
+- Under Codex, the hooks do not run (Codex reads plugin hooks, and the Codex
+  manifest opts out; see decision 007 in this repository's
+  `memory/decisions/`), the path-scoped writing rule does not load (Codex reads
+  no `.claude/rules/`), and `${CLAUDE_SKILL_DIR}` and `$0` are resolved by the
+  agent following an instruction in `SKILL.md`, not substituted by the
+  harness. Codex ignores `allowed-tools`, so the script calls the skills
+  pre-approve under Claude Code go through Codex's own approval policy.
+  Staleness is surfaced only when `status` is run.
+- Host limits this plugin stays within, read from the hosts' sources on
+  2026-10-21: Codex's skill list cuts a description at 1,024 characters and
+  Claude Code's at 1,536; Codex truncates an explicitly invoked skill's body
+  past 8,000 bytes for some plugin formats, and Claude Code advises keeping
+  `SKILL.md` under 500 lines. Each `SKILL.md` here stays under 8,000 bytes and
+  each description under 1,024 characters; `tests/skills.test.mjs` pins both.
+  The hosts can change these; re-read them before relying on a number.
 - The plugin depends on current Claude Code behavior for skills, hooks,
   path-scoped rules, and subagents. Those surfaces were verified against live
   documentation on 2026-08-08. A future release could change them; the hook

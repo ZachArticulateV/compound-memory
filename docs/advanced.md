@@ -64,8 +64,9 @@ whether the two sections match.
   as `$plan`, `$review`, `$verify`, and so on. Each carries
   `agents/openai.yaml` for the skill picker and the same note on resolving its
   variables. Where a skill offers a second opinion from another model, the
-  other model from a Codex session is Claude (for example a Claude Code
-  subagent or `claude -p`).
+  other model from a Codex session can be Claude (for example a Claude Code
+  subagent or `claude -p`); a second Codex run on the same model is a second
+  reading, not a second model.
 
 **Handing work to Codex.** From a Claude Code session:
 
@@ -161,9 +162,11 @@ wrong about the project; `audit` is what checks claims.
 
 `audit` sends memory to an evaluator that did not write it:
 
-1. **Codex CLI**, when installed. A different model, run in a read-only
+1. **Codex CLI**, when installed. A separate process, run in a read-only
    sandbox with the repository's own `AGENTS.md` and rules switched off, so
-   the audited tree cannot instruct its auditor.
+   the audited tree cannot instruct its auditor. It runs the model your Codex
+   configuration names, so it is a second model's reading only when that
+   model differs from the one that wrote the memory.
 2. **A bundled read-only subagent** otherwise. Weaker evidence, because it is
    the same model family grading the same model's work, and the report says
    so.

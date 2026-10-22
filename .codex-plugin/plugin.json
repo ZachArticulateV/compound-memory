@@ -2,7 +2,7 @@
   "name": "compound-memory",
   "displayName": "Compound Memory",
   "version": "2.0.0",
-  "description": "Memory, planning, building, review, verification, shipping, and learning for coding agents in Claude Code and Codex. Twelve skills that each work alone and hand work to one another through files in the repository: project-memory (init, status, sync, handoff, grill, audit, repair, cleanup), plan, prototype, build, debug, review, verify, ship, autopilot, learn, write, and catch-up. Deterministic Node scripts check what must be exact (memory structure, quoted review findings, the ticket graph, lesson lookup, measurement noise), two lightweight hooks signal memory drift, and an independent auditor runs on an external model so memory is never graded by the context that wrote it.",
+  "description": "Memory, planning, building, review, verification, shipping, and learning for coding agents in Claude Code and Codex. Twelve skills that each work alone and hand work to one another through files in the repository: project-memory (init, status, sync, handoff, grill, audit, repair, cleanup), plan, prototype, build, debug, review, verify, ship, autopilot, learn, write, and catch-up. Deterministic Node scripts check what must be exact (memory structure, review scope, staged work, quoted review findings, run results against the current code, PR state, the ticket graph, plan coverage, lesson lookup, measurement noise), two lightweight hooks signal memory drift, and an auditor runs in a separate read-only process (Codex when installed) so memory is not graded by the context that wrote it.",
   "author": {
     "name": "Zachary W.",
     "url": "https://articulatevision.com"

@@ -32,8 +32,15 @@ minute.
    - [ ] Assumptions made without the user (from an autopilot run)
    ```
 
+   State each check's result as observed, with the code version it ran on.
+   When there is a run record for this work, take the results from
+   `node "${CLAUDE_SKILL_DIR}/../../scripts/run-record.mjs" gate --run <id>`:
+   a stale or failed check is listed as such, never as passing.
 4. **Open it** (`gh pr create`, or the host's GitHub tool) as a draft when the
    work is not ready for review. For an existing PR, update the body and say
-   what changed since the last push.
+   what changed since the last push. Before creating, look for an open PR on
+   this branch (`gh pr list --head <branch>`); update it rather than opening a
+   second one.
 
-Report the PR URL.
+Report "PR created" with its URL. Checks have not passed yet; `watch` says when
+they have.

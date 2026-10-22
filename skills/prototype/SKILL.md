@@ -9,9 +9,10 @@ argument-hint: "[logic|ui] [the question, and the page or module it is for]"
 A prototype is throwaway code that answers one question. The question decides
 its shape, and the answer, not the code, is what the project keeps.
 
-**Done when:** the question is written at the top of the prototype, the user
-(or the evidence) has answered it, and the verdict is recorded where the plan
-or the next build will read it.
+**Done when:** the one question it answers is written at the top of the
+prototype, the user (or the evidence) has answered it, the verdict is recorded
+where the plan or the next build will read it, and every plan section the
+answer changes has been updated.
 
 ## Modes
 
@@ -27,20 +28,30 @@ ask, pick one, and state the assumption at the top of the prototype.
 
 ## Rules for both
 
-1. **Throwaway and marked as such.** Put it next to what it prototypes, and name
+1. **Name the question first,** as one sentence that can be answered ("Does a
+   two-step intake form lose fewer fields than one long page?"), and what
+   answer would change the plan. No question, no prototype; a prototype that
+   tests something else (real persistence when the question is layout) fakes
+   its answer.
+2. **Throwaway and marked as such.** Put it next to what it prototypes, and name
    it so nobody mistakes it for production code.
-2. **One command, or one double-click, to run.**
-3. **State lives in memory.** Persistence is what a prototype tests, not what it
+3. **One command, or one double-click, to run.**
+4. **State lives in memory.** Persistence is what a prototype tests, not what it
    relies on. A question about storage gets a scratch database named to be
    wiped.
-4. **Skip the polish:** no tests, no error handling past what keeps it running.
-5. **Show the state** after every action or variant switch.
-6. **Two options by default** for a UI comparison, up to five when asked. More
+5. **Skip the polish:** no tests, no error handling past what keeps it running.
+6. **Show the state** after every action or variant switch.
+7. **Two options by default** for a UI comparison, up to five when asked. More
    than five stops being different and starts being noise.
-7. **Capture the answer.** Write the verdict and the question it settled into
+8. **Capture the answer.** Write the verdict and the question it settled into
    the plan's Decisions (or the issue), commit the prototype to a
    `prototype/<slug>` branch, and keep only the validated decision on the main
    branch.
+9. **Update what the answer changed.** When the verdict changes direction,
+   edit the plan sections it touches (Requirements, Decisions, Units, Out of
+   scope) in the same change, mark the replaced decision as superseded, and
+   run `plan-check.mjs` on the plan. When it confirms the plan, say so in the
+   decision.
 
 ## Works with
 

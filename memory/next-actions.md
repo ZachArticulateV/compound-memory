@@ -7,6 +7,14 @@ Each item names an observable outcome. "Improve the backend" is not an action.
 
 ## Now
 
+- [ ] Open and merge the audit-hardening pull request from the feature-branch branch (owner)
+  - Done when: CI is green on its head and the owner merged it
+  - Out of scope: tagging a release
+
+- [ ] Raise the rate at which plain requests invoke the right skill
+  - Done when: `node evals/run.mjs` (plain prompts) shows plugin skills used on the medium tasks, with no loss on the small ones
+  - Out of scope: forcing a skill on small tasks
+
 - [ ] Run the live engineering scenarios under Codex (owner, on their machine)
   - Done when: each met its Done when line, recorded in `acceptance-criteria.md` (Engineering skills, live)
   - Out of scope: changing a skill's wording before the run shows a problem

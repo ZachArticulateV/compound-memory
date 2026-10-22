@@ -6,15 +6,16 @@ joins them.
 
 | Stage | Receives | Hands on | Gate |
 | --- | --- | --- | --- |
-| Plan | the request, memory, lessons | a plan file | the readiness check in `../plan/references/plan.md` passes |
+| Plan | the request, memory, lessons | a plan file | `plan-check.mjs` passes, and the rest of the readiness check in `../plan/references/plan.md` holds |
 | Tickets (large work) | the plan | a tickets directory | `tickets-check.mjs` reports no cycle or unknown blocker |
 | Debug (defects) | the report | a fix with a regression test | the reproduction passes and the regression test failed first |
-| Build | the plan or tickets | commits, one per unit | every unit's check failed before and passes after, observed this run |
+| Build | the plan or tickets | commits, one per unit | every unit's check gave the right answer this run (failed first for new behavior; unchanged for cleanup), recorded in the run record |
 | Simplify | the branch diff | smaller commits | the suite result is unchanged |
-| Verify | the requirements, the diff | evidence under `.verify/evidence/<run-id>/` | each user-facing behavior passed with its check output saved there, or is listed as not driven with a reason |
-| Review | the diff, the plan | findings and applied fixes | findings went through `findings-check.mjs`; kept P0 and P1 were re-checked |
+| Verify | the requirements, the diff | evidence under `.verify/evidence/<run-id>/` | each user-facing behavior is recorded as passed (output saved), or unchecked with a reason |
+| Review | the diff from `changes.mjs review`, the plan | findings and applied fixes | `findings-check.mjs --final` exits 0 |
+| Re-check | the run record | fresh results | `run-record.mjs gate` exits 0 on the code after review's fixes |
 | Learn | what the run discovered | a lesson file, when one is warranted | `memory-validate.mjs` reports no new finding on the lesson |
-| Ship | commits, evidence, open items | a PR URL | CI is green, or each red check is explained on the PR |
+| Ship | commits, the run record, open items | a PR URL | `pr-state.mjs` exits 0: checks passed on the PR's current head |
 
 ## Reading a stage's result
 
@@ -30,10 +31,20 @@ report when there is no PR):
 - review findings that were not applied, with severity;
 - decisions made without the user, with the reason;
 - behaviors `verify` could not drive;
-- red CI checks that are not this PR's, with the evidence.
+- red CI checks that are not this PR's, with the evidence (still red, and
+  reported as red);
+- optional checks recorded as unchecked, with the reason.
 
 ## Resuming
 
-When a run stops partway, the files say where it got to: the plan, the
-tickets' status lines, the commits, the PR. A new run starting from the plan
-path picks up at the first stage whose gate is not yet met.
+When a run stops partway, the files say where it got to: the run record
+(`run-record.mjs gate --run <id>`, or `--run latest` when the id is lost, lists what passed, what is stale, the open
+items, and the next action), the plan, the tickets' status lines, the commits,
+and the PR (`pr-state.mjs`). A new run picks up at the first stage whose gate
+is not yet met, and re-runs a passed check only when `gate` says it is stale.
+
+## Attempt limits
+
+One check that fails three times in a run, three fix rounds on CI, or three
+failed fixes for one bug: stop that line of work and report what was tried.
+The run record counts the attempts per check.

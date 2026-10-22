@@ -2,7 +2,7 @@
 name: review
 description: "Review a change or a document through separate lenses that cannot mask each other: does it do what was asked (spec), does it follow the project's standards, and is it correct (bugs, security, data loss), with every finding tied to a quoted line. Use when the user asks to review code, a diff, a branch, a PR, or a plan or spec."
 argument-hint: "[code|doc] [branch, PR, commit, or path]"
-allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/findings-check.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" *)
+allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/findings-check.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/changes.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/run-record.mjs" *)
 ---
 
 # Review
@@ -12,9 +12,10 @@ finding tied to the line that causes it. A change can follow every standard and
 build the wrong thing, or build the right thing badly; separate lenses keep one
 from hiding the other.
 
-**Done when:** every lens has reported or said why it was skipped, the findings
-went through `findings-check.mjs`, and every kept P0 and P1 was put through an
-attempt to disprove it (dropped, kept, or marked unresolved).
+**Done when:** the review covered every change in scope (committed, staged,
+unstaged, and new files), every lens has reported or said why it was skipped,
+the findings went through `findings-check.mjs --final` with every kept P0 and
+P1 carrying a verdict, and unproved findings are reported as unproved.
 
 ## Modes
 
@@ -28,22 +29,28 @@ decide it, use `code`. The lenses themselves are in `references/lenses.md`.
 
 ## How it works
 
-1. **Pin the target** and find the intent behind it: the plan, ticket, issue,
-   PR description, or the user's request.
+1. **Pin the target** with `changes.mjs review` (see `references/code.md`),
+   and find the intent behind it: the plan, ticket, issue, PR description, or
+   the user's request.
 2. **Find the standards:** `CODING_STANDARDS.md`, `CONTRIBUTING.md`, the agent
    instruction files, `memory/guardrails.md`, lint configuration, and the
    lessons for the changed paths.
-3. **Run the lenses in parallel subagents**, each with only what it needs. Each
-   returns findings in the shape in `../../references/artifacts.md`.
+3. **Size the review to the change.** A small, low-risk diff gets one careful
+   pass through all three lenses yourself. A larger one gets one subagent per
+   lens, in parallel. A risky one (security, data, money, a migration, a public
+   interface) adds the conditional lenses and, when one is available, a
+   reviewer on a different model.
 4. **Gate the findings in code:** write them to `.verify/review-findings.json`
-   and run `findings-check.mjs`, also when you ran the lenses yourself rather
-   than in subagents. Quotes are checked against the files, duplicates merged,
-   and only confidence 75 or more (or P0) is kept.
-5. **Try to disprove** each kept P0 and P1 before reporting it.
+   and run `findings-check.mjs`. Quotes are checked against the files,
+   duplicates merged, and only confidence 75 or more (or P0) is kept; a kept
+   finding whose quote is not in the file is unproved.
+5. **Try to disprove** each kept P0 and P1, record the verdict on it, and run
+   `findings-check.mjs --final`. Only its safe-to-fix list may be fixed.
 6. **Report each lens under its own heading.** Do not rerank across lenses.
 
 Review reports; it changes code only when the user asks it to fix the findings
-(or `autopilot` does).
+(or `autopilot` does). A fix changes the code every earlier check ran on, so
+the checks it touches run again before anyone claims the change works.
 
 ## Works with
 

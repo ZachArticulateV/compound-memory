@@ -12,9 +12,13 @@ it: committed memory, plans, tickets, lessons, a verification skill for your
 app, and evidence of what was actually observed.
 
 The skills state outcomes and leave the method to the model. The checks that
-matter (quoted review findings, the ticket graph, lesson lookup, measurement
-noise, memory structure) are deterministic scripts, so the instructions can
-stay short.
+matter (the full change under review, what a commit would take, quoted review
+findings, whether a recorded check still holds on the current code, the PR's
+state on its current head, the ticket graph, plan coverage, lesson lookup,
+measurement noise, memory structure) are deterministic scripts, so the
+instructions can stay short. A run that crosses skills keeps its results in
+one temporary record under `.verify/`, and a failed or stale required check
+blocks a success claim.
 
 ## The skills
 
@@ -218,8 +222,10 @@ plugin, delete the directory.
   runtime evidence, and Git before they are relied on.
 - **Confirmed causes and hypotheses are never conflated.** A suspected cause stays
   labelled as one until evidence confirms it.
-- **The auditor is not the author.** Audits run on an external model where one is
-  available, so memory is never graded by the context that wrote it.
+- **The auditor is not the author.** Audits run in a separate read-only Codex
+  process where one is available, so memory is not graded by the context that
+  wrote it. That process is a different model only when Codex is configured
+  with one.
 - **Many readers, one writer.** Subagents gather evidence; only the coordinating
   session writes canonical memory.
 - **Secrets never enter memory.** Variable names are recorded; values are not.
