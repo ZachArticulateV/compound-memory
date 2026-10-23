@@ -57,8 +57,8 @@ before handing it over, and list every step a stand-in environment did that the
 real target will not.
 
 Risk: evidence is screenshots, response bodies, and DB state. In an app that
-can hold personal or health data, that can capture a real person's records. Require synthetic seed data and
-keep the evidence directory out of Git.
+can hold personal or health data, that can capture a real person's records.
+Require synthetic seed data and keep the evidence directory out of Git.
 
 ### correct
 
@@ -126,7 +126,8 @@ switcher that never ships to production. The prototype is kept on a throwaway
 branch; only the decision lands on main.
 
 Gaps: the UI branch assumes a code router (Next, React Router). For a site
-built without one (a hosted site builder or a CMS), use the single-file HTML branch instead.
+built without one (a hosted site builder or a CMS), use the single-file HTML
+branch instead.
 
 ### retro
 

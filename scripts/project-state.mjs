@@ -13,7 +13,7 @@
 // clock to decide whether memory is stale. Three-week-old memory describing
 // code that has not changed is current; ten-minute-old memory describing code
 // that changed nine minutes ago is not. Calendar age produces exactly the false
-// alarms the origin spec rejects.
+// alarms this design rejects.
 
 import { fileURLToPath } from 'node:url'
 import { resolve } from 'node:path'

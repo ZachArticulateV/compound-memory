@@ -1,5 +1,5 @@
 // The coverage map says where each upstream skill now lives. These tests keep
-// it honest: every target exists, every skill the owner asked to adopt is
+// it honest: every target exists, every skill chosen for adoption is
 // mapped, and every rejection says why.
 
 import { test } from 'node:test'
@@ -24,7 +24,7 @@ function rows() {
   return out
 }
 
-/** The skills the owner listed for adoption, plus Compound Engineering's loop. */
+/** The skills chosen for adoption, plus Compound Engineering's loop. */
 const REQUIRED = {
   'mattpocock/skills': ['writing-for-agents', 'to-tickets', 'code-review', 'prototype', 'retro'],
   'cursor/plugins (pstack)': [
@@ -42,7 +42,7 @@ test('the coverage map has rows for all three upstreams', () => {
   for (const source of Object.keys(REQUIRED)) assert.ok(sources.has(source), `no section for ${source}`)
 })
 
-test('every skill the owner asked for is adopted somewhere', () => {
+test('every skill chosen for adoption is adopted somewhere', () => {
   const all = rows()
   for (const [source, names] of Object.entries(REQUIRED)) {
     for (const name of names) {

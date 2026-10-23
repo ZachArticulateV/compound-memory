@@ -8,11 +8,11 @@ date: 2026-10-21
 
 ## Context
 
-The 2026-10-21 source audit found the engineering skills handing results to
+A source audit on 2026-10-21 found the engineering skills handing results to
 each other in prose: a verify pass that ran before review's fixes still read
 as proof afterwards, "CI green or each red check explained" let a red check
-count as done, and a missing tool and a failed check looked the same. The
-owner asked for one small shared result format, checked by helpers, that keeps
+count as done, and a missing tool and a failed check looked the same. What was
+needed was one small shared result format, checked by helpers, that keeps
 temporary run state apart from lasting memory and blocks a success claim on a
 failed required check.
 

@@ -6,6 +6,13 @@ All notable changes to this plugin are documented here. Format follows
 
 ## [Unreleased]
 
+### Removed
+
+- Session-specific content from the repository: development branch names,
+  environment notes, and personal context in `memory/` and `docs/`. Run output
+  (`.verify/`, `evals/results/`) is now ignored by Git, and the scenario
+  coverage test no longer reads an external specification.
+
 ### Fixed
 
 - `review` now covers staged, unstaged, and new files. The playbook's

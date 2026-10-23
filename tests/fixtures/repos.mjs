@@ -1,7 +1,7 @@
 // Repository-shaped fixtures for the init mode.
 //
 // build.mjs makes memory trees; this makes whole projects for init to meet.
-// The three shapes correspond to the spec's first three acceptance scenarios:
+// The three shapes correspond to the first three acceptance scenarios:
 // an empty project, a mature project with no memory, and a project whose
 // CLAUDE.md is already load-bearing.
 //

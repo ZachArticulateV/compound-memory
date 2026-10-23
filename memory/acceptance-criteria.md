@@ -9,7 +9,7 @@ Status values: `unverified`, `verified`, `failing`, `not-applicable`.
 A criterion moves to `verified` only with cited evidence — a test that ran, a
 behavior observed, an artifact checked. Existence of code is not evidence.
 
-Updated: 2026-10-18
+Updated: 2026-10-23
 
 ## Structural core
 
@@ -65,7 +65,7 @@ refuse reads outside the fixture), an unattended prompt for scenarios H and J
 whose one-commit fixtures read as new projects, and a worktree with real work
 for scenario G (with none, the model asked what the work was in 3 of 9 runs).
 Scenarios A, B, C, D, E, F, G, H, I, J, and K passed; G passed 4 of 4 after its
-fixture fix. The two Codex scenarios skipped: no Codex CLI on this machine.
+fixture fix. The two Codex scenarios were skipped: no Codex CLI was installed.
 
 ## Engineering skills, live
 
@@ -109,14 +109,14 @@ in a scratch directory and was not kept.
 | `plan brainstorm` with a human answering across turns | verified | Three resumed turns: a seven-question frontier round with recommendations, a second round raised by a constraint the user added (it kept that constraint in the requirements), and the plan file written only after confirmation |
 | `autopilot` on a second stack (Python, `unittest`) | verified | Live run: routed to debug, failing tests first, fixed on a branch, every skipped stage named |
 | `autopilot` on a third stack (static web form clipped on phones) keeps its evidence, branches, and keeps its evidence directory out of Git | verified | Four live runs, 2026-10-19, under `acceptEdits` with listed commands. Every run fixed the clipping, but the first three exposed gaps, each fixed and re-run: the first two kept no evidence (tightening the verify gate alone did not help; the shrunk-verify rule a small fix follows never said to save it; `bb28433`); the third committed to `main` and put its screenshots in Git (the debug route reaches neither `build work`'s branch nor `ship commit`'s exclusion; `e065254`). The fourth met all three: a fix branch with `main` untouched, the evidence directory ignored before the commit, evidence and output saved, and a layout regression test that fails 4 times on the old CSS and passes 6 of 6 on the fix. The plugin's layout check from `skills/verify/references/checks.md` failed on the original (688px page at 375px) and passed on the fix at 320, 375, 414, and 1024px |
-| `ship watch` and `ship feedback` against real GitHub | verified | Read path on [pull request #3](https://github.com/ZachArticulateV/compound-memory/pull/3), 2026-10-19: watch read the three real checks, the clean merge state, and set aside an empty legacy status; feedback found no threads. Fix and reply paths on a test [pull request #4](https://github.com/ZachArticulateV/compound-memory/pull/4), 2026-10-19, under `acceptEdits` with listed commands: a seeded swap of the noise floor from the larger to the smaller value in `scripts/measure.mjs` turned the Ubuntu test check red. `ship watch` traced the failure from the check annotations when the proxy refused the logs, reproduced it locally, reverted the commit, pushed, and waited until all three checks were green, merging nothing. `ship feedback` replied to both review threads and resolved them: it agreed with the valid concern and pointed to the revert, and disproved the false `median()` claim by citing the line and the existing test, with no code change. The pull request was closed unmerged |
+| `ship watch` and `ship feedback` against real GitHub | verified | 2026-10-19, under `acceptEdits` with listed commands. Read path on [pull request #3](https://github.com/ZachArticulateV/compound-memory/pull/3): watch read the three real checks and the clean merge state; feedback found no threads. Fix and reply paths on a test pull request with a seeded fault in `scripts/measure.mjs` that turned the Ubuntu check red: `ship watch` traced the failure from the check annotations, reproduced it locally, reverted, pushed, and waited until all three checks were green, merging nothing; `ship feedback` answered and resolved both review threads, agreeing with the valid one and disproving the false one by citing the line and the existing test. The test pull request was closed unmerged |
 | The plugin installs and its skills are discovered under Codex | verified | Codex CLI 0.163.0, 2026-10-19: `codex plugin marketplace add` read the zacharticulatev marketplace, `codex plugin add compound-memory@zacharticulatev` installed 2.0.0 from GitHub at the pinned commit, and `codex debug prompt-input` listed all twelve skills with their full descriptions in the model-visible prompt |
-| Any skill run under Codex | unverified | no Codex model access, so no Codex model ran |
+| Any skill run under Codex | unverified | No Codex model has been run |
 | Live scenarios re-runnable from the suite | verified | `PROJECT_MEMORY_LIVE_ACCEPTANCE=1 node --test tests/acceptance/live-engineering.test.mjs`: 6 of 6 passed in three consecutive full runs (18 of 18), 2026-10-18, after two harness fixes (the inherited `NODE_TEST_CONTEXT`, and a fixture change that did not break its test). The review scenario passed 8 of 9 runs; the miss wrote no findings file, and the skill now says the gate applies when the lenses run inline |
 
 ## Audit hardening, 2026-10-21
 
-Script checks are `node --test`; agent results are `evals/results/2026-10-21-summary.md`.
+Script checks are `node --test`; agent results are in `evals/README.md` (Last measured).
 The two are kept apart.
 
 | Criterion | Status | Evidence |
@@ -130,7 +130,7 @@ The two are kept apart.
 | The verify helpers run as shipped, keep evidence, and pass a valid scroll area | verified locally | `tests/verify-helpers.test.mjs` under Playwright 1.56.1; the browser cases skip on CI |
 | Small tasks stay small | verified | Invoked `typo` runs: no extra files, 5 and 6 seconds, $0.046 each |
 | A plain request reaches the skills | not met | 0 of 24 plain-prompt plugin runs used a skill (`bugs-and-risks.md`) |
-| Any of this under Codex | unverified | No credentials; Codex facts read from its source |
+| Any of this under Codex | unverified | Not run under Codex; host facts read from Codex source |
 
 ## Out of scope for completion
 

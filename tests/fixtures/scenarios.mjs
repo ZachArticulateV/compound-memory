@@ -1,14 +1,14 @@
-// The spec's completion bar, as data.
+// The acceptance bar, as data.
 //
-// Two registries live here. SCENARIOS is the thirteen acceptance scenarios from
-// spec §49 (A-M). DELIVERABLES is the nine documents §50 requires (A-I).
+// Two registries live here. SCENARIOS is the thirteen acceptance scenarios
+// (A-M). DELIVERABLES is the nine documents the design requires (A-I).
 //
 // This module holds no fixtures of its own -- the five builders beside it
 // (build, repos, hostile, drift, workstreams) already materialize every
 // repository shape these scenarios need, and forking their shapes here would
 // create a second definition of what "the mature repo" means. What this file
-// adds is the map: which scenario each fixture serves, what the spec actually
-// demands of it, and -- the part that is easy to get wrong -- how much of that
+// adds is the map: which scenario each fixture serves, what each scenario actually
+// demands, and -- the part that is easy to get wrong -- how much of that
 // demand is checkable by code at all.
 //
 // The `coverage` field is the honest part. It is cross-checked against the
@@ -39,9 +39,9 @@ export const COVERAGE = {
 }
 
 /**
- * Spec §49, verbatim expectations.
+ * The acceptance scenarios and their expectations.
  *
- * `expects` is the spec's own bullet list, not a paraphrase -- a scenario test
+ * `expects` is the expectation list itself, not a paraphrase -- a scenario test
  * that asserts a proxy for the expectation instead of the expectation is how an
  * acceptance suite ends up certifying something nobody asked for.
  *
@@ -207,7 +207,7 @@ export const SCENARIOS = [
   },
 ]
 
-/** Every scenario id the spec defines, in order. */
+/** Every scenario id the registry defines, in order. */
 export const SCENARIO_IDS = SCENARIOS.map((s) => s.id)
 
 /** Look one up, or throw -- a typo in a test label should not silently pass. */
@@ -266,7 +266,7 @@ export function parseLimitationsCoverage(markdown) {
 }
 
 /**
- * Spec §50, the nine required deliverables and where each one shipped.
+ * The nine required deliverables and where each one shipped.
  *
  * `heading` is asserted to exist in `home` verbatim, so renaming a section in
  * the documentation without updating this table fails the suite rather than

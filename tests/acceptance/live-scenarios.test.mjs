@@ -1,6 +1,6 @@
 // Acceptance: the scenarios only a model can decide.
 //
-// Eight of the spec's thirteen scenarios (A, B, C, D, E, F, H, K) and the
+// Eight of the thirteen acceptance scenarios (A, B, C, D, E, F, H, K) and the
 // refusal halves of I and J describe what Claude does when it runs a mode.
 // No code runs a mode, so no code can assert them. The rest of the suite says
 // so plainly rather than asserting a proxy -- see docs/limitations.md.
@@ -563,9 +563,9 @@ test(label('K'), live(), (t) => {
 })
 
 // ---------------------------------------------------------------------------
-// U8's outstanding verification — the live Codex tier
+// Outstanding verification — the live Codex tier
 //
-// The plan's U8 unit carries a verification that has never been executed: a
+// One verification has never been executed here: a
 // real `codex` run against a deliberately stale memory tree returning a STALE
 // or CONTRADICTED finding, with memory/ unmodified afterward. The bridge's own
 // suite covers the contract and every demotion path against stub CLIs; what it

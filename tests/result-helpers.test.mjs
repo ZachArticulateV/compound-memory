@@ -350,8 +350,18 @@ test('plan-check: a units table is read, and brainstorm stage skips units', () =
   assert.ok(checkPlan(early).problems.some((p) => p.id === 'no-units'))
 })
 
-test('plan-check: this repository\'s own work plan passes', () => {
-  const text = readFileSync(join(repoRoot, 'docs', 'plans', '2026-10-21-audit-hardening.md'), 'utf8')
+test('plan-check: the plan shape in the artifact contract passes when filled in', () => {
+  const text = [
+    '# Invoice tax', '', '## Goal', 'Charge tax per line.', '',
+    '## Requirements', '- R1. Each line carries its own tax.', '',
+    '## Out of scope', '- Currency conversion.', '',
+    '## Decisions', '- D1. Round per line (settled by the user).', '',
+    '## Units', '### U1. Line tax', '**Goal:** tax per line', '**Files:** `lib/invoice.ts`',
+    '**Approach:** compute per line', '**Verify:** `npm test -- invoice`', '**Covers:** R1', '',
+    '## Verification', '`npm test`', '',
+    '## Done when', 'R1 holds.', '',
+    '## Open questions', '- None.', '',
+  ].join('\n')
   assert.deepEqual(checkPlan(text).problems, [])
 })
 

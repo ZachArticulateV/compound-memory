@@ -1,5 +1,5 @@
-// Acceptance: the map between the spec, the shipped documentation, and this
-// suite.
+// Acceptance: the map between the scenario registry, the shipped
+// documentation, and this suite.
 //
 // Two things are easy to get wrong once an acceptance suite exists, and both
 // are invisible from inside any single test:
@@ -10,8 +10,8 @@
 //      suite actually asserts, so the document that exists to be honest about
 //      the gaps becomes the least accurate file in the repository.
 //
-// This file closes both. It reads spec §49 and §50 directly, cross-checks the
-// registry in tests/fixtures/scenarios.mjs against the shipped limitations
+// This file closes both. It checks the shape of the registry in
+// tests/fixtures/scenarios.mjs, cross-checks it against the shipped limitations
 // table, and then checks that every scenario has a test where its coverage
 // class says it should have one. Nothing here runs a mode or touches a fixture.
 
@@ -34,19 +34,10 @@ import {
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const readRepo = (rel) => readFileSync(join(repoRoot, ...rel.split('/')), 'utf8')
 
-const spec = readRepo('docs/spec/Build a Production-Grade Claude Code Project Context & Memory System.md')
 const limitations = readRepo('docs/limitations.md')
 
 const deterministicSource = readRepo('tests/acceptance/deterministic-scenarios.test.mjs')
 const liveSource = readRepo('tests/acceptance/live-scenarios.test.mjs')
-
-/** Slice a numbered spec section out of the document. */
-function specSection(from, to) {
-  const start = spec.indexOf(`\n# ${from}.`)
-  const end = spec.indexOf(`\n# ${to}.`)
-  assert.ok(start !== -1 && end > start, `spec sections ${from} and ${to} must both be present`)
-  return spec.slice(start, end)
-}
 
 /** Scenario ids a test file wires up, read off its label() calls. */
 function labelledScenarios(source) {
@@ -54,44 +45,19 @@ function labelledScenarios(source) {
 }
 
 // ---------------------------------------------------------------------------
-// The registry against the spec
+// The registry's own shape
 // ---------------------------------------------------------------------------
 
-test('the registry carries exactly the thirteen scenarios spec §49 defines', () => {
-  const section = specSection(49, 50)
-  const headings = [...section.matchAll(/^## Scenario ([A-M])\s*[—–-]\s*(.+)$/gm)].map((m) => ({
-    id: m[1],
-    title: m[2].trim(),
-  }))
-
-  assert.equal(headings.length, 13, 'spec §49 must define thirteen scenarios')
-  assert.deepEqual(headings.map((h) => h.id), SCENARIO_IDS)
-
-  for (const { id, title } of headings) {
-    const entry = SCENARIOS.find((s) => s.id === id)
-    assert.equal(
-      entry.title.toLowerCase(),
-      title.toLowerCase(),
-      `scenario ${id} is titled "${title}" in the spec and "${entry.title}" in the registry`
-    )
-  }
-})
-
-test('every registry expectation is the spec bullet, not a paraphrase of it', () => {
-  const section = specSection(49, 50)
+test('the registry carries exactly the thirteen scenarios A–M, each with a title and expectations', () => {
+  assert.equal(SCENARIOS.length, 13, 'the registry must define thirteen scenarios')
+  assert.deepEqual(SCENARIO_IDS, 'ABCDEFGHIJKLM'.split(''))
 
   for (const s of SCENARIOS) {
-    const start = section.indexOf(`## Scenario ${s.id} `)
-    const nextHeading = section.indexOf('\n## ', start + 1)
-    const body = section.slice(start, nextHeading === -1 ? undefined : nextHeading)
-
-    for (const expectation of s.expects) {
-      assert.ok(
-        body.includes(expectation),
-        `scenario ${s.id}: "${expectation}" does not appear verbatim in the spec's expectation list`
-      )
-    }
+    assert.ok(s.title.trim().length > 0, `scenario ${s.id} has no title`)
+    assert.ok(s.expects.length > 0, `scenario ${s.id} has no expectations`)
+    assert.ok(Object.values(COVERAGE).includes(s.coverage), `scenario ${s.id} has an unknown coverage class`)
   }
+  assert.equal(new Set(SCENARIOS.map((s) => s.title.toLowerCase())).size, 13, 'two scenarios share a title')
 })
 
 // ---------------------------------------------------------------------------
@@ -101,7 +67,7 @@ test('every registry expectation is the spec bullet, not a paraphrase of it', ()
 test('docs/limitations.md accounts for every scenario, exactly once', () => {
   const table = parseLimitationsCoverage(limitations)
 
-  assert.deepEqual([...table.keys()].sort(), [...SCENARIO_IDS].sort(), 'the limitations coverage table and the spec disagree about which scenarios exist')
+  assert.deepEqual([...table.keys()].sort(), [...SCENARIO_IDS].sort(), 'the limitations coverage table and the registry disagree about which scenarios exist')
 
   for (const [id, row] of table) {
     assert.ok(row.coverage, `docs/limitations.md status for scenario ${id} does not classify: "${row.status}"`)
@@ -203,19 +169,12 @@ test('the live harness invokes only flags the installed CLIs document', () => {
 })
 
 // ---------------------------------------------------------------------------
-// Spec §50 — the required deliverables
+// The required deliverables
 // ---------------------------------------------------------------------------
 
-test('the deliverable registry carries exactly the nine spec §50 requires', () => {
-  const section = specSection(50, 51)
-  const headings = [...section.matchAll(/^## ([A-I])\.\s+(.+)$/gm)].map((m) => ({ id: m[1], title: m[2].trim() }))
-
-  assert.equal(headings.length, 9, 'spec §50 must require nine deliverables')
-  assert.deepEqual(headings.map((h) => h.id), DELIVERABLES.map((d) => d.id))
-  assert.deepEqual(
-    headings.map((h) => h.title.toLowerCase()),
-    DELIVERABLES.map((d) => d.title.toLowerCase())
-  )
+test('the deliverable registry carries exactly nine deliverables, A–I', () => {
+  assert.deepEqual(DELIVERABLES.map((d) => d.id), 'ABCDEFGHI'.split(''))
+  for (const d of DELIVERABLES) assert.ok(d.title.trim().length > 0, `deliverable ${d.id} has no title`)
 })
 
 test('every deliverable A–I has a section that actually exists in the shipped docs', () => {

@@ -23,7 +23,7 @@ Two sections below — [The eight modes](#the-eight-modes) and much of
 the top of each, and reading them as enforced behavior would be reading this
 document the way the plugin exists to stop people reading memory.
 
-The spec this implements asks for nine deliverables. Here is where each one is.
+The design calls for nine deliverables. Here is where each one is.
 
 ## Deliverable index
 
@@ -582,9 +582,7 @@ project-memory/
     ├── architecture.md               this file
     ├── limitations.md                what the system does not guarantee
     ├── coverage.md                   each upstream skill and where it lives here
-    ├── benchmark/                    reviews of the three upstreams
-    ├── plans/                        the implementation plan
-    └── spec/                         the originating specification
+    └── benchmark/                    reviews of the three upstreams
 ```
 
 `docs/`, `tests/`, and the repository metadata are development artifacts; nothing
@@ -1072,8 +1070,8 @@ failure this plugin exists to prevent.
   composed into `deterministic-scenarios.test.mjs`; the rest only happen when a
   model runs a mode, so they live in `live-scenarios.test.mjs`, gated behind
   `PROJECT_MEMORY_LIVE_ACCEPTANCE=1` and reporting as **skipped** — not passed —
-  when the variable is unset. `scenario-coverage.test.mjs` is the third: it reads
-  spec §49 and §50 directly and fails if the registry, `docs/limitations.md`, and
+  when the variable is unset. `scenario-coverage.test.mjs` is the third: it
+  fails if the scenario registry, `docs/limitations.md`, and
   the tests ever disagree about how much is actually covered.
 
 ## Limitations

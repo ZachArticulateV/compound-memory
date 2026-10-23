@@ -14,8 +14,8 @@ Reproducibility: not applicable
 The Codex manifest (including its hook opt-out),
 `skills/project-memory/agents/openai.yaml`, the Outside Claude Code section,
 and the Codex launch line are covered by structural tests and a reading of
-Codex source at c248f6d. A live Claude Code run of `handoff for codex:`
-printed a correct launch line; the Codex side has never run.
+Codex source. A live Claude Code run of `handoff for codex:` printed a correct
+launch line; the Codex side has never run a skill.
 
 **Affected components:**
 
@@ -51,10 +51,10 @@ Reproducibility: always, in the 2026-10-21 eval
 
 **Observed:**
 
-In `evals/results/2026-10-21-sonnet.md`, none of the 24 plain-prompt runs with
-the plugin loaded called a plugin skill, although a probe showed all twelve in
-the model's skill list. Plugin and no-plugin runs scored the same, and the
-debug runs fixed the bug without the regression test the debug skill asks for.
+In the 2026-10-21 agent-task eval (`evals/README.md`, Last measured), none of
+the 24 plain-prompt runs with the plugin loaded called a plugin skill, although
+all twelve were in the model's skill list. Plugin and no-plugin runs scored the
+same.
 
 **Affected components:**
 
@@ -86,9 +86,9 @@ Reproducibility: always on CI
 
 **Observed:**
 
-`tests/verify-helpers.test.mjs` skips its five browser cases when Playwright or
-Chromium is missing, which is the case on the GitHub runners. They ran here
-(Playwright 1.56.1, Chromium 1194).
+`tests/verify-helpers.test.mjs` skips its browser cases when Playwright or
+Chromium is missing, which is the case on the GitHub runners. They pass where
+Playwright and Chromium are installed.
 
 **Affected components:**
 
@@ -104,11 +104,9 @@ None.
 
 **Attempted fixes:**
 
-None; the not-checked path (exit 3) and the refusal to write outside
-the ignored .verify directory are tested everywhere, and the six browser cases pass locally on
-`1ebfe2c`.
+None; the not-checked path (exit 3) and the refusal to write outside the
+ignored .verify directory are tested everywhere.
 
 **Verification status:**
 
-Browser cases verified locally only.
-
+Browser cases verified outside CI only.

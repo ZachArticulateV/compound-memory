@@ -1,8 +1,8 @@
 // Acceptance: the scenarios code can actually decide.
 //
-// Spec §49 defines thirteen scenarios. Five of them (G, L, M, and the
+// The acceptance registry defines thirteen scenarios. Five of them (G, L, M, and the
 // mechanical halves of I and J) have a deterministic surface: shipped code
-// reaches a verdict, so a test can assert the spec's stated expectation rather
+// reaches a verdict, so a test can assert the stated expectation rather
 // than a proxy for it. The other eight only happen when a model runs a mode --
 // those live in live-scenarios.test.mjs behind an environment gate, and they
 // report as SKIPPED rather than as passed when the gate is closed.

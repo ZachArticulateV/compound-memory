@@ -13,7 +13,8 @@ node evals/run.mjs --configs none,revised --model opus
 
 It needs `claude` on PATH and spends model tokens (about $0.02 to $0.60 a run
 on `sonnet`). Results go to `evals/results/<date>-<model>.json` (one row per
-run) and `.md` (the summary).
+run) and `.md` (the summary). That directory is ignored by Git: the rows hold
+the agents' replies, so they stay on the machine that ran them.
 
 ## What is held equal
 
@@ -49,6 +50,20 @@ difference is `--plugin-dir`: none, the plugin at `--baseline-ref` (default
 `tests/evals.test.mjs` checks each grader rejects the untouched fixture or a
 wrong reply and accepts the reference outcome, so a grader cannot pass
 everything.
+
+## Last measured
+
+2026-10-21, `sonnet`, 2 trials per task and configuration.
+
+| Arm | Plugin | Correct | False success |
+| --- | --- | --- | --- |
+| Plain prompts | none, previous, current | 6/12 each | 6/12 each |
+| Skill invoked | previous | 7/12 | 5/12 |
+| Skill invoked | current | 12/12 | 0/12 |
+
+With plain prompts no run called a plugin skill, so the three configurations
+scored the same. With the skill invoked, the current skills fixed the
+`pr-ready`, `measure`, and `commit-staged` misses, and `typo` stayed small.
 
 ## Limits
 

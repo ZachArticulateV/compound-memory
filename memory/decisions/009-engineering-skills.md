@@ -8,12 +8,12 @@ date: 2026-10-18
 
 ## Context
 
-The owner asked for one plugin that does what the reviewed skills do
+The goal was one plugin that does what the reviewed skills do
 (Compound Engineering, mattpocock/skills, and Cursor's pstack; see
 `docs/benchmark/`) across memory, planning, building, review, verification,
 shipping, and learning. Each skill had to work alone, together with the others,
-and for different purposes. The owner asked for a posture that trusts the model
-rather than restricting it.
+and for different purposes, with a posture that trusts the model rather than
+restricting it.
 
 ## Decision
 
@@ -46,9 +46,9 @@ ticket graphs, lesson lookup, measurement noise) are bundled read-only scripts.
 - More modes on the one `project-memory` skill: one description cannot carry
   triggers for review, debugging, and memory without misfiring, and the memory
   skill's non-trigger clause exists to keep coding work out of it.
-- Separate plugins per area: the owner asked for one plugin, and shared
+- Separate plugins per area: the goal was one plugin, and shared
   artifacts would cross plugin boundaries.
-- Renaming the plugin: deferred here, then chosen by the owner in decision 010
+- Renaming the plugin: deferred here, then chosen in decision 010
   (`compound-memory`).
 
 ## Consequences

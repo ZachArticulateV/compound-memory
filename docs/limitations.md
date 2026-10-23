@@ -175,7 +175,7 @@ auditor bridge's tier selection and failure classification, the hooks, every
 manifest and frontmatter contract, and the shape of every fixture.
 
 It does not verify what the modes produce, because running a mode means running a
-model. The spec's thirteen acceptance scenarios split accordingly:
+model. The thirteen acceptance scenarios split accordingly:
 
 | Scenario | Status |
 | --- | --- |

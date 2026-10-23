@@ -14,3 +14,11 @@ tmp/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Run output: evidence, run records, review findings, and agent eval rows.
+# These hold session-specific results and agent replies; never commit them.
+.verify/
+evals/results/
+
+# Local agent settings and session state
+.claude/settings.local.json

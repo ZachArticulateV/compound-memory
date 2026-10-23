@@ -5,7 +5,8 @@
 For normal development:
 
 1. `current-state.md`
-2. `handoff.md`
+2. the active handoff, when one exists (`handoff.md`, or the one for this
+   branch under `handoffs/`)
 3. `next-actions.md`
 
 Read `bugs-and-risks.md` when debugging, planning, or touching an affected
@@ -27,7 +28,7 @@ memory file.
 | Architectural decisions | `decisions/` |
 | Immediate local work | `next-actions.md` |
 | Release history | `CHANGELOG.md` |
-| Originating requirements | `docs/spec/` and `docs/plans/` |
+| Original definition | `project-brief.md` |
 
 ## Do not assume
 
@@ -35,7 +36,7 @@ memory file.
   model follows; `docs/limitations.md` names the three properties code enforces.
 - That the Codex path has been exercised by a live Codex session. It is tested
   structurally, not live.
-- That the 15 skipped tests ran. They are live-tier tests gated off by default.
+- That the skipped tests ran. They are live-tier tests gated off by default.
 
 ## Important
 

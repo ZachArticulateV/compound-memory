@@ -10,7 +10,7 @@ date: 2026-10-19
 
 The plugin grew from one memory skill to twelve skills covering planning,
 building, review, verification, shipping, and learning (decision 009). The name
-`project-memory` described only one of them. The owner chose the new name.
+`project-memory` described only one of them.
 
 ## Decision
 
@@ -21,7 +21,7 @@ everything they write are unchanged. The repository keeps its name.
 
 ## Why
 
-The owner picked it from three proposals. It keeps "memory", which existing
+It was picked from three proposals. It keeps "memory", which existing
 users know, and names the compounding loop the engineering skills add.
 
 ## Alternatives considered
