@@ -69,7 +69,7 @@ IDs let later work cite the plan without copying it.
 ## Requirements        R1, R2, ... (behavior, user's words)
 ## Out of scope
 ## Decisions           D1, D2, ... (choice, reason, who settled it)
-## Units               U1, U2, ... each with Goal, Files, Approach, Verify, Covers (R ids)
+## Units               U1, U2, ... each with Goal, Files, Approach, Verify, Covers (R ids), and Depends on (U ids) when order matters
 ## Verification        the commands that prove the whole plan
 ## Done when
 ## Open questions
@@ -77,8 +77,9 @@ IDs let later work cite the plan without copying it.
 
 A plan carries no status field and no checkboxes. Progress lives in Git and in
 the tickets. `scripts/plan-check.mjs <plan>` checks the links: every
-requirement covered by a unit, every unit with a Verify, Out of scope present,
-open questions marked answered, deferred, or assumed.
+requirement covered by a unit, every unit with a Verify, every `Depends on` a
+unit that exists, Out of scope present, open questions marked answered,
+deferred, or assumed.
 
 ## Tickets
 

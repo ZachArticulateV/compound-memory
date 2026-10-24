@@ -61,6 +61,15 @@ The decisions themselves (purpose, scope, trade-offs, priorities, what done
 means) are the user's. Put each one to them and wait. A recommended answer is a
 proposal; it is never recorded as the decision until the user accepts it.
 
+## Unfamiliar territory
+
+When the user says they do not know an area, or twice answers "you decide" to
+a question that needs judgment about the domain, stop asking one question at a
+time. List the three to seven decisions and hazards that area forces, each with
+its realistic options and your default, citing the code for facts about this
+repository. Walk through the ones the user picks; the rest take your default,
+recorded as assumed.
+
 ## Challenge against memory
 
 When memory exists, every answer is checked against it as it lands:

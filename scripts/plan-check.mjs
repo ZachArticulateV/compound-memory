@@ -9,6 +9,7 @@
 //   - requirements no unit covers;
 //   - units that cite a requirement the plan does not have;
 //   - units with no Verify, or a Verify that says TBD;
+//   - a `Depends on` that names a unit the plan does not have, or the unit itself;
 //   - a missing or empty Out of scope;
 //   - open questions not marked answered, deferred, or assumed;
 //   - two decisions or two units sharing an ID.
@@ -68,14 +69,14 @@ export function parseUnits(body) {
     const cells = (l) => l.trim().replace(/^\||\|$/g, '').split('|').map((c) => c.trim())
     const header = cells(rows[0]).map((c) => c.toLowerCase())
     const col = (name) => header.findIndex((h) => h === name || h.startsWith(name))
-    const [u, v, cov] = [col('unit'), col('verify'), col('covers')]
+    const [u, v, cov, dep] = [col('unit'), col('verify'), col('covers'), col('depends')]
     if (u !== -1) {
       for (const row of rows.slice(1)) {
         if (/^\s*\|[\s:|-]+\|\s*$/.test(row)) continue
         const c = cells(row)
         const id = ids(c[u] ?? '', 'U')[0]
         if (!id) continue
-        units.push({ id, verify: v === -1 ? null : c[v] ?? '', covers: cov === -1 ? [] : ids(c[cov] ?? '', 'R'), text: row })
+        units.push({ id, verify: v === -1 ? null : c[v] ?? '', covers: cov === -1 ? [] : ids(c[cov] ?? '', 'R'), dependsOn: dep === -1 ? [] : ids(c[dep] ?? '', 'U'), text: row })
       }
       return units
     }
@@ -84,7 +85,7 @@ export function parseUnits(body) {
   for (const line of body) {
     const start = /^\s*(?:#{2,4}\s+|(?:[-*]|\d+[.)])\s+(?:\*\*)?)(U\d+)\b/.exec(line)
     if (start) {
-      current = { id: start[1], verify: null, covers: [], text: line }
+      current = { id: start[1], verify: null, covers: [], dependsOn: [], text: line }
       units.push(current)
     }
     if (current === null) continue
@@ -104,6 +105,8 @@ export function parseUnits(body) {
     }
     const c = /\bCovers\b\**\s*:?\**\s*(.*)$/i.exec(line)
     if (c) current.covers.push(...ids(c[1], 'R'))
+    const d = /\bDepends on\b\**\s*:\**\s*(.*)$/i.exec(line)
+    if (d) current.dependsOn.push(...ids(d[1], 'U'))
   }
   return units
 }
@@ -144,6 +147,12 @@ export function checkPlan(text, { stage = 'plan' } = {}) {
       for (const r of u.covers) if (!requirements.includes(r)) add('unknown-requirement', `${u.id} covers ${r}, which the Requirements section does not list`)
       if (u.covers.length === 0) add('covers-nothing', `${u.id} covers no requirement`)
     }
+    for (const u of units) {
+      for (const d of u.dependsOn) {
+        if (d === u.id) add('unknown-unit', `${u.id} depends on itself`)
+        else if (!seen.has(d)) add('unknown-unit', `${u.id} depends on ${d}, which the Units section does not list`)
+      }
+    }
     const covered = new Set(units.flatMap((u) => u.covers))
     for (const r of requirements) if (!covered.has(r)) add('uncovered', `${r} is covered by no unit`)
     const decisions = (find(secs, 'decisions') ?? []).filter((l) => itemWith('D').test(l)).map((l) => /D\d+/.exec(l)[0])
@@ -155,7 +164,7 @@ export function checkPlan(text, { stage = 'plan' } = {}) {
     schemaVersion: PLAN_CHECK_SCHEMA_VERSION,
     stage,
     requirements,
-    units: units.map((u) => ({ id: u.id, covers: u.covers, verify: u.verify })),
+    units: units.map((u) => ({ id: u.id, covers: u.covers, dependsOn: u.dependsOn, verify: u.verify })),
     problems,
     ready: problems.length === 0,
   }
