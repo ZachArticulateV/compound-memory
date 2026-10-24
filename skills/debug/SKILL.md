@@ -98,6 +98,3 @@ loop's result after the fix
 Paths in this skill and its references are relative to this skill's directory
 (`${CLAUDE_SKILL_DIR}`). Outside Claude Code, that is the directory holding this
 file.
-
-Draws on Compound Engineering `ce-debug`, mattpocock/skills
-`diagnosing-bugs`, and pstack's `principle-fix-root-causes`.

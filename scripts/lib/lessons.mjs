@@ -7,9 +7,9 @@
 // should still be found; the validator then asks for the bracket style, which
 // the flat frontmatter parser shared with the rest of memory can read.
 //
-// Compound Engineering's learnings store showed why this is code: its prompt
-// told agents to grep `tags:.*kw`, which never matches a block-list tag, and
-// four copies of that prompt drifted apart. Here there is one matcher.
+// This is code because a prose instruction (grep `tags:.*kw`) never matches a
+// block-list tag, and copies of such an instruction drift apart. Here there is
+// one matcher.
 
 import { MEMORY_DIRNAME, parseSections } from './memory-model.mjs'
 

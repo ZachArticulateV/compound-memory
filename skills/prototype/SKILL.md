@@ -67,5 +67,3 @@ ask, pick one, and state the assumption at the top of the prototype.
 Paths in this skill and its references are relative to this skill's directory
 (`${CLAUDE_SKILL_DIR}`). Outside Claude Code, that is the directory holding this
 file, and `$0` is the first word after the skill name.
-
-Draws on mattpocock/skills `prototype` and Compound Engineering `ce-prototype`.

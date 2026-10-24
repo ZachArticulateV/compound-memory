@@ -63,13 +63,6 @@ Common combinations:
 /compound-memory:autopilot        all of the first line, unattended, ending at an open PR
 ```
 
-It replaces the upstream skills it learned from: 48 skills from Compound
-Engineering, mattpocock/skills, and Cursor's pstack, so none of them needs to
-be installed beside it. [`docs/coverage.md`](docs/coverage.md) maps each one
-to where it lives here and says why the rest were left out, and
-[`docs/benchmark/parity-2026-10-24.md`](docs/benchmark/parity-2026-10-24.md) is
-the parity review behind each row.
-
 ## Memory
 
 The `project-memory` skill keeps a version-controlled project context
@@ -263,10 +256,6 @@ criteria, and archives are fetched when the task makes them relevant.
 - [`docs/limitations.md`](docs/limitations.md) — what the system does not
   guarantee, including which acceptance scenarios are machine-verified and which
   are not.
-- [`docs/coverage.md`](docs/coverage.md) — where each upstream skill now
-  lives, and why the rest were not adopted.
-- [`docs/benchmark/`](docs/benchmark/) — the reviews of mattpocock/skills,
-  Compound Engineering, and pstack behind those choices.
 
 ## Platforms
 

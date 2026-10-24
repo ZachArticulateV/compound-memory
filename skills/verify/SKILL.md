@@ -70,6 +70,3 @@ errors during a journey) and recipes for other surfaces are in
 Paths in this skill and its references are relative to this skill's directory
 (`${CLAUDE_SKILL_DIR}`). Outside Claude Code, that is the directory holding this
 file, and `$0` is the first word after the skill name.
-
-Draws on pstack's `create-verification-skill`, `maintain-verification-skill`,
-and `principle-prove-it-works`, and Compound Engineering `ce-test-browser`.

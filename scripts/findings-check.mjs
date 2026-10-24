@@ -8,9 +8,8 @@
 // only when reviewers on different models agree, and keeps what clears the bar:
 // confidence 75 or more, or severity P0.
 //
-// Compound Engineering's equivalent checked only that a quote was present, so a
-// reviewer could quote code that does not exist and keep its confidence. Here
-// the quote is looked up.
+// Checking only that a quote is present would let a reviewer quote code that
+// does not exist and keep its confidence, so the quote is looked up.
 //
 // Severity and confidence never stand in for evidence. A P0 is kept even when
 // its quote does not check out, because dropping a possible outage is worse

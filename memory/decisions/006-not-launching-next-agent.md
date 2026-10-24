@@ -8,8 +8,7 @@ date: 2026-09-29
 
 ## Context
 
-mattpocock/skills `claude-handoff` launches a background agent seeded with the
-handoff.
+A handoff could launch a background agent seeded with itself.
 
 ## Decision
 
@@ -27,7 +26,7 @@ Launching automatically: rejected for the write conflict above.
 
 ## Consequences
 
-One extra paste for the user. Requested by: the upstream benchmark.
+One extra paste for the user.
 
 ## Evidence / implementation
 

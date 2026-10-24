@@ -62,7 +62,3 @@ less like a machine" is `plain`.
 Paths in this skill and its references are relative to this skill's directory
 (`${CLAUDE_SKILL_DIR}`). Outside Claude Code, that is the directory holding this
 file, and `$0` is the first word after the skill name.
-
-Draws on pstack's `technical-writing` and `unslop`, mattpocock/skills
-`writing-for-agents` and `wait-what`, and Compound Engineering `ce-noslop` and
-`wtf`.

@@ -342,9 +342,8 @@ and is likely to be proposed again, record it: title it as the rejection
 (`Not: server-side rendering`), put the reason under Why, and list where it
 was requested. The interview discipline that `grill` and `init` run checks these
 records before re-opening a settled question. A `Not:` record has `status:
-accepted` while the rejection stands. Upstream projects keep these in an `.out-of-scope/`
-directory; here they are ordinary decision records, so they supersede and
-index like any other.
+accepted` while the rejection stands. They are ordinary decision records, so
+they supersede and index like any other.
 
 **Lifecycle:** append and supersede. Historical decisions are never rewritten to
 make an old choice look like the current one was always intended. When a decision

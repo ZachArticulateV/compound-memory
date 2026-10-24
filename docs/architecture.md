@@ -488,8 +488,7 @@ check, so a lesson the validator accepts is one lookup can find.
 
 `tests/skills.test.mjs` pins the anatomy, every path a skill names, every script
 call against its `allowed-tools`, the Codex metadata, and that every skill named
-under **Works with** exists. `tests/coverage.test.mjs` pins that each upstream
-skill `docs/coverage.md` claims is adopted maps to a skill or mode that exists.
+under **Works with** exists.
 `tests/acceptance/live-engineering.test.mjs` runs six scenarios with a model
 against a temp fixture (with a scripted `gh` from `tests/fixtures/fake-gh.cjs`
 for the shipping scenario) and checks the artifacts with these same scripts;
@@ -582,9 +581,7 @@ project-memory/
     ├── quickstart.md                 the beginner's first run
     ├── advanced.md                   worktrees, Codex, CI, teams
     ├── architecture.md               this file
-    ├── limitations.md                what the system does not guarantee
-    ├── coverage.md                   each upstream skill and where it lives here
-    └── benchmark/                    reviews of the three upstreams
+    └── limitations.md                what the system does not guarantee
 ```
 
 `docs/`, `tests/`, and the repository metadata are development artifacts; nothing
