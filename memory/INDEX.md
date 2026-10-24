@@ -5,8 +5,7 @@
 For normal development:
 
 1. `current-state.md`
-2. the active handoff, when one exists (`handoff.md`, or the one for this
-   branch under `handoffs/`)
+2. the active handoff, when one exists (the probe names it)
 3. `next-actions.md`
 
 Read `bugs-and-risks.md` when debugging, planning, or touching an affected
