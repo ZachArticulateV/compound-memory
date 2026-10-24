@@ -120,14 +120,18 @@ whether to heed it. What their scripts establish, and nothing more:
   not part of the code fingerprint. Re-running the recorded command is how to
   confirm a result.
 - `changes.mjs` lists every change in scope and, before a commit, the staged
-  lines that were staged before the work began or fall outside the intended
-  paths. It compares each file's staged blob and each hunk's position and
+  lines that were staged before the work began, edits that were already in
+  the working tree then and are now staged unchanged, or lines outside the
+  intended paths. An earlier edit the agent then changed further is not
+  recognized as the user's. It compares each file's staged blob and each hunk's position and
   text against the snapshot, so a hunk the user and the agent staged
   identically at the same place counts as the user's. It never stages or
   commits.
 - `pr-state.mjs` classifies what GitHub reported at the moment it was fetched.
-  It does not fetch, and it cannot see a required check GitHub has not yet
-  created.
+  It does not fetch, and it sees a required check GitHub has not yet created
+  only when `--required` names it. A review is pending only while GitHub still
+  lists the reviewer as requested; a bot that reviews without being requested
+  is not seen.
 - `plan-check.mjs` checks the links between requirements and units, not
   whether a `Verify` could fail or a requirement is testable.
 - `rewrite-check.mjs` compares tokens and words of doubt, not meaning.
