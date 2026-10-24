@@ -20,7 +20,16 @@ out. For a PR you have not checked out, add a worktree for its head and pass
 ## 2. Gather what each lens needs
 
 - **Intent** for the spec lens: the plan file, ticket, issue, PR body, or the
-  user's words. With none, the spec lens reports "no spec available".
+  user's words. Also check the commit list for issue references (`#123`,
+  `Closes #45`) and fetch them with the host's tracker tool. With none, and a
+  person present, ask once where the spec is; otherwise the spec lens reports
+  "no spec available". Every lens gets a two-line summary of the intent; only
+  the spec lens gets the full spec.
+- **Settled decisions:** the choices the plan records as the user's. Keep them
+  out of the lenses' inputs as open questions, and drop a finding that only
+  prefers another option to one of them; a real defect in one stays.
+- **Earlier review:** for a PR with previous threads, the changes reviewers
+  asked for that the diff never made or later reverted are findings.
 - **Standards** for the standards lens: every file that says how code here
   should be written, plus `memory/guardrails.md` and the lessons for the
   changed paths:
@@ -42,8 +51,8 @@ standards lens the standards). Each returns findings as JSON in the shape
 `../../references/artifacts.md` gives, plus at most 400 words of prose.
 
 For a risky change, when a different model is available (the Codex CLI from
-Claude Code, `claude -p` from Codex), run the correctness lens on it as well
-and set `model` on its findings. Agreement on a checked quote between two
+Claude Code, `claude -p` from Codex), run the correctness or adversarial lens
+on it as well and set `model` on its findings. Agreement on a checked quote between two
 model labels raises confidence; agreement between two subagents on one model
 does not. The label is what you wrote, so set it truthfully.
 
@@ -53,7 +62,7 @@ Collect every lens's findings into one `.verify/review-findings.json` (keep
 `.verify/` in `.gitignore`) and run it against a checkout of the reviewed head:
 
 ```bash
-node "${CLAUDE_SKILL_DIR}/../../scripts/findings-check.mjs" --input .verify/review-findings.json
+node "${CLAUDE_SKILL_DIR}/../../scripts/findings-check.mjs" --input .verify/review-findings.json --patch .verify/review.patch
 ```
 
 It checks that each quote is really in the file near the cited line, merges
@@ -61,7 +70,8 @@ duplicates, and keeps findings at confidence 75 or more, or P0. It reads files
 as they are on disk, so when the reviewed head is not the current tree (a PR you
 have not checked out), add a worktree for it (`git worktree add`) and pass that
 directory with `--cwd`. A finding about a deleted line quotes the code that
-remains around it.
+remains around it. With `--patch`, a finding on lines the change did not touch
+is marked pre-existing and kept off the safe-to-fix list.
 
 ## 5. Try to disprove
 
@@ -72,7 +82,7 @@ the reason), `confirmed`, or `unresolved` when you cannot settle it. An
 unproved finding cannot be confirmed until it quotes real code. Then:
 
 ```bash
-node "${CLAUDE_SKILL_DIR}/../../scripts/findings-check.mjs" --input .verify/review-findings.json --final
+node "${CLAUDE_SKILL_DIR}/../../scripts/findings-check.mjs" --input .verify/review-findings.json --patch .verify/review.patch --final
 ```
 
 It exits 1 while a kept P0 or P1 has no verdict, drops the disproved ones, and
@@ -91,7 +101,10 @@ Why: <one or two sentences>. Fix: <one sentence>.
 ```
 
 End with one line per lens: its count and its worst finding. Do not pick one
-worst finding across lenses. Then the number of suppressed findings.
+worst finding across lenses. Then the number of suppressed findings. Findings
+the gate marked pre-existing go in their own Pre-existing list after the
+lenses, outside each lens's count, unless the change depends on them. A
+migration the migration lens covered gets its deployment notes here.
 
 ## 7. Fix, when asked
 
@@ -102,4 +115,6 @@ is mechanical. Run the tests after each fix, and commit as
 ones the fix touches, `verify` included for a user-facing path, and record
 them in the run when there is one
 (`node "${CLAUDE_SKILL_DIR}/../../scripts/run-record.mjs" gate --run <id>`
-names what is stale). List the findings you did not apply.
+names what is stale). List the findings you did not apply and where each one
+went: the PR's Open items, or the project's tracker when it keeps work there,
+linked.
