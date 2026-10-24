@@ -2,7 +2,7 @@
 name: build
 description: "Implement planned work with proof at every step: execute a plan or tickets unit by unit, running independent units in parallel; refine code just written; or improve a measured metric, keeping only the wins that clear the noise. Use when the user asks to implement, build, execute a plan or ticket, clean up freshly written code, or make something faster or smaller."
 argument-hint: "[work|simplify|optimize] [plan path, ticket, or goal]"
-allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/tickets-check.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/measure.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/run-record.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/changes.mjs" *)
+allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/tickets-check.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/measure.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/run-record.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/changes.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/project-state.mjs" *)
 ---
 
 # Build
@@ -37,14 +37,21 @@ request to decide it, use `work`. Read only the reference for the mode you run.
    ```
 
    On the repository's default branch, create a feature branch before the first
-   commit.
+   commit. When the working tree already holds edits, snapshot it before your
+   first change, so the commit check can tell the user's edits from yours:
+
+   ```bash
+   node "${CLAUDE_SKILL_DIR}/../../scripts/changes.mjs" snapshot
+   ```
 
    When the project has a verification skill (`.claude/skills/verify-*` or
    `.agents/skills/verify-*`), note it: `verify` uses it to prove user-facing
    changes.
 2. **Run the mode** from its reference.
 3. **Keep the plan true.** When the plan turns out wrong, fix the plan file and
-   say what changed, rather than quietly building something else.
+   say what changed, rather than quietly building something else. A decision
+   the plan records as the user's is not yours to change: when it proves
+   unworkable, stop and ask.
 4. **Hand off.** Run `verify` for user-facing changes and `review` before
    shipping. When the work crosses skills or sessions, keep the check results
    in a run record (`../../references/artifacts.md`) so the next stage reads
@@ -67,6 +74,6 @@ Paths in this skill and its references are relative to this skill's directory
 (`${CLAUDE_SKILL_DIR}`). Outside Claude Code, that is the directory holding this
 file, and `$0` is the first word after the skill name.
 
-Draws on Compound Engineering `ce-work`, `ce-simplify-code`, and `ce-optimize`,
-mattpocock/skills `tdd` and `implement`, and pstack's
+Draws on Compound Engineering `ce-work`, `ce-simplify-code`, `ce-optimize`,
+and `ce-worktree`, mattpocock/skills `tdd` and `implement`, and pstack's
 `principle-prove-it-works`.

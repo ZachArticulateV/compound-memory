@@ -145,6 +145,22 @@ function worktrees(root, options) {
 }
 
 /**
+ * Whether this checkout is a linked worktree (made by `git worktree add`)
+ * rather than the main one: its own git directory differs from the shared
+ * common directory. A submodule also has a separate git directory, so one is
+ * not counted. null when Git cannot answer.
+ */
+function linkedWorktree(root, options) {
+  const res = runGit(['rev-parse', '--path-format=absolute', '--git-dir', '--git-common-dir', '--show-superproject-working-tree'], { ...options, cwd: root })
+  if (!res.ok) return null
+  const [gitDir, commonDir, superproject] = res.stdout.split(/\r?\n/).map((l) => l.trim())
+  if (!gitDir || !commonDir) return null
+  if (superproject) return false
+  const norm = (p) => p.split('\\').join('/').replace(/\/+$/, '').toLowerCase()
+  return norm(gitDir) !== norm(commonDir)
+}
+
+/**
  * Working-tree changes, including untracked files. NUL-delimited so paths are
  * never ambiguous.
  *
@@ -195,6 +211,9 @@ export function readGitState(root, options = {}) {
     detached: branch === null,
     head: headSha(root, options),
     worktrees: worktrees(root, options),
+    // true inside a checkout made by `git worktree add`: work there in place
+    // rather than nesting another worktree.
+    linkedWorktree: linkedWorktree(root, options),
     // null, not false, when `git status` itself failed. A clean tree and an
     // unanswerable question must not serialize identically.
     dirty: status.ok ? status.changes.length > 0 : null,
