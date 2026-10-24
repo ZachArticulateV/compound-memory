@@ -123,3 +123,8 @@ None.
   `CLAUDE.md`, which fails strict plugin validation.
 - Never commit run output (the .verify and evals/results directories): it
   holds agent replies and session-specific results. `.gitignore` covers both.
+- A content scan for personal or session-specific text expects exactly one
+  identity: the publisher's, in the manifests' author fields, the LICENSE
+  copyright line, the repository URLs and install commands, and GitHub's
+  merge-commit messages. The owner chose to keep it; anything else is a
+  finding.
