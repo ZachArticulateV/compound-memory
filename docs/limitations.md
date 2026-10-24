@@ -135,7 +135,8 @@ whether to heed it. What their scripts establish, and nothing more:
   can still read badly, and a hit inside a deliberate example is not a fault.
 - `scripts/verify/` helpers check layout and console errors on the pages and
   journeys they are given. A pass on one page at three widths is not a pass on
-  the app.
+  the app. `feature-map-check.mjs` checks the map's shape, not that any recipe
+  in it still drives the app.
 - `tickets-check.mjs` reports collisions only between tickets whose `Touches`
   lines overlap. A ticket with no `Touches` line is reported as unknown, not as
   safe.

@@ -471,6 +471,7 @@ only pre-approves the bundled scripts they call. What must be exact is code:
 | `scripts/pr-state.mjs` | `ship pr`, `ship watch`, `autopilot` | Is the PR only created, are its checks passed on the current head, or is it ready to merge? |
 | `scripts/plan-check.mjs` | `plan`, `prototype`, `autopilot` | Does every requirement have a unit, every unit a Verify, and every open question a status? |
 | `scripts/rewrite-check.mjs` | `write` | Did a rewrite lose code, commands, paths, links, numbers, or doubt, or add identifiers the source did not have? With `--tells`, which listed writing tells (vocabulary, filler, em dashes, arrows, heading structure) does a file carry? |
+| `scripts/verify/feature-map-check.mjs` | `verify` | Does every feature-map entry have a file and every file an entry, and does each feature file carry one H1, the four sections in order, and a `Preconditions:` line? |
 | `scripts/verify/layout-check.mjs`, `console-check.mjs` | `verify` | Does the page clip a control at a phone, tablet, or desktop width? Did the page or journey log an error or fail a request? Exit 3 means Playwright was missing: not checked. |
 
 All are read-only except where they write their own output: `run-record.mjs`
@@ -478,9 +479,10 @@ writes the run record, `changes.mjs snapshot` and `review --write` write under
 `.verify/`, and the verify helpers write screenshots and reports to the
 evidence directory. None stages, commits, pushes, or runs a command it was
 given, and each refuses an output path outside `.verify/`; a pre-approved
-script that ran arbitrary commands would be a shell grant. The verify helpers
-load the project's own Playwright (and `console-check.mjs` a journey module the
-agent wrote), so they run project code and are not pre-approved. `scripts/lib/lessons.mjs` is the
+script that ran arbitrary commands would be a shell grant. The two browser
+helpers load the project's own Playwright (and `console-check.mjs` a journey
+module the agent wrote), so they run project code and are not pre-approved;
+`feature-map-check.mjs` reads Markdown only and is. `scripts/lib/lessons.mjs` is the
 one lesson reader, shared by `lessons.mjs` and the validator's `lesson-format`
 check, so a lesson the validator accepts is one lookup can find.
 
@@ -527,7 +529,7 @@ project-memory/
 │   ├── pr-state.mjs                  created / checks passed / ready to merge
 │   ├── plan-check.mjs                requirement-to-unit coverage
 │   ├── rewrite-check.mjs             facts and doubt kept through a rewrite; writing tells
-│   ├── verify/                       layout and console helpers (Playwright)
+│   ├── verify/                       layout and console helpers (Playwright); feature-map shape
 │   ├── session-status-hook.mjs       SessionStart handler
 │   ├── post-tool-validate-hook.mjs   PostToolUse handler
 │   └── lib/

@@ -2,7 +2,7 @@
 name: verify
 description: "Prove software works the way a user experiences it: generate a project verification skill that launches and drives the real app, run it to capture evidence for a change, or keep its feature map current. Use when the user asks to verify a change, test it in the real app, prove something works, check a UI for clipped or broken layout, or set up repeatable verification."
 argument-hint: "[create|run|maintain] [feature, change, or URL]"
-allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/run-record.mjs" *)
+allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/run-record.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/verify/feature-map-check.mjs" *)
 ---
 
 # Verify
@@ -36,7 +36,10 @@ errors during a journey) and recipes for other surfaces are in
   serving a version, build ID, or commit you can match. A port that answers is
   not proof; another app may be on it.
 - **The real user path.** Click, type, call the endpoint, run the command; not
-  internal setters or test-only routes.
+  internal setters or test-only routes. Mock only where production already
+  isolates the outside system (a payment sandbox, a stubbed mail relay). A
+  dry-run or test mode is checked by observation (files written, network
+  calls, Git refs) for what it really skips before you rely on it.
 - **Action and result.** Capture what you did and the state it produced, and
   check what was saved and its side effects (a row written, a file created, a
   message sent) through a second path: reload the page, read the record back,
