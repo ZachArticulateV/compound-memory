@@ -283,13 +283,22 @@ decisions. The glossary is a glossary and nothing else. Because it names no
 implementation, it is outside change-based staleness: the probe never reports
 it as behind a code change.
 
-**Lifecycle:** created lazily, when the first term is resolved. Updated inline
-the moment a term is settled. A renamed concept replaces its entry, and the old
+**Location:** when the project already keeps a root `GLOSSARY.md`, or a
+`GLOSSARY-MAP.md` that links one glossary per bounded context, that is the
+glossary: `INDEX.md` points to it and no copy goes under `memory/`. The same
+holds for an existing decision folder such as `docs/adr/`. A project with
+several bounded contexts and one glossary groups entries under a `## <Context>`
+heading each, and a word defined in two contexts names its context in each
+definition.
+
+**Lifecycle:** created lazily, when the first term is resolved. Updated as soon
+as a term is settled (in `grill`, once the user confirms the round). A renamed concept replaces its entry, and the old
 word joins `_Avoid_`. A retired concept's entry is removed; decision records that
 used the word keep it, because they are history.
 
-**Checked:** the validator warns wherever another memory file uses an
-`_Avoid_` word in prose. Decision records and the archive are exempt, since
+**Checked:** the validator reads `memory/glossary.md`, else a root
+`GLOSSARY.md`, plus each glossary `GLOSSARY-MAP.md` links to, and warns
+wherever another memory file uses an `_Avoid_` word in prose. Decision records and the archive are exempt, since
 they are history.
 
 ### `decisions/`

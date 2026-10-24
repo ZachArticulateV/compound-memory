@@ -14,7 +14,7 @@
 // Exit code is 1 only when a finding has severity `error`.
 
 import { fileURLToPath } from 'node:url'
-import { basename, resolve } from 'node:path'
+import { basename, posix, resolve } from 'node:path'
 
 import { containedBy, countLines, joinRel, readTextSafe, statSafe } from './lib/fs-utils.mjs'
 import {
@@ -555,31 +555,74 @@ export function findAvoidedTerms(text, glossary) {
  * capped per file, with one summary finding for the rest, so a large file
  * cannot flood the report or outrun the post-edit hook's timeout.
  */
+/**
+ * The glossaries this project keeps, as repository-relative paths.
+ *
+ * `memory/glossary.md` when it exists; otherwise a root `GLOSSARY.md`, the
+ * home a project that kept one before adopting memory already has. A root
+ * `GLOSSARY-MAP.md` (one glossary per bounded context) adds every Markdown
+ * file it links to inside the repository. A link that leaves the repository
+ * is ignored rather than read.
+ */
+export function glossarySources(root, memory, read) {
+  const sources = []
+  const memoryGlossary = `${MEMORY_DIRNAME}/${GLOSSARY_FILENAME}`
+  if (memory.markdownFiles.includes(memoryGlossary)) sources.push(memoryGlossary)
+  else if (read('GLOSSARY.md') !== null) sources.push('GLOSSARY.md')
+  const map = read('GLOSSARY-MAP.md')
+  if (map !== null) {
+    for (const m of map.matchAll(/\]\(([^)\s#]+\.md)(?:#[^)]*)?\)/g)) {
+      const target = posix.normalize(m[1].replace(/^\.\//, ''))
+      if (target.startsWith('../') || posix.isAbsolute(target) || /^[a-z]+:/i.test(target)) continue
+      if (!sources.includes(target) && read(target) !== null) sources.push(target)
+    }
+  }
+  return sources
+}
+
+/** One glossary from several: every term, and every alias with its term. */
+function mergeGlossaries(parsed) {
+  if (parsed.length === 1) return parsed[0]
+  const terms = []
+  const aliases = new Map()
+  for (const g of parsed) {
+    terms.push(...g.terms)
+    for (const [key, value] of g.aliases) if (!aliases.has(key)) aliases.set(key, value)
+  }
+  return { terms, aliases, unattributed: [] }
+}
+
 function checkAvoidedTerms(root, memory, findings, texts = new Map()) {
   // Texts the main loop already read are reused, not read a second time.
   const read = (rel) => (texts.has(rel) ? texts.get(rel) : readTextSafe(joinRel(root, rel)))
-  const glossaryRel = `${MEMORY_DIRNAME}/${GLOSSARY_FILENAME}`
-  if (!memory.markdownFiles.includes(glossaryRel)) return
-  const glossaryText = read(glossaryRel)
-  if (glossaryText === null) return
-  const glossary = parseGlossary(glossaryText)
-  // An _Avoid_ line the parser could not attach to a term is a word the check
-  // will never enforce. Say so, rather than let the check quietly do less.
-  for (const orphan of glossary.unattributed) {
-    findings.push(
-      finding(
-        'glossary-format',
-        'warning',
-        glossaryRel,
-        'An _Avoid_ line with no term above it is not enforced. Put it under a `**Term**:` line (see memory-schema.md).',
-        { line: orphan.line }
+  const sources = glossarySources(root, memory, read)
+  if (sources.length === 0) return
+  const parsed = []
+  for (const rel of sources) {
+    const text = read(rel)
+    if (text === null) continue
+    const glossary = parseGlossary(text)
+    parsed.push(glossary)
+    // An _Avoid_ line the parser could not attach to a term is a word the check
+    // will never enforce. Say so, rather than let the check quietly do less.
+    for (const orphan of glossary.unattributed) {
+      findings.push(
+        finding(
+          'glossary-format',
+          'warning',
+          rel,
+          'An _Avoid_ line with no term above it is not enforced. Put it under a `**Term**:` line (see memory-schema.md).',
+          { line: orphan.line }
+        )
       )
-    )
+    }
   }
+  if (parsed.length === 0) return
+  const glossary = mergeGlossaries(parsed)
   if (glossary.aliases.size === 0) return
 
   for (const rel of memory.markdownFiles) {
-    if (rel === glossaryRel) continue
+    if (sources.includes(rel)) continue
     if (isDecisionRecord(rel, memory)) continue
     if (rel.startsWith(`${MEMORY_DIRNAME}/archive/`)) continue
     const text = read(rel)

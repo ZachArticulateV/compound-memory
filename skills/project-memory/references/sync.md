@@ -57,6 +57,7 @@ changed. Files change constantly; concepts rarely.
 | A decision was replaced | A new record, and `status: superseded` on the old one | The old record's body |
 | The structure of memory changed | `INDEX.md` | Everything else |
 | A feature's evidence changed | `acceptance-criteria.md` status and its cited evidence | The criterion text |
+| A project concept got a name | `glossary.md` (or the glossary the project already keeps): an entry, with the rejected words under `_Avoid_` | Code identifiers |
 | A project concept was renamed or split | `glossary.md`: new word as the entry, old word under `_Avoid_`; the old word replaced in current memory prose | Decision records and `archive/` |
 | A project concept was retired | `glossary.md`: its entry removed | Decision records that used it |
 
