@@ -470,7 +470,7 @@ only pre-approves the bundled scripts they call. What must be exact is code:
 | `scripts/run-record.mjs` | `build`, `verify`, `review`, `ship`, `autopilot`, `catch-up` | What did this run check, against which code, with what saved output, and may it claim success now? Stale, failed, missing, and over-limit checks block. |
 | `scripts/pr-state.mjs` | `ship pr`, `ship watch`, `autopilot` | Is the PR only created, are its checks passed on the current head, or is it ready to merge? |
 | `scripts/plan-check.mjs` | `plan`, `prototype`, `autopilot` | Does every requirement have a unit, every unit a Verify, and every open question a status? |
-| `scripts/rewrite-check.mjs` | `write` | Did a rewrite lose code, commands, paths, links, numbers, or doubt, or add identifiers the source did not have? |
+| `scripts/rewrite-check.mjs` | `write` | Did a rewrite lose code, commands, paths, links, numbers, or doubt, or add identifiers the source did not have? With `--tells`, which listed writing tells (vocabulary, filler, em dashes, arrows, heading structure) does a file carry? |
 | `scripts/verify/layout-check.mjs`, `console-check.mjs` | `verify` | Does the page clip a control at a phone, tablet, or desktop width? Did the page or journey log an error or fail a request? Exit 3 means Playwright was missing: not checked. |
 
 All are read-only except where they write their own output: `run-record.mjs`
@@ -526,7 +526,7 @@ project-memory/
 │   ├── run-record.mjs                the shared run record and its success gate
 │   ├── pr-state.mjs                  created / checks passed / ready to merge
 │   ├── plan-check.mjs                requirement-to-unit coverage
-│   ├── rewrite-check.mjs             facts and doubt kept through a rewrite
+│   ├── rewrite-check.mjs             facts and doubt kept through a rewrite; writing tells
 │   ├── verify/                       layout and console helpers (Playwright)
 │   ├── session-status-hook.mjs       SessionStart handler
 │   ├── post-tool-validate-hook.mjs   PostToolUse handler

@@ -32,7 +32,9 @@ the pointer first; inline the material only if that fails.
 Inline what every path needs; move behind a pointer what only some paths
 reach. Keep a concept's definition, rules, and caveats under one heading. A
 document can be too long even when every line is true; split it by case or by
-sequence.
+sequence. Split by sequence only when you see the agent rush a step to reach
+the next one, and know that hiding later steps works only across a real context
+boundary: a subagent, or a hand-off to another skill or session.
 
 ## Every step ends on a done check
 
@@ -75,6 +77,10 @@ guardrail, paired with the positive target.
 - A description says what the skill does and when to use it, with a "use
   when" clause carrying the trigger cases, under 1,024 characters: Codex's
   skill list cuts descriptions there, and Claude Code at 1,536.
+- Split off a new model-invoked skill only when it has a trigger word of its
+  own, or another skill must reach it; otherwise it is a mode. Many
+  user-invoked skills want one router skill that names them, and reference two
+  user-invoked skills share goes in a plain file both point to.
 - Keep `SKILL.md` a short router; move detail to `references/` and load it per
   mode. Claude Code advises under 500 lines. Codex truncates an explicitly
   invoked skill's body past 8,000 bytes for some plugin formats, so staying

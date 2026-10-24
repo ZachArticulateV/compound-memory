@@ -16,7 +16,7 @@ import { codeFingerprint, stagedSnapshot } from '../scripts/lib/changes.mjs'
 import { reviewScope, checkStaged } from '../scripts/changes.mjs'
 import { classifyCheck, prState } from '../scripts/pr-state.mjs'
 import { checkPlan } from '../scripts/plan-check.mjs'
-import { compareRewrite } from '../scripts/rewrite-check.mjs'
+import { compareRewrite, findTells } from '../scripts/rewrite-check.mjs'
 import { checkFindings } from '../scripts/findings-check.mjs'
 import { lessonDrift, lessonsWithDrift } from '../scripts/lessons.mjs'
 import { parseLesson } from '../scripts/lib/lessons.mjs'
@@ -380,6 +380,42 @@ test('rewrite-check: a surer rewrite with an invented number fails', () => {
   assert.equal(r.ok, false)
   assert.ok(r.doubtDropped.some((d) => d.kind === 'unknown'))
   assert.ok(r.added.some((a) => a.token === '3'))
+})
+
+test('rewrite-check --tells: listed tells are found with their line, and code, quotes, and front matter are skipped', () => {
+  const text = [
+    '---',
+    'title: We Leverage Things',
+    '---',
+    '# Setup Guide For Teams',
+    '',
+    "It's worth noting that we leverage a robust cache \u2014 click here, e.g. the docs.",
+    'Use `leverage()` and say "delve" when quoting a word.',
+    '```',
+    'delve -> robust',
+    '```',
+    'Parser rejects date -> exit 2. Pick a file(s) and/or a folder.',
+    '#### Deep heading',
+    '# Second title',
+  ].join('\n')
+  const { tells, ok } = findTells(text)
+  assert.equal(ok, false)
+  const got = tells.map((t) => `${t.line} ${t.category}`)
+  for (const want of ['4 title case', '6 filler', '6 vocabulary', '6 em dash', '6 click here', '6 latin', '11 arrow', '11 plural (s)', '11 slash', '12 skipped heading level', '13 second H1']) {
+    assert.ok(got.includes(want), `missing ${want} in ${JSON.stringify(got)}`)
+  }
+  assert.ok(!got.some((g) => g.startsWith('2 ') || g.startsWith('7 ') || g.startsWith('9 ')), JSON.stringify(got))
+  assert.deepEqual(findTells('# Plain heading\n\nThe build reads `budget.json` and fails above the limit.\n'), { schemaVersion: 1, tells: [], ok: true })
+})
+
+test('rewrite-check --tells: the CLI exits 1 on a hit, 0 on clean text, and 2 when mixed with --before', (t) => {
+  const root = makeTempRoot()
+  cleanupAfter(t, root)
+  writeTree(root, { 'slop.md': 'We leverage it.\n', 'clean.md': 'The job retries twice.\n' })
+  const run = (...args) => spawnSync(process.execPath, [join(repoRoot, 'scripts', 'rewrite-check.mjs'), ...args], { cwd: root, encoding: 'utf8' }).status
+  assert.equal(run('--tells', 'slop.md'), 1)
+  assert.equal(run('--tells', 'clean.md'), 0)
+  assert.equal(run('--tells', 'clean.md', '--before', 'slop.md'), 2)
 })
 
 // ---------------------------------------------------------------------------
