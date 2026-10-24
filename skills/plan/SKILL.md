@@ -56,6 +56,3 @@ The habits in `../../references/principles.md` apply throughout.
 Paths in this skill and its references are relative to this skill's directory
 (`${CLAUDE_SKILL_DIR}`). Outside Claude Code, that is the directory holding this
 file, and `$0` is the first word after the skill name.
-
-Draws on Compound Engineering `ce-brainstorm`, `ce-plan`, and `ce-pov`, and
-mattpocock/skills `to-tickets`, `to-spec`, and `grill-with-docs`.

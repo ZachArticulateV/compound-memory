@@ -24,8 +24,9 @@ plugin and tracks its own development in its own `memory/` tree.
   that line.
 - Skills compose through files, never by calling each other. A new artifact
   gets a row in `references/artifacts.md`; a new skill or mode keeps the
-  anatomy `tests/skills.test.mjs` pins, and an adopted upstream skill gets a row
-  in `docs/coverage.md`.
+  anatomy `tests/skills.test.mjs` pins.
+- The skills are this plugin's own: they name no other skill set, project, or
+  author, and carry no attribution lines.
 - The engineering skills state outcomes and trust the model (decision 009).
   Add a script for a fact that must be exact rather than a prohibition.
 - `.claude-plugin/plugin.json` and `.codex-plugin/plugin.json` keep identical

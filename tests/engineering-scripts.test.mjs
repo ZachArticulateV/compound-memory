@@ -1,9 +1,8 @@
 // The deterministic scripts under the engineering skills.
 //
-// Each script exists because an upstream skill left the same fact to prose and
-// it went wrong there: Compound Engineering's tag grep missed block-list tags,
-// its quote gate never checked the quote, and mattpocock's ticket edges were
-// never checked at all. The tests pin the case that motivated each one, and the
+// Each script holds a fact that goes wrong when left to prose: a tag grep that
+// misses block-list tags, a quote gate that never checks the quote, ticket
+// edges nobody checks. The tests pin the case that motivated each one, and the
 // neighbouring case that must stay quiet.
 
 import { test } from 'node:test'

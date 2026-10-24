@@ -54,7 +54,8 @@ everything.
 ## Last measured
 
 2026-10-24, `sonnet`, 2 trials per task and configuration, skill invoked
-(`node evals/run.mjs --invoke`), after the upstream parity changes.
+(`node evals/run.mjs --invoke`), after the changes listed under Unreleased
+in `CHANGELOG.md`.
 
 | Arm | Plugin | Correct | False success |
 | --- | --- | --- | --- |
