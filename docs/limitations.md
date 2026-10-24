@@ -131,6 +131,8 @@ whether to heed it. What their scripts establish, and nothing more:
 - `plan-check.mjs` checks the links between requirements and units, not
   whether a `Verify` could fail or a requirement is testable.
 - `rewrite-check.mjs` compares tokens and words of doubt, not meaning.
+  `--tells` matches listed words and characters, not tone: a text with no hit
+  can still read badly, and a hit inside a deliberate example is not a fault.
 - `scripts/verify/` helpers check layout and console errors on the pages and
   journeys they are given. A pass on one page at three widths is not a pass on
   the app.
