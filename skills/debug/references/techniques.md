@@ -12,7 +12,11 @@ Roughly in this order, take the first that reaches the bug's code path:
 5. a replay of a captured request, payload, or event log through the code path;
 6. a throwaway harness that runs the smallest part of the system that fails;
 7. a property or fuzz loop for "sometimes wrong";
-8. a differential loop: the same input through the old and new version.
+8. a differential loop: the same input through the old and new version;
+9. a person in the loop, when only someone at a real device, account, or
+   screen can trigger it: give them a numbered script of steps, each ending in
+   one observation to report (yes or no, or the error pasted), and collect the
+   answers as `KEY=value` lines you can compare across runs.
 
 Then tighten it: cache setup, narrow the scope, assert on the exact symptom,
 pin time and random seeds, isolate the file system and network. A
@@ -30,8 +34,14 @@ splits the remaining possibilities most evenly.
 - **Bisect the path.** Log or assert at the midpoint of the code path; the
   half where the value goes wrong holds the bug.
 - **Diff environments.** When it fails in one place only (CI, production, one
-  machine): compare versions, configuration, data, time zone, locale, and
-  concurrency between where it works and where it fails.
+  machine): compare versions, dependencies and the lockfile, the runtime
+  version, environment variables, local services, configuration, data, time
+  zone, locale, and concurrency between where it works and where it fails.
+- **Your own tree.** When uncommitted files could reach the failure, reproduce
+  with them set aside (`git stash push -u`), then restore exactly the entry
+  that created (none, if it printed "No local changes to save"). A cause in
+  that work in progress is reported to its owner, never committed as the
+  fix.
 - **Flaky failures.** Run the check in a loop (50 to 200 times) to measure the
   failure rate before and after a fix. A "fixed" flake that was never measured
   is not fixed. Suspect shared state, ordering, time, and network.
