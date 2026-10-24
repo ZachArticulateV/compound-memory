@@ -293,11 +293,11 @@ test('pr-state: the CLI exit code follows --want', (t) => {
 const PLAN = `# Plan
 
 ## Goal
-Case managers see due reviews.
+Support agents see tickets awaiting a reply.
 
 ## Requirements
 
-- R1. A case manager sees every client whose review is due this week.
+- R1. A support agent sees every ticket whose reply is due today.
 - R2. Marking a review done removes it for everyone.
 
 ## Out of scope
@@ -519,7 +519,7 @@ test('review 10a: a directory ending in " b" keeps its path', (t) => {
 
 test('review 10c: plan-check accepts numbered requirements, a Verify on the next line, and the word TODO in prose', () => {
   const plan = PLAN
-    .replace('- R1. A case manager', '1. R1. A case manager')
+    .replace('- R1. A support agent', '1. R1. A support agent')
     .replace('- R2. Marking', '2. R2. Marking')
     .replace('### U1. Query due reviews\n- **Verify:** `npm test -- due`', '### U1. Query due reviews\nReplace the TODO stub in the query.\n- **Verify:**\n  `npm test -- due`')
   assert.deepEqual(checkPlan(plan).problems, [])

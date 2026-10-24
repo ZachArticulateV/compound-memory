@@ -29,7 +29,7 @@ ask, pick one, and state the assumption at the top of the prototype.
 ## Rules for both
 
 1. **Name the question first,** as one sentence that can be answered ("Does a
-   two-step intake form lose fewer fields than one long page?"), and what
+   two-step signup form lose fewer fields than one long page?"), and what
    answer would change the plan. No question, no prototype; a prototype that
    tests something else (real persistence when the question is layout) fakes
    its answer.

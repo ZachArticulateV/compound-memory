@@ -37,8 +37,8 @@ Requirements are behaviors in the user's words, each one testable:
 ```markdown
 ## Requirements
 
-- R1. A case manager sees every client whose review is due this week.
-- R2. Marking a review done removes it from the list for everyone.
+- R1. A support agent sees every ticket whose reply is due today.
+- R2. Answering a ticket removes it from the list for everyone.
 ```
 
 Write Out of scope as plainly as the requirements. Leave Units, Decisions, and
