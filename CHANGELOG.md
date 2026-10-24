@@ -15,6 +15,12 @@ All notable changes to this plugin are documented here. Format follows
 
 ### Fixed
 
+- `ship commit` could commit the user's unstaged edits as the agent's work:
+  `changes.mjs snapshot` now records the unstaged hunks and untracked files
+  already in the working tree, and `staged --baseline` flags any of them
+  staged unchanged. The patch that sets aside someone else's staged work is
+  written with `git diff --output`, which stays byte-exact on every shell.
+- The worked examples in `plan` and `prototype` use neutral domains.
 - `review` now covers staged, unstaged, and new files. The playbook's
   `git diff <base>...HEAD` was empty for uncommitted work;
   `scripts/changes.mjs review` lists and saves the whole change.
@@ -50,6 +56,38 @@ All notable changes to this plugin are documented here. Format follows
 
 ### Added
 
+- **Upstream parity** (`docs/benchmark/parity-2026-10-24.md`): every one of the
+  48 upstream skills in `docs/coverage.md` was re-read at its current commit
+  and compared with its home here; each gap was closed in an existing mode, so
+  no skill or mode was added. `tests/coverage.test.mjs` now requires all 48 to
+  keep a home and an entry in the dated review.
+- `rewrite-check.mjs --tells`: candidate writing tells in one file (listed
+  vocabulary and filler, em dashes, arrows, slashes, heading structure),
+  skipping code and quoted mentions.
+- `scripts/verify/feature-map-check.mjs`: the feature map's index against its
+  files, and each file's sections and `Preconditions:` line.
+- `findings-check.mjs --patch`: findings on lines the change did not touch are
+  marked pre-existing and kept off the safe-to-fix list.
+- `lessons.mjs --check`: commits a lesson cites must exist and be reachable
+  from HEAD.
+- `plan-check.mjs` reads `Depends on` and reports a unit that does not exist.
+- The probe reports `git.linkedWorktree`, so `build` works in place inside a
+  linked worktree.
+- `pr-state.mjs`: a fork run awaiting approval is waiting, not failed; a
+  requested review not yet given keeps a PR from ready; `--required` counts a
+  required check that has not reported as pending; `--no-ci` lets a repository
+  with no CI reach ready as "no checks configured"; UTF-16 input is read.
+- The validator reads a root `GLOSSARY.md` and the context glossaries
+  `GLOSSARY-MAP.md` links when memory keeps no glossary of its own, and `init`
+  adopts an existing glossary or `docs/adr/` instead of copying it.
+- Skill changes from the parity review, each in an existing mode: product
+  shapes, plan deepening, and adoption grades in `plan`; guard metrics and
+  judged targets in `build optimize`; adversarial, reliability, and
+  frontend-timing lenses and premise and design lenses for documents in
+  `review`; an until-ready loop, issue references, and complete feedback
+  collection in `ship`; ranked hypotheses and minimal repros in `debug`; the
+  full tell list in `write plain`; pending calls in `catch-up chat`; and the
+  rest listed per skill in the parity review.
 - **Run record** (`scripts/run-record.mjs`, decision 011): one temporary
   result format under `.verify/` with the task, scope, code fingerprint,
   checks and their saved output, and open items. `gate` blocks a success
