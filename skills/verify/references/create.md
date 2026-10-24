@@ -33,8 +33,13 @@ description naming the app, its surface, and when to use it) and these
 sections, each filled from what the interview found:
 
 - **Launch:** the exact command, and how to tell the app is ready. Ready means
-  usable, not just that a process answers. Launch works from an empty data
-  directory, including migrations and seed data. Include teardown.
+  usable, not just that a process answers (a database health check can pass
+  while its init scripts still run). Launch works from an empty data
+  directory, including migrations and seed data. Include teardown. A
+  short-lived CLI or TUI is built once, and each drive starts in its own fresh
+  PTY or tmux session. A missing asset that blocks startup but is irrelevant to
+  the check may be created as marked verification scaffolding, which Cleanup
+  removes.
 - **Doctor:** one read-only check that this instance is worth driving: process
   up, right build (a version, build ID, or commit the app serves, matched to
   the checkout), port owned by this run, login valid.
@@ -64,9 +69,42 @@ one-paragraph description of what the user sees, and four sections in order:
    with its exact command and observable result.
 4. `Gotchas`: traps that waste or invalidate a run.
 
+The README also says how to report: record the feature ID and the entry point
+with every artifact, and never report a skipped entry point as verified
+through another. The Driving section opens with `Preconditions:`. The map
+describes what a user does; implementation details stay in the code.
+
+```markdown
+# Notes
+
+Users write, edit, and delete short notes from the sidebar.
+
+## Sub-features
+
+- `create`: a new note from the sidebar button
+
+## How to get to it (user POV)
+
+- Sidebar, **New note**; or the `n` shortcut on the notes list
+
+## Driving it with Playwright
+
+- Preconditions: signed in as the seeded user, notes list open
+- `create`: click **New note**, type a title, press Enter; the note is first
+  in the list and survives a reload
+
+## Gotchas
+
+- The list re-sorts after save; wait for the toast before reading it
+```
+
 When the seed data lacks what a journey needs, the journey reports the failure
 and the reason goes in Gotchas. Weakening a journey until it passes defeats the
-map.
+map. Check the map's shape:
+
+```bash
+node "${CLAUDE_SKILL_DIR}/../../scripts/verify/feature-map-check.mjs" .claude/skills/verify-<app>/features
+```
 
 ## 4. Prove the skill before handing it over
 
