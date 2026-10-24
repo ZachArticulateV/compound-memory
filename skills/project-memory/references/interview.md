@@ -77,6 +77,10 @@ When memory exists, every answer is checked against it as it lands:
 Raise the conflict in the next round as its own question. Do not quietly
 reconcile it.
 
+When the boundary between two concepts is in play, ask about one concrete case
+that falls between them (a partly shipped order, a refund on a cancelled
+plan), so the answer fixes the boundary instead of restating a definition.
+
 ## Done
 
 The interview is done when the frontier is empty (every branch visited, nothing
