@@ -9,7 +9,8 @@ Before substantial project work, read:
 - the active handoff listed in `memory/INDEX.md`, when one exists
 - `memory/next-actions.md`
 
-Read decisions, bugs, and deeper memory only when relevant to the current task.
+Read decisions, bugs, lessons (`memory/lessons/`), and deeper memory only when
+relevant to the current task.
 
 Project memory is context, not proof. Verify behavior against code, tests,
 runtime evidence, configuration, and Git when accuracy matters.

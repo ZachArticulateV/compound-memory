@@ -18,7 +18,7 @@ import { classifyCheck, prState } from '../scripts/pr-state.mjs'
 import { checkPlan } from '../scripts/plan-check.mjs'
 import { compareRewrite, findTells } from '../scripts/rewrite-check.mjs'
 import { checkFindings } from '../scripts/findings-check.mjs'
-import { lessonDrift, lessonsWithDrift } from '../scripts/lessons.mjs'
+import { checkLessonCommits, citedCommits, lessonDrift, lessonsWithDrift } from '../scripts/lessons.mjs'
 import { parseLesson } from '../scripts/lib/lessons.mjs'
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..')
@@ -468,6 +468,22 @@ test('rewrite-check --tells: the CLI exits 1 on a hit, 0 on clean text, and 2 wh
 // ---------------------------------------------------------------------------
 
 const lesson = (paths) => `---\ntitle: Jobs are idempotent\ntags: [jobs]\napplies_when: Changing a job\npaths: ${paths}\nstatus: active\n---\n\n# Jobs are idempotent\n\n## Do this\n\nMake the job safe twice.\n`
+
+test('lesson commits: a cited commit that is missing or off HEAD is reported, and hex words are not commits', (t) => {
+  const root = repo(t, { 'app/a.mjs': 'x\n' })
+  const head = git(root, ['rev-parse', 'HEAD']).trim()
+  git(root, ['checkout', '-q', '-b', 'side'])
+  writeTree(root, { 'app/b.mjs': 'y\n' })
+  commitAll(root, 'side work')
+  const side = git(root, ['rev-parse', 'HEAD']).trim()
+  git(root, ['checkout', '-q', '-'])
+  const body = `${lesson('[app/]')}\nSee commit ${head.slice(0, 9)}; the color deadbeef is not a commit.\n\n## Evidence\n\n- ${head.slice(0, 12)} (the fix)\n- ${side.slice(0, 12)} (never merged)\n- abc1234 (typo)\n`
+  assert.deepEqual(citedCommits(body).sort(), [head.slice(0, 9), head.slice(0, 12), side.slice(0, 12), 'abc1234'].sort())
+  writeTree(root, { 'memory/lessons/jobs.md': body })
+  const result = checkLessonCommits(root)
+  assert.deepEqual(result.problems.map((p) => [p.sha, p.problem]).sort(), [['abc1234', 'no such commit'], [side.slice(0, 12), 'not reachable from HEAD']].sort())
+  assert.equal(node([script('lessons.mjs'), '--check', '--cwd', root], root).status, 1)
+})
 
 test('lesson drift: commits to a lesson\'s paths after it was written are reported', (t) => {
   const root = repo(t, { 'app/jobs/charge.mjs': 'x\n', 'memory/lessons/jobs.md': lesson('[app/jobs/]'), 'web/a.css': 'a\n' })

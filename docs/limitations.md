@@ -148,7 +148,9 @@ whether to heed it. What their scripts establish, and nothing more:
   safe.
 - `lessons.mjs` matches words and paths. A lesson written in words the next
   task does not use is not found; tags drawn from existing lessons narrow that
-  gap but do not close it.
+  gap but do not close it. `--check` sees a commit only where a lesson cites
+  it in its Evidence section or after the word "commit", and a hash with no
+  letter or no digit in Evidence is not taken for one.
 - `measure.mjs` judges the samples it is given. Too few samples, or samples from
   a noisy machine, make it say `inconclusive`, which is the correct answer and
   not a result. A supplied `--noise` can raise the floor, never lower it below

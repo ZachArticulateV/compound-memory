@@ -463,7 +463,7 @@ only pre-approves the bundled scripts they call. What must be exact is code:
 
 | Script | Used by | Answers |
 | --- | --- | --- |
-| `scripts/lessons.mjs` | `plan`, `build`, `debug`, `review`, `learn` | Which lessons in `memory/lessons/` match these words and changed paths? Stale and retired lessons are skipped unless asked for. |
+| `scripts/lessons.mjs` | `plan`, `build`, `debug`, `review`, `learn` | Which lessons in `memory/lessons/` match these words and changed paths? Stale and retired lessons are skipped unless asked for. With `--check`, does every commit a lesson cites exist and sit on HEAD? |
 | `scripts/findings-check.mjs` | `review`, `autopilot` | Is each finding's quoted line really in the file near the cited line? Duplicates merged; confidence raised only on cross-model agreement; kept at 75 or more, or P0. With `--patch`, which findings sit on lines the change did not touch? |
 | `scripts/tickets-check.mjs` | `plan`, `build`, `catch-up`, `autopilot` | Which tickets are ready, which can run in parallel, and which ready tickets touch the same paths? Cycles, unknown blockers, and two tickets sharing a number exit 1. |
 | `scripts/measure.mjs` | `build optimize`, `debug` | Does this change clear the noise floor: keep, revert, or inconclusive? The floor is the largest of the samples' spread, a supplied noise, and a minimum effect. |

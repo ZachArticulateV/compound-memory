@@ -11,7 +11,10 @@
 // path it lists that no longer exists, or commits to its paths after the
 // lesson was last committed. Such a lesson is a candidate for `learn refresh`;
 // it is still returned, because changed code does not make it false.
-// `--drift` lists every lesson with drift and nothing else.
+// `--drift` lists every lesson with drift and nothing else. `--check` lists
+// the commits lessons cite (in their Evidence section, or right after the
+// word "commit") that do not exist or are not reachable from HEAD, so a
+// lesson cannot rest on history that was rewritten or never pushed.
 //
 // WHAT THIS IS NOT: a judge of relevance. A match is a candidate to read.
 //
@@ -23,7 +26,7 @@ import { resolve } from 'node:path'
 import { parseArgs } from 'node:util'
 
 import { findProjectRoot, isDirectory, joinRel, listFiles, pathExists, readTextContained, relPosix } from './lib/fs-utils.mjs'
-import { commitsTouchingPathSince, isRepository, lastCommitForPath } from './lib/git.mjs'
+import { commitsTouchingPathSince, isRepository, lastCommitForPath, runGit } from './lib/git.mjs'
 import { LESSONS_REL, lessonProblems, parseLesson, rankLessons } from './lib/lessons.mjs'
 import { USAGE_EXIT_CODE, emit } from './lib/report.mjs'
 
@@ -62,6 +65,36 @@ export function lessonDrift(root, lesson, { git = isRepository(root) } = {}) {
     if (res.commits.length > 0) changed.push({ path: p, commits: res.commits.length, latest: res.commits[0].sha.slice(0, 12) })
   }
   return { checked: true, reason: null, missing, changed }
+}
+
+/** Commit hashes a lesson cites: in its Evidence section, or after the word "commit". */
+export function citedCommits(body) {
+  const out = new Set()
+  const hash = /(?<![\w/.-])([0-9a-f]{7,40})(?![\w/.-])/g
+  const evidence = /^## Evidence\s*$([\s\S]*?)(?=^## |(?![\s\S]))/m.exec(body)?.[1] ?? ''
+  for (const m of evidence.matchAll(hash)) if (/[a-f]/.test(m[1]) && /\d/.test(m[1])) out.add(m[1])
+  for (const m of body.matchAll(/\bcommits?\s+`?([0-9a-f]{7,40})\b/gi)) out.add(m[1])
+  return [...out]
+}
+
+/** Each cited commit that does not exist, or is not reachable from HEAD. */
+export function checkLessonCommits(root) {
+  const absRoot = resolve(root)
+  if (!isRepository(absRoot)) return { checked: false, reason: 'no Git history', problems: [] }
+  const problems = []
+  for (const lesson of loadLessons(absRoot)) {
+    if (lesson.status === 'retired') continue
+    for (const sha of citedCommits(lesson.body)) {
+      const exists = runGit(['cat-file', '-e', `${sha}^{commit}`], { cwd: absRoot }).ok
+      if (!exists) {
+        problems.push({ path: lesson.path, sha, problem: 'no such commit' })
+        continue
+      }
+      const reachable = runGit(['merge-base', '--is-ancestor', sha, 'HEAD'], { cwd: absRoot }).ok
+      if (!reachable) problems.push({ path: lesson.path, sha, problem: 'not reachable from HEAD' })
+    }
+  }
+  return { checked: true, reason: null, problems }
 }
 
 export function lessonsWithDrift(root) {
@@ -127,12 +160,15 @@ export function renderLessonsText(result) {
 
 const USAGE = `Usage: lessons.mjs [--query "<words>"] [--paths a,b] [path ...] [--all] [--limit n] [--json] [--cwd <dir>]
        lessons.mjs --drift [--json] [--cwd <dir>]
+       lessons.mjs --check [--json] [--cwd <dir>]
 
 Find the lessons under memory/lessons/ that match a task. Paths may be given as
 a comma or space separated --paths value, or as bare arguments. With no query
 and no paths, list the active lessons. Each result says whether its paths have
 changed since it was written. --drift lists only the active lessons whose paths
-changed or are gone. Read-only. Exits 0 when it ran; 2 on a usage error.
+changed or are gone. --check lists cited commits that do not exist or are not
+reachable from HEAD, and exits 1 when there is one. Read-only. Otherwise exits
+0 when it ran; 2 on a usage error.
 `
 
 /**
@@ -153,6 +189,7 @@ export function parseLessonsArgs(argv) {
         all: { type: 'boolean', default: false },
         limit: { type: 'string', default: '5' },
         drift: { type: 'boolean', default: false },
+        check: { type: 'boolean', default: false },
       },
       allowPositionals: true,
       strict: true,
@@ -181,6 +218,16 @@ export function main(argv = process.argv.slice(2)) {
   if (!Number.isInteger(limit) || limit < 0) {
     process.stderr.write(`lessons: --limit must be a whole number\n\n${USAGE}`)
     return USAGE_EXIT_CODE
+  }
+  if (values.check) {
+    const result = checkLessonCommits(root)
+    const text = !result.checked
+      ? `Commits not checked: ${result.reason}.`
+      : result.problems.length === 0
+        ? 'Every commit the lessons cite exists and is reachable from HEAD.'
+        : [`${result.problems.length} cited commit(s) to fix:`, ...result.problems.map((p) => `    ${p.path}: ${p.sha} ${p.problem}`)].join('\n')
+    emit({ schemaVersion: LESSONS_SCHEMA_VERSION, ...result }, text, { json: values.json })
+    return result.problems.length === 0 ? 0 : 1
   }
   if (values.drift) {
     const drifted = lessonsWithDrift(root)
