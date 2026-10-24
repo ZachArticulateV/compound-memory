@@ -48,7 +48,10 @@ permission you do not have.
 
 The second time the same correction comes up, make it impossible rather than
 writing it down again: architecture first, then types, then a lint whose
-message names the fix, then a test. Plain-text rules are for judgment calls.
+message names the fix, then a test. Plain-text rules are for judgment calls:
+put one where the work happens, with one concrete example of the mistake it
+prevents. Once a check enforces a rule, delete the prose and leave at most a
+pointer to the check.
 
 ## One owner per meaning
 

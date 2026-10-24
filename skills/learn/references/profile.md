@@ -10,7 +10,10 @@ Look where this user keeps working preferences: the user-scope `CLAUDE.md`
 (`~/.claude/CLAUDE.md`) or `AGENTS.md`, a `<handle>-mode` skill in
 `~/.claude/skills/` or the project's skills, and any preferences document the
 user names. These are the source. When none exists, the result is a new
-user-invoked `<handle>-mode` skill.
+`<handle>-mode` skill: user-invoked (`disable-model-invocation: true`) unless
+the user asks otherwise, with a description that names the user and
+`/<handle>-mode` rather than generic tasks, so it never fires on an ordinary
+request. Write it to `../write/references/agents.md`.
 
 ## 2. Mine the history
 
@@ -24,7 +27,9 @@ patterns with evidence pointers for:
 - delegation (subagents, models, parallel work);
 - what done means (tests, live checks, review);
 - code and prose standards they cite;
-- process (branches, worktrees, commits, PRs).
+- process (branches, worktrees, commits, PRs);
+- the skills they reach for when scoping or investigating, and their habits
+  with skills (fixing one mid-task, asking for new ones).
 
 Keep a pattern only when it appears in two or more slices, or when the user
 stated it as a rule ("always", "never", "from now on") and nothing later
@@ -44,5 +49,7 @@ documents by path rather than pasting them in. Keep each section to rules that
 change behavior; "communicate clearly" is not a rule, "tables when comparing
 options" is.
 
-Apply what the user approves. Sanitize everything: no secrets, no personal data
-from the transcripts, no other people's names.
+Apply what the user approves. Rules kept in a repository land on a branch
+through `ship pr`, never as a push to the default branch; user-scope files
+outside Git are edited in place. Sanitize everything: no secrets, no personal
+data from the transcripts, no other people's names.

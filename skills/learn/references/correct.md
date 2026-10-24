@@ -30,7 +30,11 @@ that happened before counts.
 4. **A test** of the behavior. Fix or delete tests that pass while the behavior
    is broken, or fail when only internals change.
 5. **A written rule**, last, and only for judgment calls. Nothing fails when an
-   agent skips it.
+   agent skips it, so put it beside the code it governs and pair it with one
+   real example of the mistake.
+
+Fix the most frequent classes first, each in its own commit, so any one fix
+can be reverted alone.
 
 ## 3. Prove each check
 
@@ -46,6 +50,8 @@ a reason, an expiry date, and the name of the person who approved it.
 
 Record each rule and its enforcer in `memory/guardrails.md` (from
 `templates/guardrails.md`). It is read during review, not loaded every session.
+A correction seen for the first time is fixed where it happened and recorded
+with the enforcer "judgment"; that row is what makes the next one recognizable.
 When a rule already in the table is broken again and its enforcer is
 "judgment", that is a repeat: move it up the ladder in the same change. Remove a
 row once its mistake cannot happen.
