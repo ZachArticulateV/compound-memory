@@ -48,6 +48,7 @@ focus, write `Next session focus: unspecified` and cover the work as it stands.
 | Work type | What the session actually did | Always: it decides what verification means (Section 2) |
 | Tests run, and their results, or the work type's equivalent checks | The runs you observed this session | Always — including "none" |
 | Unresolved failures | The runs you observed this session | Whenever one exists |
+| Approaches tried and ruled out, with why | What the session actually tried | Whenever one was: it goes under Evidence collected, so the next session does not repeat it |
 | Decisions the user made | The conversation | Whenever one was made: it is filed, not just mentioned (Section 3) |
 | Next exact step | Your own state | Always |
 

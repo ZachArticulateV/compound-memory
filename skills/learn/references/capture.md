@@ -27,9 +27,24 @@ plan, would repeat the mistake or rediscover the finding. Skip it when:
      finds it;
    - `retire_when`: the condition under which it stops being true, when there
      is one;
-   - the body: What happened, Why, Do this, Evidence (a commit, a test, a PR,
-     an issue).
-3. **Check claims.** Every path, command, and commit the lesson names exists.
+   - the body: What happened (including the approaches tried that failed, and
+     why), Why, Do this, Evidence (a commit, a test, a PR, an issue).
+
+   When the problem spanned earlier sessions, read their transcripts
+   (locations in `references/retro.md`) for the dead ends. A project term the
+   lesson relies on and the glossary lacks gets a glossary entry, or is named
+   for `/project-memory sync`.
+3. **Check claims.** Every path, command, and commit the lesson names exists,
+   and every commit is reachable from HEAD:
+
+   ```bash
+   node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" --check
+   ```
+
+   A claim about behavior cites the line that defines it, read this session.
+   "Fixed in" cites a PR, and says pending until the fix is on the default
+   branch. A claim you could not check is worded as this session's conclusion,
+   not as a fact.
 4. **Validate** with `memory-validate.mjs` and fix any finding on the lesson.
 
 One lesson per file; one subject per lesson. Report the lesson's path, or that
