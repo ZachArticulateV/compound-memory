@@ -26,6 +26,9 @@ Each item names an observable outcome. "Improve the backend" is not an action.
 ## Next
 
 - [ ] Push the `v2.0.0` tag on `b2419f6`, the release merge commit
+- [ ] Add an agent-task eval for one behavior the parity review added (a user's unstaged edit left out of a commit, or a requested review keeping a PR from ready)
+  - Done when: the task's grader rejects the untouched fixture, accepts the reference outcome, and `node evals/run.mjs --invoke --tasks <id>` has been run on it
+  - Out of scope: tasks for the prose-only additions
 
 ## Blocked
 

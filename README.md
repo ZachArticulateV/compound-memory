@@ -12,11 +12,13 @@ it: committed memory, plans, tickets, lessons, a verification skill for your
 app, and evidence of what was actually observed.
 
 The skills state outcomes and leave the method to the model. The checks that
-matter (the full change under review, what a commit would take, quoted review
-findings, whether a recorded check still holds on the current code, the PR's
-state on its current head, the ticket graph, plan coverage, lesson lookup,
-measurement noise, memory structure) are deterministic scripts, so the
-instructions can stay short. A run that crosses skills keeps its results in
+matter (the full change under review, what a commit would take, including
+edits you made before the agent started, quoted review findings and which of
+them predate the change, whether a recorded check still holds on the current
+code, the PR's state on its current head, the ticket graph, plan coverage,
+lesson lookup, measurement noise, writing tells, the verification feature map,
+memory structure) are deterministic scripts, so the instructions can stay
+short. A run that crosses skills keeps its results in
 one temporary record under `.verify/`, and a failed or stale required check
 blocks a success claim.
 
@@ -61,9 +63,12 @@ Common combinations:
 /compound-memory:autopilot        all of the first line, unattended, ending at an open PR
 ```
 
-[`docs/coverage.md`](docs/coverage.md) maps every upstream skill this plugin
-learned from (Compound Engineering, mattpocock/skills, and Cursor's pstack) to
-where it lives here, and says why the rest were left out.
+It replaces the upstream skills it learned from: 48 skills from Compound
+Engineering, mattpocock/skills, and Cursor's pstack, so none of them needs to
+be installed beside it. [`docs/coverage.md`](docs/coverage.md) maps each one
+to where it lives here and says why the rest were left out, and
+[`docs/benchmark/parity-2026-10-24.md`](docs/benchmark/parity-2026-10-24.md) is
+the parity review behind each row.
 
 ## Memory
 

@@ -162,8 +162,7 @@ subdirectory therefore sees the project's tree.
 
 It reports: whether `memory/` exists and which core files are present; Git
 branch, `HEAD`, worktree list, whether this checkout is a linked worktree, and
-the full working-tree change list including
-untracked files; which handoff is active and whether it belongs to this branch;
+the full working-tree change list including untracked files; which handoff is active and whether it belongs to this branch;
 each governed contract file (`contract`: presence, size against a 200-line
 signal, containment, whether it carries the memory section, `missingSection`
 per harness, `sectionsMatch`); and change-based staleness. Decision records,
