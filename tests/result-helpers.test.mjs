@@ -286,6 +286,43 @@ test('pr-state: the CLI exit code follows --want', (t) => {
   assert.equal(node([...args, '--want', 'ready', '--threads', join(root, 'threads.json')], root).status, 0)
 })
 
+test('pr-state: a fork run waiting for approval is pending, not failed, and blocks checks passed', () => {
+  assert.equal(classifyCheck({ name: 'a', status: 'COMPLETED', conclusion: 'ACTION_REQUIRED' }).result, 'awaiting-approval')
+  const r = prState(pr({ statusCheckRollup: [{ name: 'test', status: 'COMPLETED', conclusion: 'ACTION_REQUIRED' }] }))
+  assert.equal(r.stage, 'checks-pending')
+  assert.equal(r.checksPassed, false)
+  assert.match(r.blockers.join(' '), /approve/)
+})
+
+test('pr-state: a requested review not yet given keeps a green PR from ready', () => {
+  const r = prState(pr({ reviewRequests: [{ login: 'octocat' }, { name: 'core-team' }] }), { threads: [] })
+  assert.equal(r.checksPassed, true)
+  assert.equal(r.readyToMerge, false)
+  assert.deepEqual(r.pendingReviews, ['octocat', 'core-team'])
+})
+
+test('pr-state: a required check that has not reported is pending, and no CI is never checks passed', () => {
+  const missing = prState(pr(), { required: ['test', 'lint'], threads: [] })
+  assert.equal(missing.stage, 'checks-pending')
+  assert.match(missing.blockers.join(' '), /required check\(s\) have not reported on this head: lint/)
+  const none = prState(pr({ statusCheckRollup: [] }), { threads: [] })
+  assert.equal(none.readyToMerge, false)
+  const noCi = prState(pr({ statusCheckRollup: [] }), { threads: [], noCi: true })
+  assert.equal(noCi.checksPassed, false, 'nothing was checked')
+  assert.equal(noCi.noChecksConfigured, true)
+  assert.equal(noCi.readyToMerge, true)
+})
+
+test('pr-state: the CLI reads UTF-16 input with a byte-order mark, and a required-checks list', (t) => {
+  const root = makeTempRoot()
+  cleanupAfter(t, root)
+  writeFileSync(join(root, 'pr.json'), Buffer.concat([Buffer.from([0xff, 0xfe]), Buffer.from(JSON.stringify(pr()), 'utf16le')]))
+  writeFileSync(join(root, 'required.txt'), 'test\nlint\n')
+  const args = [script('pr-state.mjs'), '--input', join(root, 'pr.json'), '--no-local']
+  assert.equal(node(args, root).status, 0)
+  assert.equal(node([...args, '--required', join(root, 'required.txt')], root).status, 1)
+})
+
 // ---------------------------------------------------------------------------
 // plan-check
 // ---------------------------------------------------------------------------
