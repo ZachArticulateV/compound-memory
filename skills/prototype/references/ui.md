@@ -20,7 +20,7 @@ the user can compare them in place and pick one or combine parts of each.
 ## Steps
 
 1. **Write the plan in one line** where the prototype lives: "Two variants of
-   the intake form on `/clients/new`, switchable with `?variant=`."
+   the signup form on `/signup`, switchable with `?variant=`."
 2. **Make two variants** (up to five when asked). Each one changes the layout,
    the information hierarchy, or the primary action, not just colors or copy.
    If two come out similar, redo one with an explicit constraint ("no card

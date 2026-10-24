@@ -3,7 +3,7 @@
 One self-contained HTML file that lets anyone drive a state model by clicking
 buttons. Use it for business rules, state transitions, and data shapes: the
 things that read fine on paper and feel wrong once real cases run through them.
-Because it is one file, it can go to a designer, a clinician, or a client, so
+Because it is one file, it can go to a designer, an expert, or a client, so
 it speaks their language, not the code's.
 
 ## Steps

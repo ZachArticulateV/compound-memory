@@ -22,10 +22,10 @@ parallel subagents and keep only their conclusions:
 Follow the plan shape in `../../references/artifacts.md`.
 
 - **Terms** define only the words a reader could take two ways ("active
-  client", "review due"), in the project's glossary words when
+  ticket", "reply due"), in the project's glossary words when
   `memory/glossary.md` has them. Skip the section when no word is ambiguous.
 - **Requirements** say what is true when the work is done, each one
-  observable ("the list shows only reviews due this week"), not an activity
+  observable ("the list shows only tickets due today"), not an activity
   ("improve the list").
 - **Decisions** carry an ID, the choice, the reason, and who settled it (the
   user, or you, marked as a recommendation). Only a user's decision is settled.
