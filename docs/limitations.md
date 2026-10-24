@@ -111,7 +111,9 @@ whether to heed it. What their scripts establish, and nothing more:
   refuses to list a P0 or P1 as safe to fix until it carries a verdict. It
   does not confirm the finding is right, the verdict is whatever the reviewer
   wrote, the `model` label is self-reported, and it only sees findings the
-  review writes to its input file.
+  review writes to its input file. `--patch` decides "pre-existing" by line
+  distance from the change, so a bug the change triggers in an untouched line
+  far away is marked pre-existing; the reviewer says so when it is.
 - `run-record.mjs` refuses a success claim when a required check failed, never
   ran, lost its saved output, or ran on code or an environment that has since
   changed. It never runs the check: the exit code is the one the agent
