@@ -24,18 +24,30 @@ function rows() {
   return out
 }
 
-/** The skills chosen for adoption, plus Compound Engineering's loop. */
+/**
+ * Every upstream skill this plugin replaces. Each must have an adopted row, so
+ * a user who installs the plugin needs none of these.
+ */
 const REQUIRED = {
-  'mattpocock/skills': ['writing-for-agents', 'to-tickets', 'code-review', 'prototype', 'retro'],
+  'mattpocock/skills': [
+    'writing-for-agents', 'to-tickets', 'code-review', 'prototype', 'retro', 'tdd', 'diagnosing-bugs',
+    'implement', 'to-spec', 'pr', 'handoff', 'grilling', 'grill-with-docs', 'domain-modeling', 'wait-what',
+  ],
   'cursor/plugins (pstack)': [
-    'create-verification-skill', 'correct', 'recall', 'technical-writing', 'automate-me', 'ketchup',
-    'principle-prove-it-works', 'principle-encode-lessons-in-structure',
+    'create-verification-skill', 'maintain-verification-skill', 'principle-prove-it-works', 'correct',
+    'principle-encode-lessons-in-structure', 'recall', 'ketchup', 'technical-writing', 'automate-me', 'unslop',
+    'principle-fix-root-causes',
   ],
   'EveryInc/compound-engineering-plugin': [
-    'ce-brainstorm', 'ce-plan', 'ce-work', 'ce-simplify-code', 'ce-code-review', 'ce-compound',
-    'ce-compound-refresh', 'ce-debug', 'ce-pov', 'ce-optimize', 'lfg',
+    'ce-brainstorm', 'ce-plan', 'ce-work', 'ce-simplify-code', 'ce-code-review', 'ce-doc-review', 'ce-compound',
+    'ce-compound-refresh', 'ce-debug', 'ce-pov', 'ce-optimize', 'ce-prototype', 'ce-commit', 'ce-commit-push-pr',
+    'ce-babysit-pr', 'ce-resolve-pr-feedback', 'lfg', 'ce-handoff', 'ce-noslop', 'wtf', 'ce-test-browser',
+    'ce-worktree',
   ],
 }
+
+/** The dated parity review the coverage map cites. */
+const REVIEW = /`(docs\/benchmark\/parity-\d{4}-\d{2}-\d{2}\.md)`/.exec(coverage)?.[1]
 
 test('the coverage map has rows for all three upstreams', () => {
   const sources = new Set(rows().map((r) => r.source))
@@ -75,5 +87,15 @@ test('every target in the Here column exists', () => {
 test('every rejection gives its reason', () => {
   for (const row of rows().filter((r) => r.here === 'not adopted')) {
     assert.ok(row.note.length > 20, `${row.upstream} is not adopted with no reason given`)
+  }
+})
+
+test('the coverage map cites a dated parity review that covers every required skill', () => {
+  assert.ok(REVIEW, 'docs/coverage.md names no docs/benchmark/parity-YYYY-MM-DD.md')
+  assert.ok(existsSync(join(repoRoot, REVIEW)), `${REVIEW} does not exist`)
+  const review = readFileSync(join(repoRoot, REVIEW), 'utf8')
+  for (const [source, names] of Object.entries(REQUIRED)) {
+    assert.ok(review.includes(`## ${source}`), `${REVIEW} has no section for ${source}`)
+    for (const name of names) assert.ok(review.includes(`### \`${name}\``), `${REVIEW} has no entry for ${name}`)
   }
 })
