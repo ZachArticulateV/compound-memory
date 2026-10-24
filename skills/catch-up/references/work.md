@@ -7,7 +7,8 @@ a short brief and the next move.
 
 Pin the topic, the window (default: the last seven days), and the workspace
 (default: this one). State the scope back. Never widen "recent" to "all" or
-read another project's history without being asked.
+read another project's history without being asked, and never quietly cap
+"all" to a recent slice: when you must, say so.
 
 ## 2. Read the record, cheapest first
 
@@ -29,17 +30,24 @@ read another project's history without being asked.
    node "${CLAUDE_SKILL_DIR}/../../scripts/tickets-check.mjs" --dir <tickets dir>
    ```
 
-5. **Transcripts,** when memory is missing or does not cover the topic.
+5. **Transcripts,** when memory is missing, does not cover the topic, or is
+   older than sessions in the window (the probe reports when each memory file
+   last changed).
    Claude Code keeps them in `~/.claude/projects/<slug>/<session>.jsonl`
    (the workspace path with each `/` and `.` turned into `-`); Codex in
    `~/.codex/sessions/`. Order by modification time, search the topic first,
-   and read only the matching parts. For more than two sessions, give each
+   and read only the matching parts; skip this session and subagent, eval,
+   and test transcripts. Read a transcript in full when the answer depends on
+   what an agent actually ran. For more than two sessions, give each
    slice to a subagent on a fast model; each returns, per session: the goal,
    decisions, open threads, corrections, and artifacts (PRs, branches,
    tickets).
-6. **The wider record,** when the topic names a feature or bug: issues and
-   their comments, fixes that shipped and were reverted, errors still
-   reported. Say which sources were unavailable.
+6. **The wider record,** when the topic names a feature, file, area, or bug:
+   each source the host can reach (code history, the issue tracker and its
+   comments, team chat, long-form docs, error tracking), one subagent per
+   source when there are several, asked for the current state, what did not
+   hold (fixes shipped and reverted), and what users still report. Report each
+   source as found, checked and empty, or unavailable.
 
 ## 3. Verify
 
@@ -56,6 +64,9 @@ memory file stale, say which claim it may have outlived.
 - **Problems:** at most five recurring ones, including fixes that were
   reverted, so the next attempt starts where the last one failed.
 - **Next move:** the single most useful next action, concrete.
+
+Leave adjacent work out unless it blocks this one. When space runs short, cut
+detail before threads.
 
 Cite each finding by its source (PR number, ticket, session). Redact secrets
 and personal or health data from anything quoted out of a transcript. When memory
