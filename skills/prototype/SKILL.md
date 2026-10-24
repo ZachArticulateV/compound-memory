@@ -35,7 +35,9 @@ ask, pick one, and state the assumption at the top of the prototype.
    its answer.
 2. **Throwaway and marked as such.** Put it next to what it prototypes, and name
    it so nobody mistakes it for production code.
-3. **One command, or one double-click, to run.**
+3. **One command, or one double-click, to run,** in the medium that shows the
+   thing being judged: when a browser would fake it (a native gesture, a
+   sound, a printed page), build it where it is real, and say so.
 4. **State lives in memory.** Persistence is what a prototype tests, not what it
    relies on. A question about storage gets a scratch database named to be
    wiped.
@@ -45,7 +47,8 @@ ask, pick one, and state the assumption at the top of the prototype.
    than five stops being different and starts being noise.
 8. **Capture the answer.** Write the verdict and the question it settled into
    the plan's Decisions (or the issue), commit the prototype to a
-   `prototype/<slug>` branch, and keep only the validated decision on the main
+   `prototype/<slug>` branch, name that branch in the decision so the source
+   can be found again, and keep only the validated decision on the main
    branch.
 9. **Update what the answer changed.** When the verdict changes direction,
    edit the plan sections it touches (Requirements, Decisions, Units, Out of

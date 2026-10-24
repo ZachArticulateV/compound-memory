@@ -23,8 +23,13 @@ the user can compare them in place and pick one or combine parts of each.
    the signup form on `/signup`, switchable with `?variant=`."
 2. **Make two variants** (up to five when asked). Each one changes the layout,
    the information hierarchy, or the primary action, not just colors or copy.
-   If two come out similar, redo one with an explicit constraint ("no card
-   grid"). Use the project's own component library and styles.
+   Variants may share small pieces such as a header, but each owns its own
+   layout; a shared layout component makes them the same screen. If two come
+   out similar, redo one with an explicit constraint ("no card grid"). Use the
+   project's own component library and styles. When the question is wide open
+   ("make onboarding more fun"), first name three to five different mechanisms
+   in a line each and let the user pick which to build; two close variants are
+   for a narrow question.
 3. **Wire one switcher:** read the parameter, render `VariantA` or `VariantB`,
    and mount a small fixed bar at the bottom center with previous and next
    arrows and the variant's name. Arrow keys cycle too, except while an input
@@ -38,3 +43,13 @@ the user can compare them in place and pick one or combine parts of each.
 
 Variants read data and point any mutation at a stub; the question is how it
 looks, not whether the backend works.
+
+## When the question is how it looks
+
+A question about palette, type, density, or tone needs variants finished
+enough to judge, or a broken render loses a good idea: readable contrast, real
+content at its shortest and longest, visible focus, and the states the screen
+has (empty, loading, error). The variants differ in what organizes the screen,
+not in a color swap. Look at each one rendered before handing over the URL,
+for example with `layout-check.mjs` from `../verify/references/checks.md` and
+the host's accessibility tooling for contrast.
