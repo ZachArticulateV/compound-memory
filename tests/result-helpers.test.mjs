@@ -379,6 +379,14 @@ test('plan-check: an uncovered requirement, a missing Verify, a TBD, and an unkn
   assert.deepEqual(ids, ['no-verify', 'open-question', 'uncovered', 'unknown-requirement'])
 })
 
+test('plan-check: Depends on must name a unit the plan has', () => {
+  const ok = PLAN.replace('### U2. Mark done', '### U2. Mark done\n- **Depends on:** U1')
+  assert.deepEqual(checkPlan(ok).problems, [])
+  assert.deepEqual(checkPlan(ok).units.find((u) => u.id === 'U2').dependsOn, ['U1'])
+  const bad = PLAN.replace('### U2. Mark done', '### U2. Mark done\n- **Depends on:** U9, U2')
+  assert.deepEqual(checkPlan(bad).problems.map((p) => p.message).sort(), ['U2 depends on U9, which the Units section does not list', 'U2 depends on itself'].sort())
+})
+
 test('plan-check: a units table is read, and brainstorm stage skips units', () => {
   const table = PLAN.replace(/## Units[\s\S]*?## Verification/, '## Units\n\n| Unit | Goal | Verify | Covers |\n| --- | --- | --- | --- |\n| U1 | query | `npm test -- due` | R1 |\n| U2 | done | `npm test -- done` | R2 |\n\n## Verification')
   assert.deepEqual(checkPlan(table).problems, [])
