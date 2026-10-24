@@ -53,7 +53,22 @@ everything.
 
 ## Last measured
 
-2026-10-21, `sonnet`, 2 trials per task and configuration.
+2026-10-24, `sonnet`, 2 trials per task and configuration, skill invoked
+(`node evals/run.mjs --invoke`), after the upstream parity changes.
+
+| Arm | Plugin | Correct | False success |
+| --- | --- | --- | --- |
+| Skill invoked | previous (`origin/main`) | 10/12 | 2/12 |
+| Skill invoked | current | 12/12 | 0/12 |
+
+The current skills held the 12 of 12 measured on 2026-10-21; the previous
+plugin missed `measure` in both trials this time. The small tasks stayed small:
+10 seconds and $0.056 a run on average, against 9.3 seconds and $0.053 for the
+previous plugin.
+
+### 2026-10-21
+
+`sonnet`, 2 trials per task and configuration.
 
 | Arm | Plugin | Correct | False success |
 | --- | --- | --- | --- |
