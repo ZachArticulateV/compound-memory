@@ -48,6 +48,7 @@ focus, write `Next session focus: unspecified` and cover the work as it stands.
 | Work type | What the session actually did | Always: it decides what verification means (Section 2) |
 | Tests run, and their results, or the work type's equivalent checks | The runs you observed this session | Always — including "none" |
 | Unresolved failures | The runs you observed this session | Whenever one exists |
+| Approaches tried and ruled out, with why | What the session actually tried | Whenever one was: it goes under Evidence collected, so the next session does not repeat it |
 | Decisions the user made | The conversation | Whenever one was made: it is filed, not just mentioned (Section 3) |
 | Next exact step | Your own state | Always |
 
@@ -151,6 +152,7 @@ The layout depends on how many workstreams are active. Read `git.worktrees` and
 | One active workstream | `memory/handoff.md` |
 | More than one active workstream | `memory/handoffs/<workstream-slug>.md` |
 | Already promoted to a directory | Stay promoted; write the file for this branch |
+| The user wants it outside the repository, or the repository must not gain files | The OS temp directory (`$TMPDIR`, `/tmp`, or `%TEMP%`), with the path printed; skip filing (Section 3) |
 
 The slug is the branch name lowercased, with every run of non-alphanumeric
 characters collapsed to a single hyphen: `feature/auth-refresh` becomes

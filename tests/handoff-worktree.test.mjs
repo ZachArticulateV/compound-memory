@@ -127,6 +127,10 @@ test('the probe reports both workstreams, which is what triggers promotion', nee
   const fromWorktree = collectProjectState(worktree)
   assert.equal(fromWorktree.git.branch, branchB)
   assert.equal(fromWorktree.git.worktrees.length, 2)
+
+  // Only the second checkout is a linked worktree, so work there stays in place.
+  assert.equal(fromMain.git.linkedWorktree, false)
+  assert.equal(fromWorktree.git.linkedWorktree, true)
 })
 
 test('branches that slugify identically collide, so the target needs a declared-branch guard', needsGit, (t) => {

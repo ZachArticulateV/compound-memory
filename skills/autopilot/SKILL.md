@@ -1,6 +1,6 @@
 ---
 name: autopilot
-description: "Take a request from idea or bug report to a reviewed, verified pull request without stopping, by running this plugin's skills in order: plan or debug, build, simplify, verify, review, learn, and ship. Use when the user asks for hands-off, end-to-end, or autonomous work, such as \"take it all the way\", \"just do it\", or \"lfg\"."
+description: "Take a request from idea or bug report to a reviewed, verified pull request without stopping, by running this plugin's skills in order: plan or debug, build, simplify, verify, review, learn, and ship. Use when the user asks for hands-off, end-to-end, or autonomous work, such as \"take it all the way\" or \"just do it\"."
 argument-hint: "[feature, bug, issue, or plan path]"
 allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/tickets-check.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/findings-check.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/memory-validate.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/run-record.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/pr-state.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/changes.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/plan-check.mjs" *)
 ---
@@ -99,5 +99,3 @@ Every other skill in this plugin, through the files in
 Paths in this skill and its references are relative to this skill's directory
 (`${CLAUDE_SKILL_DIR}`). Outside Claude Code, that is the directory holding this
 file.
-
-Draws on Compound Engineering `lfg`.

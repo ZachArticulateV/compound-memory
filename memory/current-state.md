@@ -4,7 +4,7 @@ What is true about this project right now. A snapshot, not a journal — obsolet
 state is replaced here rather than appended to. History lives in Git and in
 `decisions/`.
 
-Updated: 2026-10-23
+Updated: 2026-10-24
 
 ## Release
 
@@ -43,21 +43,25 @@ Eleven skills beside `project-memory` (decision 009): `plan`, `prototype`,
 `build`, `debug`, `review`, `verify`, `ship`, `autopilot`, `learn`, `write`,
 `catch-up`. Each has an outcome, a Done when line, a mode table, and a Works
 with section, and composes through the artifacts in `references/artifacts.md`.
-`docs/coverage.md` maps every adopted upstream skill to its home here.
+The skills are the plugin's own: they name no other skill set or author.
 
 **Verified:**
 
-- `tests/skills.test.mjs` and `tests/coverage.test.mjs`: anatomy, paths,
-  script pre-approvals, Codex metadata, hand-off targets, coverage targets.
+- `tests/skills.test.mjs`: anatomy, paths, script pre-approvals, Codex
+  metadata, hand-off targets.
 - Every engineering mode met its Done when line in live headless runs on sample
   repositories (`acceptance-criteria.md`, Engineering skills, live).
 - With the skill invoked, the agent-task eval scored 12 of 12 correct with no
-  false success (`evals/README.md`, Last measured).
+  false success on 2026-10-21 and again on 2026-10-24, after the changes
+  listed under Unreleased in `CHANGELOG.md` (`evals/README.md`, Last measured).
 
 **Not verified:**
 
 - Any skill run under Codex. The plugin installs there and all twelve skills
   reach the model's prompt.
+- The guidance added on 2026-10-24 (new lenses, interview moves, loop rules)
+  beyond the six eval tasks. The tests pin the text and the scripts,
+  not what a model does with the new prose.
 - The console and component-provenance checks in
   `skills/verify/references/checks.md`.
 
@@ -73,15 +77,17 @@ Status: working
 (`scripts/lessons.mjs`, `scripts/findings-check.mjs`,
 `scripts/tickets-check.mjs`, `scripts/measure.mjs`, `scripts/changes.mjs`,
 `scripts/run-record.mjs`, `scripts/pr-state.mjs`, `scripts/plan-check.mjs`,
-`scripts/rewrite-check.mjs`, and the `scripts/verify/` helpers; decision 011),
+`scripts/rewrite-check.mjs`, and the `scripts/verify/` helpers, including
+`scripts/verify/feature-map-check.mjs`; decision 011),
 and two Claude Code hooks. The Codex manifest opts out of the hooks
 (decision 007).
 
 **Verified:**
 
-- `node --test`: 748 tests, 727 passed, 0 failed, 21 skipped, on Linux,
-  2026-10-23. CI runs Ubuntu and Windows.
-- `claude plugin validate . --strict` passed on the same tree.
+- `node --test`: 757 tests, 736 passed, 0 failed, 21 skipped, on Linux,
+  2026-10-24. CI runs Ubuntu and Windows.
+- `claude plugin validate . --strict` and `node scripts/memory-validate.mjs`
+  passed on the same tree.
 
 **Not verified:**
 
@@ -98,8 +104,8 @@ None.
 
 ## Intentionally deferred
 
-- Multi-context glossaries (upstream CONTEXT-MAP), until a multi-context
-  repository adopts the plugin (see `docs/benchmark/mattpocock-skills.md`).
+- A glossary per context kept under `memory/` itself. The validator already
+  reads a root glossary map and the context glossaries it links.
 
 ## Before modifying this project
 
@@ -114,3 +120,8 @@ None.
   `CLAUDE.md`, which fails strict plugin validation.
 - Never commit run output (the .verify and evals/results directories): it
   holds agent replies and session-specific results. `.gitignore` covers both.
+- A content scan for personal or session-specific text expects exactly one
+  identity: the publisher's, in the manifests' author fields, the LICENSE
+  copyright line, the repository URLs and install commands, and GitHub's
+  merge-commit messages. The owner chose to keep it; anything else is a
+  finding.

@@ -8,9 +8,8 @@
 // only when reviewers on different models agree, and keeps what clears the bar:
 // confidence 75 or more, or severity P0.
 //
-// Compound Engineering's equivalent checked only that a quote was present, so a
-// reviewer could quote code that does not exist and keep its confidence. Here
-// the quote is looked up.
+// Checking only that a quote is present would let a reviewer quote code that
+// does not exist and keep its confidence, so the quote is looked up.
 //
 // Severity and confidence never stand in for evidence. A P0 is kept even when
 // its quote does not check out, because dropping a possible outage is worse
@@ -21,6 +20,11 @@
 // carry a `verdict` (confirmed, disproved, or unresolved). Disproved findings
 // are dropped; only findings whose evidence checked out and that are either
 // confirmed or below P1 are listed as safe to fix. A missing verdict exits 1.
+//
+// With --patch <file> (the patch `changes.mjs review --write` saved), a kept
+// finding whose line is not within a few lines of a changed line, or whose
+// file the change does not touch, is marked `outsideDiff`: a pre-existing
+// problem, reported apart and kept off the safe-to-fix list.
 //
 // WHAT THIS IS NOT: a judge of whether a finding is right. A verified quote
 // proves the reviewer looked at real code, not that its reasoning holds. The
@@ -193,7 +197,59 @@ const order = (a, b) =>
   a.file.localeCompare(b.file) ||
   (a.line ?? 0) - (b.line ?? 0)
 
-export function checkFindings(root, input, { final = false } = {}) {
+/** Lines within this distance of a changed line count as part of the change. */
+export const DIFF_NEIGHBORHOOD = 3
+
+/**
+ * The new-side lines each file's change touches, from a unified diff: added
+ * lines, and the position where lines were removed. A deleted file maps to
+ * null (the whole file is the change).
+ */
+export function changedLines(patch) {
+  const files = new Map()
+  let file = null
+  let oldFile = null
+  let next = 0
+  for (const line of patch.split(/\r?\n/)) {
+    if (line.startsWith('diff --git ')) {
+      file = null
+      oldFile = null
+      continue
+    }
+    if (line.startsWith('--- ')) {
+      oldFile = line.slice(4).replace(/^a\//, '')
+      continue
+    }
+    if (line.startsWith('+++ ')) {
+      const target = line.slice(4)
+      file = target === '/dev/null' ? oldFile : target.replace(/^b\//, '')
+      if (target === '/dev/null') files.set(file, null)
+      else if (!files.has(file)) files.set(file, new Set())
+      continue
+    }
+    const h = /^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@/.exec(line)
+    if (h) {
+      next = Number(h[1])
+      continue
+    }
+    if (file === null || files.get(file) === null) continue
+    if (line.startsWith('+')) files.get(file).add(next++)
+    else if (line.startsWith('-')) files.get(file).add(Math.max(next, 1))
+    else if (line.startsWith(' ')) next++
+  }
+  return files
+}
+
+/** Is a finding at file:line inside the change? */
+export function insideChange(files, file, line) {
+  if (!files.has(file)) return false
+  const lines = files.get(file)
+  if (lines === null || !line) return true
+  for (const l of lines) if (Math.abs(l - line) <= DIFF_NEIGHBORHOOD) return true
+  return false
+}
+
+export function checkFindings(root, input, { final = false, patch = null } = {}) {
   const absRoot = resolve(root)
   const list = Array.isArray(input) ? input : Array.isArray(input?.findings) ? input.findings : null
   if (list === null) return { error: 'input must be a JSON array of findings or an object with a "findings" array' }
@@ -202,6 +258,8 @@ export function checkFindings(root, input, { final = false } = {}) {
   const passing = merged.filter((f) => f.confidence >= KEEP_CONFIDENCE || f.severity === 'P0')
   const suppressed = merged.filter((f) => !passing.includes(f))
   for (const f of passing) f.unproved = f.evidence !== 'checked'
+  const changed = patch === null ? null : changedLines(patch)
+  if (changed !== null) for (const f of passing) f.outsideDiff = !insideChange(changed, f.file, f.line)
   // A confirmed verdict cannot rest on a quote that is not in the file.
   for (const f of passing) {
     if (f.unproved && f.verdict === 'confirmed') {
@@ -216,7 +274,7 @@ export function checkFindings(root, input, { final = false } = {}) {
   const missingVerdict = final ? kept.filter((f) => CHALLENGED.includes(f.severity) && f.verdict === undefined) : []
   // Safe to fix: real code is quoted, and a serious finding survived the
   // attempt to disprove it.
-  const fixable = kept.filter((f) => !f.unproved && (!CHALLENGED.includes(f.severity) || f.verdict === 'confirmed'))
+  const fixable = kept.filter((f) => !f.unproved && !f.outsideDiff && (!CHALLENGED.includes(f.severity) || f.verdict === 'confirmed'))
   return {
     schemaVersion: FINDINGS_SCHEMA_VERSION,
     root: absRoot.split('\\').join('/'),
@@ -235,6 +293,7 @@ export function checkFindings(root, input, { final = false } = {}) {
       disproved: disproved.length,
       missingVerdict: missingVerdict.length,
       fixable: fixable.length,
+      preExisting: kept.filter((f) => f.outsideDiff).length,
       quoteNotFound: checked.filter((f) => f.quoteStatus === 'not-found' || f.quoteStatus === 'file-missing').length,
       promoted: merged.filter((f) => f.promoted).length,
     },
@@ -248,7 +307,12 @@ export function renderFindingsText(result) {
     out.push(`    ${f.file}${f.line ? `:${f.line}` : ''}  [${(f.lenses ?? []).join(', ') || 'no lens'}]${f.promoted ? '  agreement across model labels' : ''}`)
     for (const p of f.problems) out.push(`    note: ${p}`)
   }
-  for (const f of result.kept.filter((k) => !k.unproved)) line(f)
+  for (const f of result.kept.filter((k) => !k.unproved && !k.outsideDiff)) line(f)
+  const before = result.kept.filter((k) => !k.unproved && k.outsideDiff)
+  if (before.length > 0) {
+    out.push('', 'PRE-EXISTING — on lines this change did not touch. Report them apart; fix one only when the change depends on it:')
+    for (const f of before) line(f)
+  }
   const unproved = result.kept.filter((k) => k.unproved)
   if (unproved.length > 0) {
     out.push('', 'UNPROVED — kept for severity, but the quoted evidence is not in the file. Report these as unproved, not as defects:')
@@ -271,7 +335,7 @@ export function renderFindingsText(result) {
   return out.join('\n')
 }
 
-const USAGE = `Usage: findings-check.mjs --input <findings.json> [--final] [--json] [--cwd <dir>]
+const USAGE = `Usage: findings-check.mjs --input <findings.json> [--final] [--patch <review.patch>] [--json] [--cwd <dir>]
 
 Check review findings against the working tree: verify each quoted line, merge
 duplicates, and keep findings at confidence ${KEEP_CONFIDENCE}+ or severity P0. A kept
@@ -279,12 +343,14 @@ finding whose quote is not in the file is labelled unproved.
 --final also checks the disprove pass: each kept P0 and P1 needs a "verdict"
 (${VERDICTS.join(', ')}); disproved ones are dropped and the safe-to-fix list
 is printed.
+--patch marks findings outside the change's lines as pre-existing and keeps
+them off the safe-to-fix list.
 Read "-" as the input to read standard input. Read-only. Exits 0 when it ran;
 1 with --final when a kept P0 or P1 has no verdict; 2 on a usage error.
 `
 
 export function main(argv = process.argv.slice(2)) {
-  const { values, root, error } = parseCliArgs(argv, { extraOptions: { input: { type: 'string' }, final: { type: 'boolean', default: false } } })
+  const { values, root, error } = parseCliArgs(argv, { extraOptions: { input: { type: 'string' }, final: { type: 'boolean', default: false }, patch: { type: 'string' } } })
   if (error !== null || (!values.help && !values.input)) {
     process.stderr.write(`findings-check: ${error ?? '--input is required'}\n\n${USAGE}`)
     return USAGE_EXIT_CODE
@@ -300,7 +366,16 @@ export function main(argv = process.argv.slice(2)) {
     process.stderr.write(`findings-check: cannot read ${values.input}: ${err.message}\n`)
     return USAGE_EXIT_CODE
   }
-  const result = checkFindings(root, input, { final: values.final })
+  let patch = null
+  if (values.patch) {
+    try {
+      patch = readFileSync(resolve(root, values.patch), 'utf8')
+    } catch (err) {
+      process.stderr.write(`findings-check: cannot read ${values.patch}: ${err.message}\n`)
+      return USAGE_EXIT_CODE
+    }
+  }
+  const result = checkFindings(root, input, { final: values.final, patch })
   if (result.error) {
     process.stderr.write(`findings-check: ${result.error}\n`)
     return USAGE_EXIT_CODE

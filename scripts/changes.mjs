@@ -7,11 +7,13 @@
 //             base, staged, unstaged, and new files. `--write <file>` saves the
 //             whole change as one patch, new files included. Exits 1 when
 //             there is nothing to review.
-//   snapshot  Saves which lines are staged right now, before the agent stages
-//             anything (default `.verify/staged-before.json`).
+//   snapshot  Saves which lines are staged right now, and the unstaged edits
+//             and untracked files already in the working tree, before the
+//             agent changes anything (default `.verify/staged-before.json`).
 //   staged    Checks the index before a commit: every staged file falls under
 //             `--intended` paths, no line staged before the work began is
-//             still staged (with `--baseline`), and files with both staged and
+//             still staged and no edit already in the working tree is now
+//             staged unchanged (with `--baseline`), and files with both staged and
 //             unstaged lines are named so a partial commit is deliberate.
 //             Exits 1 when the commit would take something not intended.
 //
@@ -30,7 +32,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 
 import {
   SCRATCH_DIR, changeSets, fromObject, fullDiff, indexState, isGitCheckout, reviewBase,
-  scratchIgnored, stagedSnapshot, stillStaged, underPath,
+  scratchIgnored, stagedFromWorkingTree, stagedSnapshot, stillStaged, underPath,
 } from './lib/changes.mjs'
 import { USAGE_EXIT_CODE, emit, parseCliArgs } from './lib/report.mjs'
 
@@ -102,6 +104,15 @@ export function checkStaged(root, { intended = [], baseline = null } = {}) {
   for (const file of outside) problems.push({ id: 'unintended-file', file, message: `${file} is staged but is not among the intended paths` })
 
   if (baseline !== null) {
+    for (const r of stagedFromWorkingTree(baseline, state.staged)) {
+      problems.push({
+        id: 'dirty-before',
+        file: r.file,
+        message: r.whole
+          ? `${r.file} was an untracked file before this work began and is staged unchanged`
+          : `${r.hunks} hunk(s) in ${r.file} were unstaged edits before this work began and are now staged`,
+      })
+    }
     for (const r of stillStaged(fromObject(baseline.staged), state.staged)) {
       problems.push({
         id: 'staged-before',
@@ -170,9 +181,11 @@ const USAGE = `Usage:
 
 review    every change in scope: commits since the base, staged, unstaged, and
           new files. Exits 1 when there is nothing to review.
-snapshot  save the lines staged right now (default ${DEFAULT_SNAPSHOT}).
+snapshot  save the lines staged right now and the edits already in the
+          working tree (default ${DEFAULT_SNAPSHOT}).
 staged    check the index before a commit. Exits 1 when it holds a file outside
-          --intended, or lines that were staged before the snapshot.
+          --intended, lines that were staged before the snapshot, or an edit
+          that was in the working tree before the snapshot, staged unchanged.
 Exits 2 on a usage error.
 `
 
@@ -221,7 +234,8 @@ export function main(argv = process.argv.slice(2)) {
     mkdirSync(dirname(file), { recursive: true })
     writeFileSync(file, `${JSON.stringify({ schemaVersion: CHANGES_SCHEMA_VERSION, ...snap }, null, 2)}\n`, 'utf8')
     const count = Object.keys(snap.staged).length
-    process.stdout.write(`Saved the index state to ${target}: ${count === 0 ? 'nothing staged' : `${count} file(s) with staged lines`}.\n`)
+    const dirty = Object.keys(snap.unstaged).length + Object.keys(snap.untracked).length
+    process.stdout.write(`Saved the index state to ${target}: ${count === 0 ? 'nothing staged' : `${count} file(s) with staged lines`}; ${dirty === 0 ? 'no other edits in the working tree' : `${dirty} file(s) already edited or untracked`}.\n`)
     return 0
   }
 

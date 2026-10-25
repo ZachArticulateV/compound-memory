@@ -81,6 +81,35 @@ test('a commit guard flags a file someone else staged', (t) => {
   assert.ok(res.problems.some((p) => p.id === 'staged-before' && p.file === 'notes.md'))
 })
 
+test('a commit guard flags the user\'s unstaged edit, and their untracked file, staged by the agent', (t) => {
+  const lines = Array.from({ length: 30 }, (_, i) => `line ${i + 1}`)
+  const root = repo(t, { 'lib/a.mjs': `${lines.join('\n')}\n` })
+  // Before the agent begins, the user has an unstaged edit at the top and a
+  // new file nobody has added.
+  lines[0] = 'line 1 (user, unstaged)'
+  writeTree(root, { 'lib/a.mjs': `${lines.join('\n')}\n`, 'lib/scratch.mjs': 'theirs\n' })
+  const before = stagedSnapshot(root)
+  assert.ok(before.unstaged['lib/a.mjs'].hunks.length === 1)
+  assert.ok(before.untracked['lib/scratch.mjs'])
+  // The agent edits the bottom and stages everything under lib/.
+  lines[29] = 'line 30 (agent)'
+  writeTree(root, { 'lib/a.mjs': `${lines.join('\n')}\n` })
+  git(root, ['add', 'lib/'])
+
+  const res = checkStaged(root, { intended: ['lib/'], baseline: before })
+  assert.equal(res.ok, false)
+  assert.deepEqual(res.problems.map((p) => [p.id, p.file]).sort(), [['dirty-before', 'lib/a.mjs'], ['dirty-before', 'lib/scratch.mjs']])
+
+  // Staging only the agent's hunk passes.
+  git(root, ['reset', '-q', '--', 'lib/'])
+  const agentOnly = [...lines]
+  agentOnly[0] = 'line 1'
+  writeFileSync(join(root, 'patch-src.mjs'), `${agentOnly.join('\n')}\n`)
+  git(root, ['update-index', '--add', '--cacheinfo', `100644,${git(root, ['hash-object', '-w', 'patch-src.mjs']).trim()},lib/a.mjs`])
+  const clean = checkStaged(root, { intended: ['lib/'], baseline: before })
+  assert.deepEqual(clean.problems, [], JSON.stringify(clean.problems))
+})
+
 test('a commit guard flags another hunk staged earlier in a file the agent changed', (t) => {
   const lines = Array.from({ length: 30 }, (_, i) => `line ${i + 1}`)
   const root = repo(t, { 'lib/a.mjs': `${lines.join('\n')}\n` })

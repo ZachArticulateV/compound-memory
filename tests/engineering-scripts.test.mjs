@@ -1,9 +1,8 @@
 // The deterministic scripts under the engineering skills.
 //
-// Each script exists because an upstream skill left the same fact to prose and
-// it went wrong there: Compound Engineering's tag grep missed block-list tags,
-// its quote gate never checked the quote, and mattpocock's ticket edges were
-// never checked at all. The tests pin the case that motivated each one, and the
+// Each script holds a fact that goes wrong when left to prose: a tag grep that
+// misses block-list tags, a quote gate that never checks the quote, ticket
+// edges nobody checks. The tests pin the case that motivated each one, and the
 // neighbouring case that must stay quiet.
 
 import { test } from 'node:test'
@@ -144,6 +143,27 @@ test('a finding that quotes code which is not there loses its confidence', (t) =
   assert.equal(result.kept.length, 0)
   assert.equal(result.suppressed[0].confidence, 25)
   assert.equal(result.counts.quoteNotFound, 1)
+})
+
+test('with a patch, a finding on lines the change did not touch is pre-existing and not safe to fix', (t) => {
+  const root = makeTempRoot()
+  cleanupAfter(t, root)
+  const long = `${Array.from({ length: 20 }, (_, i) => `const v${i + 1} = ${i + 1}`).join('\n')}\n`
+  writeTree(root, { 'lib/queue.ts': QUEUE, 'lib/old.ts': long })
+  // The change edits line 2 of queue.ts and nothing in old.ts.
+  const patch = 'diff --git a/lib/queue.ts b/lib/queue.ts\n--- a/lib/queue.ts\n+++ b/lib/queue.ts\n@@ -2 +2 @@\n-  return job()\n+  return run(job)\n'
+  const finding = (file, line, quote, title) => ({ lens: 'correctness', severity: 'P2', confidence: 100, file, line, quote, title })
+  const result = checkFindings(root, { findings: [
+    finding('lib/queue.ts', 2, 'return run(job)', 'In the change'),
+    finding('lib/queue.ts', 5, 'export const other = 1', 'Near the change'),
+    finding('lib/old.ts', 18, 'const v18 = 18', 'Untouched file'),
+  ] }, { final: true, patch })
+  const by = Object.fromEntries(result.kept.map((f) => [f.title, f.outsideDiff]))
+  assert.deepEqual(by, { 'In the change': false, 'Near the change': false, 'Untouched file': true })
+  assert.deepEqual(result.fixable.map((f) => f.title).sort(), ['In the change', 'Near the change'])
+  assert.equal(result.counts.preExisting, 1)
+  // Without a patch nothing is marked.
+  assert.equal(checkFindings(root, { findings: [finding('lib/old.ts', 18, 'const v18 = 18', 'x')] }).kept[0].outsideDiff, undefined)
 })
 
 test('agreement raises confidence only across different models', (t) => {

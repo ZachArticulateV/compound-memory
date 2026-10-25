@@ -6,7 +6,8 @@ Prove a change works in the running app and keep the evidence.
 
 1. **Decide what to prove.** List the user-facing behaviors the change touches,
    from the plan's requirements, the ticket's `Verify with`, or the diff. Each
-   one needs its own evidence.
+   one needs its own evidence. A change to a layout, a global style, or a
+   shared component reaches every page that uses it: drive the main ones.
 2. **Find the recipe.** Use the project's verification skill
    (`.claude/skills/verify-*` or `.agents/skills/verify-*`) and its feature
    map. Drive every entry point the map lists for an affected feature, not just
@@ -29,7 +30,10 @@ Prove a change works in the running app and keep the evidence.
 5. **Drive and capture** into `.verify/evidence/<run-id>/`: the action, the
    resulting state, what was saved (read back through a second path), side
    effects, and for UI an accessibility snapshot and a screenshot with the app
-   visibly identified.
+   visibly identified. A step only an outside party can complete (a provider
+   sign-in, an emailed or texted code, a sandbox payment) is handed to the user
+   when one is present and recorded as user-confirmed; unattended, the behavior
+   is recorded as unchecked with that reason.
 6. **Run the scripted checks** that fit the change, from `references/checks.md`
    or the verification skill's helpers, with `--out` set to the run's evidence
    directory. A scripted check is evidence anyone can re-run; an eyeballed

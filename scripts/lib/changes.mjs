@@ -225,11 +225,55 @@ export function indexState(root, { paths = [] } = {}) {
   return { ok: true, staged, unstaged: new Set(nulList(unstaged.stdout)), untracked: nulList(untracked.stdout) }
 }
 
-/** What is staged right now, in a form that can be saved and compared later. */
+/**
+ * The working tree's own changes before any work began: for each tracked file
+ * with unstaged edits, its hunks against HEAD that are not already staged; for
+ * each untracked file, its blob. A later commit that stages one of these
+ * unchanged is committing someone else's edit.
+ */
+export function workingTreeState(root, state) {
+  const head = headOf(root)
+  const against = head === null ? [EMPTY_TREE] : ['HEAD']
+  const unstaged = {}
+  for (const path of state.unstaged) {
+    const diff = git(root, ['diff', ...DIFF_FLAGS, '-U0', ...against, '--', path])
+    const already = state.staged.get(path)?.hunks ?? []
+    const hunks = diff.ok ? hunkKeys(diff.stdout).filter((k) => !already.includes(k)) : []
+    if (hunks.length > 0) unstaged[path] = { hunks }
+  }
+  const untracked = {}
+  for (const path of state.untracked) {
+    const blob = git(root, ['hash-object', '--', path])
+    if (blob.ok) untracked[path] = blob.stdout.trim()
+  }
+  return { unstaged, untracked }
+}
+
+/** What is staged right now, and what the working tree already held, in a form that can be saved and compared later. */
 export function stagedSnapshot(root) {
   const state = indexState(root)
   if (!state.ok) return state
-  return { ok: true, head: headOf(root), staged: Object.fromEntries(state.staged) }
+  return { ok: true, head: headOf(root), staged: Object.fromEntries(state.staged), ...workingTreeState(root, state) }
+}
+
+/**
+ * Edits that were in the working tree, unstaged, before the snapshot and are
+ * now staged unchanged: a hunk at the same place with the same lines, or a
+ * then-untracked file staged with the same content.
+ */
+export function stagedFromWorkingTree(before, now) {
+  const out = []
+  for (const [file, was] of Object.entries(before.unstaged ?? {})) {
+    const cur = now.get(file)
+    if (!cur) continue
+    const taken = was.hunks.filter((k) => cur.hunks.includes(k)).length
+    if (taken > 0) out.push({ file, whole: false, hunks: taken })
+  }
+  for (const [file, blob] of Object.entries(before.untracked ?? {})) {
+    const cur = now.get(file)
+    if (cur && cur.blob === blob) out.push({ file, whole: true })
+  }
+  return out
 }
 
 export const fromObject = (obj) => new Map(Object.entries(obj ?? {}))

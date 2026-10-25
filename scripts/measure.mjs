@@ -11,9 +11,6 @@
 // floor the answer is "inconclusive", never a silent revert, so a change that
 // might have helped is measured again rather than thrown away.
 //
-// The rule follows Compound Engineering's ce-optimize decide.mjs, cut to one
-// metric.
-//
 // Read-only.
 
 import { fileURLToPath } from 'node:url'

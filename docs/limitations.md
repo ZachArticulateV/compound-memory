@@ -111,7 +111,9 @@ whether to heed it. What their scripts establish, and nothing more:
   refuses to list a P0 or P1 as safe to fix until it carries a verdict. It
   does not confirm the finding is right, the verdict is whatever the reviewer
   wrote, the `model` label is self-reported, and it only sees findings the
-  review writes to its input file.
+  review writes to its input file. `--patch` decides "pre-existing" by line
+  distance from the change, so a bug the change triggers in an untouched line
+  far away is marked pre-existing; the reviewer says so when it is.
 - `run-record.mjs` refuses a success claim when a required check failed, never
   ran, lost its saved output, or ran on code or an environment that has since
   changed. It never runs the check: the exit code is the one the agent
@@ -120,26 +122,35 @@ whether to heed it. What their scripts establish, and nothing more:
   not part of the code fingerprint. Re-running the recorded command is how to
   confirm a result.
 - `changes.mjs` lists every change in scope and, before a commit, the staged
-  lines that were staged before the work began or fall outside the intended
-  paths. It compares each file's staged blob and each hunk's position and
+  lines that were staged before the work began, edits that were already in
+  the working tree then and are now staged unchanged, or lines outside the
+  intended paths. An earlier edit the agent then changed further is not
+  recognized as the user's. It compares each file's staged blob and each hunk's position and
   text against the snapshot, so a hunk the user and the agent staged
   identically at the same place counts as the user's. It never stages or
   commits.
 - `pr-state.mjs` classifies what GitHub reported at the moment it was fetched.
-  It does not fetch, and it cannot see a required check GitHub has not yet
-  created.
+  It does not fetch, and it sees a required check GitHub has not yet created
+  only when `--required` names it. A review is pending only while GitHub still
+  lists the reviewer as requested; a bot that reviews without being requested
+  is not seen.
 - `plan-check.mjs` checks the links between requirements and units, not
   whether a `Verify` could fail or a requirement is testable.
 - `rewrite-check.mjs` compares tokens and words of doubt, not meaning.
+  `--tells` matches listed words and characters, not tone: a text with no hit
+  can still read badly, and a hit inside a deliberate example is not a fault.
 - `scripts/verify/` helpers check layout and console errors on the pages and
   journeys they are given. A pass on one page at three widths is not a pass on
-  the app.
+  the app. `feature-map-check.mjs` checks the map's shape, not that any recipe
+  in it still drives the app.
 - `tickets-check.mjs` reports collisions only between tickets whose `Touches`
   lines overlap. A ticket with no `Touches` line is reported as unknown, not as
   safe.
 - `lessons.mjs` matches words and paths. A lesson written in words the next
   task does not use is not found; tags drawn from existing lessons narrow that
-  gap but do not close it.
+  gap but do not close it. `--check` sees a commit only where a lesson cites
+  it in its Evidence section or after the word "commit", and a hash with no
+  letter or no digit in Evidence is not taken for one.
 - `measure.mjs` judges the samples it is given. Too few samples, or samples from
   a noisy machine, make it say `inconclusive`, which is the correct answer and
   not a result. A supplied `--noise` can raise the floor, never lower it below

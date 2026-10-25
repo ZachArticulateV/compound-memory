@@ -106,3 +106,36 @@ test('console: the journey drives the page and its console error fails the check
   const allowed = run('console-check.mjs', [join(root, 'console.html'), '--journey', join(root, 'journey.mjs'), '--allow', 'save failed', '--out', join(root, '.verify', 'out2')], root)
   assert.equal(allowed.status, 0, allowed.stdout)
 })
+
+// feature-map-check needs no browser: it reads Markdown only.
+
+const FEATURE = (title, driving = '- Preconditions: signed in as the seeded user.\n- Click **New note**; a blank editor opens.\n') =>
+  `# ${title}\n\nWhat the user sees.\n\n## Sub-features\n\n- \`create\`: one line.\n\n## How to get to it (user POV)\n\n- The sidebar button.\n\n## Driving it with Playwright\n\n${driving}\n## Gotchas\n\n- None yet.\n`
+
+test('feature-map-check: a well-formed map passes, and each kind of drift is named', (t) => {
+  const root = makeTempRoot()
+  cleanupAfter(t, root)
+  writeTree(root, {
+    'good/README.md': '# Features\n\n- [Notes](notes.md)\n- `search.md`\n',
+    'good/notes.md': FEATURE('Notes'),
+    'good/search.md': FEATURE('Search'),
+    'bad/README.md': '# Features\n\n- [Notes](notes.md)\n- [Notes again](notes.md)\n- [Gone](gone.md)\n',
+    'bad/notes.md': FEATURE('Notes', 'Click **New note**.\n'),
+    'bad/extra.md': '# Extra\n\n## Gotchas\n\n## Sub-features\n',
+  })
+  const run = (dir) => spawnSync(process.execPath, [helper('feature-map-check.mjs'), dir, '--json'], { cwd: root, encoding: 'utf8' })
+  const good = run('good')
+  assert.equal(good.status, 0, good.stdout)
+  const bad = run('bad')
+  assert.equal(bad.status, 1)
+  const problems = JSON.parse(bad.stdout).problems.map((p) => `${p.file}: ${p.problem}`)
+  for (const want of [
+    'README.md: lists notes.md more than once',
+    'README.md: lists gone.md, which does not exist',
+    'extra.md: not listed in README.md',
+    'notes.md: the Driving section does not open with `Preconditions:`',
+    'extra.md: section "Gotchas" is out of order',
+    'extra.md: no "How to get to it" section',
+  ]) assert.ok(problems.includes(want), `missing "${want}" in ${JSON.stringify(problems)}`)
+  assert.equal(spawnSync(process.execPath, [helper('feature-map-check.mjs'), 'nowhere'], { cwd: root }).status, 2)
+})

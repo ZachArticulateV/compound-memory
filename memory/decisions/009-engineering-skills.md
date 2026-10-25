@@ -8,10 +8,8 @@ date: 2026-10-18
 
 ## Context
 
-The goal was one plugin that does what the reviewed skills do
-(Compound Engineering, mattpocock/skills, and Cursor's pstack; see
-`docs/benchmark/`) across memory, planning, building, review, verification,
-shipping, and learning. Each skill had to work alone, together with the others,
+The goal was one plugin that covers memory, planning, building, review,
+verification, shipping, and learning on its own. Each skill had to work alone, together with the others,
 and for different purposes, with a posture that trusts the model rather than
 restricting it.
 
@@ -36,10 +34,9 @@ ticket graphs, lesson lookup, measurement noise) are bundled read-only scripts.
 - Composition through files means any skill runs without the others: a missing
   plan, memory tree, or verification skill changes what a skill reads, not
   whether it runs.
-- The reviewed upstreams show the trade: Compound Engineering's long
-  prohibitions cost context and still left its guarantees in prose; Matt's and
-  pstack's short skills rely on the model and lose little. Checks that matter
-  are code here, so the prose can stay short.
+- Long prohibitions cost context and still leave guarantees in prose; short
+  skills that rely on the model lose little. Checks that matter are code here,
+  so the prose can stay short.
 
 ## Alternatives considered
 
@@ -65,14 +62,12 @@ ticket graphs, lesson lookup, measurement noise) are bundled read-only scripts.
   outcomes. The accuracy rules themselves (observed verification only,
   hypotheses labelled, secrets by name) stay, because they are what makes
   memory worth reading.
-- `tests/skills.test.mjs` pins the anatomy every skill shares, and
-  `tests/coverage.test.mjs` pins that each adopted upstream skill maps to a
-  skill that exists.
+- `tests/skills.test.mjs` pins the anatomy every skill shares.
 
 ## Evidence / implementation
 
 `skills/*/SKILL.md`, `references/artifacts.md`, `references/principles.md`,
-`docs/coverage.md`, `scripts/lessons.mjs`, `scripts/findings-check.mjs`,
+`scripts/lessons.mjs`, `scripts/findings-check.mjs`,
 `scripts/tickets-check.mjs`, `scripts/measure.mjs`.
 
 ## Supersedes

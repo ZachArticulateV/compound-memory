@@ -150,6 +150,11 @@ that a future session would need to respect. Each passes the three-part test in
 trade-off. It is not a restatement of the stack. If you cannot say what the
 alternative was, it is not a decision record.
 
+When the repository already keeps a glossary (`GLOSSARY.md`,
+`GLOSSARY-MAP.md`) or a decision folder (`docs/adr/`), adopt it: point to it
+from `INDEX.md` and write no copy under `memory/` (`memory-schema.md`,
+Location).
+
 `glossary.md` is written only when reconnaissance found project-specific terms
 that a newcomer would misread: a word the code uses in a sense of its own, two
 names for one concept, one name for two. Use the code's own names as the
