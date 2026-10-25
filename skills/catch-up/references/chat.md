@@ -18,16 +18,23 @@ items are never cut to fit: when there are many, the reply grows by them.
    produced, or a small diagram of how a change works or how PRs depend on
    each other (six boxes at most, plain labels). A status list is not a
    picture; a Markdown table is not a picture. Use a picture only where the
-   host renders it.
+   host renders it. A visible change with no capture says "No screenshot yet"
+   and describes what changed.
 3. **One short line per thing the user asked for:** what came of it, and
    whether it is done, running, failed, or not checked. Write each line as you
    would say it: "Search was slow from a missing index", not "Search: done".
-   Never mark done what still waits on the user.
+   Each line stays true read alone, and names a bug fixed on the way. Never
+   mark done what still waits on the user.
 4. **At most three lines** that change what the user knows or must do, then one
    line for any work left that you can do yourself.
-5. **Action items** as plain bullets, two lines each: the decision with your
-   recommendation and why; then what happens if they do not answer. Write
-   "unknown" for what you do not know.
+5. **Action items:** every call still waiting on the user, including one
+   raised before their last message and not yet answered. Per item: its link
+   or number, what it changes for users, the evidence for your pick, its risk
+   (say "low" and why when it is low), and your pick. Items that share one
+   call go under that call, riskiest first. Say what waiting costs only when
+   it costs more than delay. Write "unknown" for what you do not know. The
+   reply alone must be enough to decide; a count or a link does not stand in
+   for an item.
 6. **A choice between options** goes after the action items: each option with
    what it gets the user and what it costs.
 

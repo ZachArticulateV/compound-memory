@@ -8,6 +8,9 @@ All notable changes to this plugin are documented here. Format follows
 
 ### Removed
 
+- The coverage map, the benchmark reviews, their test, and every skill's
+  attribution line: the skills are this plugin's own and name no other skill
+  set or author.
 - Session-specific content from the repository: development branch names,
   environment notes, and personal context in `memory/` and `docs/`. Run output
   (`.verify/`, `evals/results/`) is now ignored by Git, and the scenario
@@ -15,6 +18,12 @@ All notable changes to this plugin are documented here. Format follows
 
 ### Fixed
 
+- `ship commit` could commit the user's unstaged edits as the agent's work:
+  `changes.mjs snapshot` now records the unstaged hunks and untracked files
+  already in the working tree, and `staged --baseline` flags any of them
+  staged unchanged. The patch that sets aside someone else's staged work is
+  written with `git diff --output`, which stays byte-exact on every shell.
+- The worked examples in `plan` and `prototype` use neutral domains.
 - `review` now covers staged, unstaged, and new files. The playbook's
   `git diff <base>...HEAD` was empty for uncommitted work;
   `scripts/changes.mjs review` lists and saves the whole change.
@@ -50,6 +59,32 @@ All notable changes to this plugin are documented here. Format follows
 
 ### Added
 
+- `rewrite-check.mjs --tells`: candidate writing tells in one file (listed
+  vocabulary and filler, em dashes, arrows, slashes, heading structure),
+  skipping code and quoted mentions.
+- `scripts/verify/feature-map-check.mjs`: the feature map's index against its
+  files, and each file's sections and `Preconditions:` line.
+- `findings-check.mjs --patch`: findings on lines the change did not touch are
+  marked pre-existing and kept off the safe-to-fix list.
+- `lessons.mjs --check`: commits a lesson cites must exist and be reachable
+  from HEAD.
+- `plan-check.mjs` reads `Depends on` and reports a unit that does not exist.
+- The probe reports `git.linkedWorktree`, so `build` works in place inside a
+  linked worktree.
+- `pr-state.mjs`: a fork run awaiting approval is waiting, not failed; a
+  requested review not yet given keeps a PR from ready; `--required` counts a
+  required check that has not reported as pending; `--no-ci` lets a repository
+  with no CI reach ready as "no checks configured"; UTF-16 input is read.
+- The validator reads a root `GLOSSARY.md` and the context glossaries
+  `GLOSSARY-MAP.md` links when memory keeps no glossary of its own, and `init`
+  adopts an existing glossary or `docs/adr/` instead of copying it.
+- Skill changes, each in an existing mode: product
+  shapes, plan deepening, and adoption grades in `plan`; guard metrics and
+  judged targets in `build optimize`; adversarial, reliability, and
+  frontend-timing lenses and premise and design lenses for documents in
+  `review`; an until-ready loop, issue references, and complete feedback
+  collection in `ship`; ranked hypotheses and minimal repros in `debug`; the
+  full tell list in `write plain`; and pending calls in `catch-up chat`.
 - **Run record** (`scripts/run-record.mjs`, decision 011): one temporary
   result format under `.verify/` with the task, scope, code fingerprint,
   checks and their saved output, and open items. `gate` blocks a success
@@ -106,11 +141,8 @@ All notable changes to this plugin are documented here. Format follows
   and `measure.mjs` (keep, revert, or inconclusive against a noise floor).
 - **`memory/lessons/` and `memory/guardrails.md`** in the memory schema, owned
   by `learn`, and a twelfth validator check, `lesson-format`.
-- **`docs/coverage.md`**: where each adopted upstream skill lives, and why the
-  rest were not adopted; `docs/benchmark/compound-engineering.md` and
-  `docs/benchmark/skill-candidates-2026-10.md`.
 - **Tests** for every skill's anatomy, its paths, its script pre-approvals, its
-  Codex metadata, the coverage map, and the four scripts.
+  Codex metadata, and the four scripts.
 - **`tests/acceptance/live-engineering.test.mjs`**: six live scenarios (debug;
   plan tickets then build; review; learn capture and refresh; ship watch and
   feedback against a scripted `gh`; routing away from memory), checked by
@@ -200,9 +232,6 @@ Merged to main on 2026-09-29 and never tagged; these changes ship in 2.0.0.
   defined; the README gains a Start here table; `docs/advanced.md` covers
   worktrees, Codex, delegation, `grill`, the glossary, CI, audits, and team
   practice. A test keeps the quickstart covering every mode.
-- **`docs/benchmark/mattpocock-skills.md`**: the adopted and rejected patterns
-  from mattpocock/skills, with a scorecard.
-
 - **CI validates this repository's own memory** with the plugin's validator.
 - **The glossary is outside change-based staleness**: it defines vocabulary,
   names no implementation, and no longer goes stale on unrelated code edits.

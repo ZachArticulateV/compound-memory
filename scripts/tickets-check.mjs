@@ -9,8 +9,8 @@
 // no verify command, and frontier tickets that touch the same paths, which two
 // parallel agents would collide on.
 //
-// mattpocock/skills `to-tickets` declares blocking edges but nothing checks
-// them, and nothing says which ready tickets are safe to run at once.
+// Blocking edges written in prose are never checked, and nothing in prose says
+// which ready tickets are safe to run at once.
 //
 // Read-only.
 

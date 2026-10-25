@@ -64,6 +64,3 @@ the checks it touches run again before anyone claims the change works.
 Paths in this skill and its references are relative to this skill's directory
 (`${CLAUDE_SKILL_DIR}`). Outside Claude Code, that is the directory holding this
 file, and `$0` is the first word after the skill name.
-
-Draws on mattpocock/skills `code-review` and Compound Engineering
-`ce-code-review` and `ce-doc-review`.

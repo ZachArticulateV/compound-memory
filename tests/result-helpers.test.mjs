@@ -16,9 +16,9 @@ import { codeFingerprint, stagedSnapshot } from '../scripts/lib/changes.mjs'
 import { reviewScope, checkStaged } from '../scripts/changes.mjs'
 import { classifyCheck, prState } from '../scripts/pr-state.mjs'
 import { checkPlan } from '../scripts/plan-check.mjs'
-import { compareRewrite } from '../scripts/rewrite-check.mjs'
+import { compareRewrite, findTells } from '../scripts/rewrite-check.mjs'
 import { checkFindings } from '../scripts/findings-check.mjs'
-import { lessonDrift, lessonsWithDrift } from '../scripts/lessons.mjs'
+import { checkLessonCommits, citedCommits, lessonDrift, lessonsWithDrift } from '../scripts/lessons.mjs'
 import { parseLesson } from '../scripts/lib/lessons.mjs'
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..')
@@ -286,6 +286,43 @@ test('pr-state: the CLI exit code follows --want', (t) => {
   assert.equal(node([...args, '--want', 'ready', '--threads', join(root, 'threads.json')], root).status, 0)
 })
 
+test('pr-state: a fork run waiting for approval is pending, not failed, and blocks checks passed', () => {
+  assert.equal(classifyCheck({ name: 'a', status: 'COMPLETED', conclusion: 'ACTION_REQUIRED' }).result, 'awaiting-approval')
+  const r = prState(pr({ statusCheckRollup: [{ name: 'test', status: 'COMPLETED', conclusion: 'ACTION_REQUIRED' }] }))
+  assert.equal(r.stage, 'checks-pending')
+  assert.equal(r.checksPassed, false)
+  assert.match(r.blockers.join(' '), /approve/)
+})
+
+test('pr-state: a requested review not yet given keeps a green PR from ready', () => {
+  const r = prState(pr({ reviewRequests: [{ login: 'octocat' }, { name: 'core-team' }] }), { threads: [] })
+  assert.equal(r.checksPassed, true)
+  assert.equal(r.readyToMerge, false)
+  assert.deepEqual(r.pendingReviews, ['octocat', 'core-team'])
+})
+
+test('pr-state: a required check that has not reported is pending, and no CI is never checks passed', () => {
+  const missing = prState(pr(), { required: ['test', 'lint'], threads: [] })
+  assert.equal(missing.stage, 'checks-pending')
+  assert.match(missing.blockers.join(' '), /required check\(s\) have not reported on this head: lint/)
+  const none = prState(pr({ statusCheckRollup: [] }), { threads: [] })
+  assert.equal(none.readyToMerge, false)
+  const noCi = prState(pr({ statusCheckRollup: [] }), { threads: [], noCi: true })
+  assert.equal(noCi.checksPassed, false, 'nothing was checked')
+  assert.equal(noCi.noChecksConfigured, true)
+  assert.equal(noCi.readyToMerge, true)
+})
+
+test('pr-state: the CLI reads UTF-16 input with a byte-order mark, and a required-checks list', (t) => {
+  const root = makeTempRoot()
+  cleanupAfter(t, root)
+  writeFileSync(join(root, 'pr.json'), Buffer.concat([Buffer.from([0xff, 0xfe]), Buffer.from(JSON.stringify(pr()), 'utf16le')]))
+  writeFileSync(join(root, 'required.txt'), 'test\nlint\n')
+  const args = [script('pr-state.mjs'), '--input', join(root, 'pr.json'), '--no-local']
+  assert.equal(node(args, root).status, 0)
+  assert.equal(node([...args, '--required', join(root, 'required.txt')], root).status, 1)
+})
+
 // ---------------------------------------------------------------------------
 // plan-check
 // ---------------------------------------------------------------------------
@@ -293,11 +330,11 @@ test('pr-state: the CLI exit code follows --want', (t) => {
 const PLAN = `# Plan
 
 ## Goal
-Case managers see due reviews.
+Support agents see tickets awaiting a reply.
 
 ## Requirements
 
-- R1. A case manager sees every client whose review is due this week.
+- R1. A support agent sees every ticket whose reply is due today.
 - R2. Marking a review done removes it for everyone.
 
 ## Out of scope
@@ -342,6 +379,14 @@ test('plan-check: an uncovered requirement, a missing Verify, a TBD, and an unkn
   assert.deepEqual(ids, ['no-verify', 'open-question', 'uncovered', 'unknown-requirement'])
 })
 
+test('plan-check: Depends on must name a unit the plan has', () => {
+  const ok = PLAN.replace('### U2. Mark done', '### U2. Mark done\n- **Depends on:** U1')
+  assert.deepEqual(checkPlan(ok).problems, [])
+  assert.deepEqual(checkPlan(ok).units.find((u) => u.id === 'U2').dependsOn, ['U1'])
+  const bad = PLAN.replace('### U2. Mark done', '### U2. Mark done\n- **Depends on:** U9, U2')
+  assert.deepEqual(checkPlan(bad).problems.map((p) => p.message).sort(), ['U2 depends on U9, which the Units section does not list', 'U2 depends on itself'].sort())
+})
+
 test('plan-check: a units table is read, and brainstorm stage skips units', () => {
   const table = PLAN.replace(/## Units[\s\S]*?## Verification/, '## Units\n\n| Unit | Goal | Verify | Covers |\n| --- | --- | --- | --- |\n| U1 | query | `npm test -- due` | R1 |\n| U2 | done | `npm test -- done` | R2 |\n\n## Verification')
   assert.deepEqual(checkPlan(table).problems, [])
@@ -382,11 +427,63 @@ test('rewrite-check: a surer rewrite with an invented number fails', () => {
   assert.ok(r.added.some((a) => a.token === '3'))
 })
 
+test('rewrite-check --tells: listed tells are found with their line, and code, quotes, and front matter are skipped', () => {
+  const text = [
+    '---',
+    'title: We Leverage Things',
+    '---',
+    '# Setup Guide For Teams',
+    '',
+    "It's worth noting that we leverage a robust cache \u2014 click here, e.g. the docs.",
+    'Use `leverage()` and say "delve" when quoting a word.',
+    '```',
+    'delve -> robust',
+    '```',
+    'Parser rejects date -> exit 2. Pick a file(s) and/or a folder.',
+    '#### Deep heading',
+    '# Second title',
+  ].join('\n')
+  const { tells, ok } = findTells(text)
+  assert.equal(ok, false)
+  const got = tells.map((t) => `${t.line} ${t.category}`)
+  for (const want of ['4 title case', '6 filler', '6 vocabulary', '6 em dash', '6 click here', '6 latin', '11 arrow', '11 plural (s)', '11 slash', '12 skipped heading level', '13 second H1']) {
+    assert.ok(got.includes(want), `missing ${want} in ${JSON.stringify(got)}`)
+  }
+  assert.ok(!got.some((g) => g.startsWith('2 ') || g.startsWith('7 ') || g.startsWith('9 ')), JSON.stringify(got))
+  assert.deepEqual(findTells('# Plain heading\n\nThe build reads `budget.json` and fails above the limit.\n'), { schemaVersion: 1, tells: [], ok: true })
+})
+
+test('rewrite-check --tells: the CLI exits 1 on a hit, 0 on clean text, and 2 when mixed with --before', (t) => {
+  const root = makeTempRoot()
+  cleanupAfter(t, root)
+  writeTree(root, { 'slop.md': 'We leverage it.\n', 'clean.md': 'The job retries twice.\n' })
+  const run = (...args) => spawnSync(process.execPath, [join(repoRoot, 'scripts', 'rewrite-check.mjs'), ...args], { cwd: root, encoding: 'utf8' }).status
+  assert.equal(run('--tells', 'slop.md'), 1)
+  assert.equal(run('--tells', 'clean.md'), 0)
+  assert.equal(run('--tells', 'clean.md', '--before', 'slop.md'), 2)
+})
+
 // ---------------------------------------------------------------------------
 // lesson drift
 // ---------------------------------------------------------------------------
 
 const lesson = (paths) => `---\ntitle: Jobs are idempotent\ntags: [jobs]\napplies_when: Changing a job\npaths: ${paths}\nstatus: active\n---\n\n# Jobs are idempotent\n\n## Do this\n\nMake the job safe twice.\n`
+
+test('lesson commits: a cited commit that is missing or off HEAD is reported, and hex words are not commits', (t) => {
+  const root = repo(t, { 'app/a.mjs': 'x\n' })
+  const head = git(root, ['rev-parse', 'HEAD']).trim()
+  git(root, ['checkout', '-q', '-b', 'side'])
+  writeTree(root, { 'app/b.mjs': 'y\n' })
+  commitAll(root, 'side work')
+  const side = git(root, ['rev-parse', 'HEAD']).trim()
+  git(root, ['checkout', '-q', '-'])
+  const body = `${lesson('[app/]')}\nSee commit ${head.slice(0, 9)}; the color deadbeef is not a commit.\n\n## Evidence\n\n- ${head.slice(0, 12)} (the fix)\n- ${side.slice(0, 12)} (never merged)\n- abc1234 (typo)\n`
+  assert.deepEqual(citedCommits(body).sort(), [head.slice(0, 9), head.slice(0, 12), side.slice(0, 12), 'abc1234'].sort())
+  writeTree(root, { 'memory/lessons/jobs.md': body })
+  const result = checkLessonCommits(root)
+  assert.deepEqual(result.problems.map((p) => [p.sha, p.problem]).sort(), [['abc1234', 'no such commit'], [side.slice(0, 12), 'not reachable from HEAD']].sort())
+  assert.equal(node([script('lessons.mjs'), '--check', '--cwd', root], root).status, 1)
+})
 
 test('lesson drift: commits to a lesson\'s paths after it was written are reported', (t) => {
   const root = repo(t, { 'app/jobs/charge.mjs': 'x\n', 'memory/lessons/jobs.md': lesson('[app/jobs/]'), 'web/a.css': 'a\n' })
@@ -519,7 +616,7 @@ test('review 10a: a directory ending in " b" keeps its path', (t) => {
 
 test('review 10c: plan-check accepts numbered requirements, a Verify on the next line, and the word TODO in prose', () => {
   const plan = PLAN
-    .replace('- R1. A case manager', '1. R1. A case manager')
+    .replace('- R1. A support agent', '1. R1. A support agent')
     .replace('- R2. Marking', '2. R2. Marking')
     .replace('### U1. Query due reviews\n- **Verify:** `npm test -- due`', '### U1. Query due reviews\nReplace the TODO stub in the query.\n- **Verify:**\n  `npm test -- due`')
   assert.deepEqual(checkPlan(plan).problems, [])

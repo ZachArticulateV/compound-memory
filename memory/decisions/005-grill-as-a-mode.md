@@ -8,8 +8,8 @@ date: 2026-09-29
 
 ## Context
 
-mattpocock/skills ships grilling as a model-invoked skill that fires on any
-"grill" phrase. This plugin adopted the discipline in the benchmark work.
+Grilling could ship as a model-invoked skill that fires on any "grill"
+phrase.
 
 ## Decision
 
@@ -26,7 +26,7 @@ validator.
 ## Alternatives considered
 
 - A separate model-invoked skill: would fire on casual use of the word and
-  compete with an installed upstream `grilling` skill.
+  compete with any other installed skill that claims it.
 - A separate user-invoked skill: could not share the interview reference with
   `init` without cross-skill links.
 
@@ -37,8 +37,7 @@ count.
 
 ## Evidence / implementation
 
-`skills/project-memory/references/grill.md`, `skills/project-memory/references/interview.md`, `tests/grill.test.mjs`,
-`docs/benchmark/mattpocock-skills.md` (Iteration 2).
+`skills/project-memory/references/grill.md`, `skills/project-memory/references/interview.md`, `tests/grill.test.mjs`.
 
 ## Supersedes
 

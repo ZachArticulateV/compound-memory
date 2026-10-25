@@ -561,6 +561,36 @@ test('with no glossary the avoided-term check is silent', () => {
   assert.deepEqual(findingsOf(validateMemory(root), 'avoided-term'), [])
 })
 
+test('a root GLOSSARY.md is the glossary when memory keeps none', () => {
+  const tree = completeMemoryTree()
+  const root = fixtureWith({
+    'GLOSSARY.md': GLOSSARY,
+    'memory/next-actions.md': tree['memory/next-actions.md'] + '\nThe auth lane stays paused.\n',
+  })
+  cleanupAfter(test, root)
+  assert.deepEqual(
+    findingsOf(validateMemory(root), 'avoided-term').map((f) => [f.artifact, f.alias, f.term]),
+    [['memory/next-actions.md', 'lane', 'Workstream']]
+  )
+})
+
+test('GLOSSARY-MAP.md adds each linked context glossary, and ignores links out of the repository', () => {
+  const tree = completeMemoryTree()
+  const root = fixtureWith({
+    'GLOSSARY-MAP.md': '# Contexts\n\n- [Billing](billing/GLOSSARY.md)\n- [Outside](../elsewhere/GLOSSARY.md)\n',
+    'billing/GLOSSARY.md': '# Billing\n\n_Avoid_: stray\n\n**Invoice**:\nA bill sent to a customer.\n_Avoid_: receipt\n',
+    'memory/glossary.md': GLOSSARY,
+    'memory/next-actions.md': tree['memory/next-actions.md'] + '\nSend the receipt. The auth lane stays paused.\n',
+  })
+  cleanupAfter(test, root)
+  const result = validateMemory(root)
+  assert.deepEqual(
+    findingsOf(result, 'avoided-term').map((f) => [f.alias, f.term]).sort(),
+    [['lane', 'Workstream'], ['receipt', 'Invoice']]
+  )
+  assert.deepEqual(findingsOf(result, 'glossary-format').map((f) => f.artifact), ['billing/GLOSSARY.md'])
+})
+
 test('an INDEX reference to a glossary that does not exist yet is not broken', () => {
   // The glossary is created lazily, so pointing at it before its first term is
   // the schema describing itself, not a missing artifact.

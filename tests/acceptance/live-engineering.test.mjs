@@ -15,9 +15,8 @@
 // 2026-10-18 run). Knobs: PROJECT_MEMORY_LIVE_MODEL, PROJECT_MEMORY_LIVE_TIMEOUT_MS,
 // PROJECT_MEMORY_LIVE_MAX_BUDGET_USD.
 //
-// Re-run this after changing a skill's wording, the way Compound Engineering
-// re-runs its eval cells: a green structural suite says nothing broke, not that
-// behavior held.
+// Re-run this after changing a skill's wording: a green structural suite says
+// nothing broke, not that behavior held.
 
 import { test } from 'node:test'
 import assert from 'node:assert/strict'

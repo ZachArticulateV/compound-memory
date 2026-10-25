@@ -28,9 +28,10 @@ subagents and keep only their findings.
   only a judgment call goes into the standards file. Standards are applied in
   review, where context pressure is lowest, not loaded into every
   implementation session.
-- **Instruction files:** steering text in `AGENTS.md` or `CLAUDE.md` that
-  belongs in standards, a check, or a skill. These files load every session, so
-  they should hold pointers.
+- **Instruction files:** steering text in `AGENTS.md` or `CLAUDE.md` (the
+  user's global file too, edited through `profile`) that belongs in standards,
+  a check, or a skill. These files load every session, so they should hold
+  pointers.
 - **Tool economy:** an expensive call (a huge file read, a slow command, a noisy
   tool) that a cheaper one would replace.
 - **No-ops:** instructions that do not change what the agent does by default.
@@ -48,6 +49,9 @@ or health data redacted), the proposed change, and its home:
 - a check or structural fix: run `correct`;
 - durable knowledge: run `capture`;
 - a pointer: edit the index or instruction file;
+- reference needed only sometimes, or a command repeated by hand: a project
+  skill;
 - memory drift: `/project-memory sync`.
 
-Present the list and apply the ones the user picks.
+Present the list and apply the ones the user picks. Text added to an
+instruction file or a skill follows `../write/references/agents.md`.

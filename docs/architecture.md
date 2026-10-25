@@ -161,8 +161,8 @@ project root from the working directory: the nearest ancestor holding
 subdirectory therefore sees the project's tree.
 
 It reports: whether `memory/` exists and which core files are present; Git
-branch, `HEAD`, worktree list, and the full working-tree change list including
-untracked files; which handoff is active and whether it belongs to this branch;
+branch, `HEAD`, worktree list, whether this checkout is a linked worktree, and
+the full working-tree change list including untracked files; which handoff is active and whether it belongs to this branch;
 each governed contract file (`contract`: presence, size against a 200-line
 signal, containment, whether it carries the memory section, `missingSection`
 per harness, `sectionsMatch`); and change-based staleness. Decision records,
@@ -462,15 +462,16 @@ only pre-approves the bundled scripts they call. What must be exact is code:
 
 | Script | Used by | Answers |
 | --- | --- | --- |
-| `scripts/lessons.mjs` | `plan`, `build`, `debug`, `review`, `learn` | Which lessons in `memory/lessons/` match these words and changed paths? Stale and retired lessons are skipped unless asked for. |
-| `scripts/findings-check.mjs` | `review`, `autopilot` | Is each finding's quoted line really in the file near the cited line? Duplicates merged; confidence raised only on cross-model agreement; kept at 75 or more, or P0. |
+| `scripts/lessons.mjs` | `plan`, `build`, `debug`, `review`, `learn` | Which lessons in `memory/lessons/` match these words and changed paths? Stale and retired lessons are skipped unless asked for. With `--check`, does every commit a lesson cites exist and sit on HEAD? |
+| `scripts/findings-check.mjs` | `review`, `autopilot` | Is each finding's quoted line really in the file near the cited line? Duplicates merged; confidence raised only on cross-model agreement; kept at 75 or more, or P0. With `--patch`, which findings sit on lines the change did not touch? |
 | `scripts/tickets-check.mjs` | `plan`, `build`, `catch-up`, `autopilot` | Which tickets are ready, which can run in parallel, and which ready tickets touch the same paths? Cycles, unknown blockers, and two tickets sharing a number exit 1. |
 | `scripts/measure.mjs` | `build optimize`, `debug` | Does this change clear the noise floor: keep, revert, or inconclusive? The floor is the largest of the samples' spread, a supplied noise, and a minimum effect. |
-| `scripts/changes.mjs` | `review`, `ship commit`, `autopilot` | What is the whole change (commits since the base, staged, unstaged, new files)? Does the index hold only the intended work, with nothing staged before the work began? |
+| `scripts/changes.mjs` | `review`, `build`, `ship commit`, `autopilot` | What is the whole change (commits since the base, staged, unstaged, new files)? Does the index hold only the intended work, with nothing staged before the work began and no edit that was already in the working tree then? |
 | `scripts/run-record.mjs` | `build`, `verify`, `review`, `ship`, `autopilot`, `catch-up` | What did this run check, against which code, with what saved output, and may it claim success now? Stale, failed, missing, and over-limit checks block. |
-| `scripts/pr-state.mjs` | `ship pr`, `ship watch`, `autopilot` | Is the PR only created, are its checks passed on the current head, or is it ready to merge? |
-| `scripts/plan-check.mjs` | `plan`, `prototype`, `autopilot` | Does every requirement have a unit, every unit a Verify, and every open question a status? |
-| `scripts/rewrite-check.mjs` | `write` | Did a rewrite lose code, commands, paths, links, numbers, or doubt, or add identifiers the source did not have? |
+| `scripts/pr-state.mjs` | `ship pr`, `ship watch`, `autopilot` | Is the PR only created, are its checks passed on the current head, or is it ready to merge? A required check that has not reported, a fork run awaiting approval, and a requested review not yet given each hold it back; a repository with no CI is "no checks configured", never passed. |
+| `scripts/plan-check.mjs` | `plan`, `prototype`, `autopilot` | Does every requirement have a unit, every unit a Verify and only real `Depends on` units, and every open question a status? |
+| `scripts/rewrite-check.mjs` | `write` | Did a rewrite lose code, commands, paths, links, numbers, or doubt, or add identifiers the source did not have? With `--tells`, which listed writing tells (vocabulary, filler, em dashes, arrows, heading structure) does a file carry? |
+| `scripts/verify/feature-map-check.mjs` | `verify` | Does every feature-map entry have a file and every file an entry, and does each feature file carry one H1, the four sections in order, and a `Preconditions:` line? |
 | `scripts/verify/layout-check.mjs`, `console-check.mjs` | `verify` | Does the page clip a control at a phone, tablet, or desktop width? Did the page or journey log an error or fail a request? Exit 3 means Playwright was missing: not checked. |
 
 All are read-only except where they write their own output: `run-record.mjs`
@@ -478,16 +479,16 @@ writes the run record, `changes.mjs snapshot` and `review --write` write under
 `.verify/`, and the verify helpers write screenshots and reports to the
 evidence directory. None stages, commits, pushes, or runs a command it was
 given, and each refuses an output path outside `.verify/`; a pre-approved
-script that ran arbitrary commands would be a shell grant. The verify helpers
-load the project's own Playwright (and `console-check.mjs` a journey module the
-agent wrote), so they run project code and are not pre-approved. `scripts/lib/lessons.mjs` is the
+script that ran arbitrary commands would be a shell grant. The two browser
+helpers load the project's own Playwright (and `console-check.mjs` a journey
+module the agent wrote), so they run project code and are not pre-approved;
+`feature-map-check.mjs` reads Markdown only and is. `scripts/lib/lessons.mjs` is the
 one lesson reader, shared by `lessons.mjs` and the validator's `lesson-format`
 check, so a lesson the validator accepts is one lookup can find.
 
 `tests/skills.test.mjs` pins the anatomy, every path a skill names, every script
 call against its `allowed-tools`, the Codex metadata, and that every skill named
-under **Works with** exists. `tests/coverage.test.mjs` pins that each upstream
-skill `docs/coverage.md` claims is adopted maps to a skill or mode that exists.
+under **Works with** exists.
 `tests/acceptance/live-engineering.test.mjs` runs six scenarios with a model
 against a temp fixture (with a scripted `gh` from `tests/fixtures/fake-gh.cjs`
 for the shipping scenario) and checks the artifacts with these same scripts;
@@ -526,8 +527,8 @@ project-memory/
 │   ├── run-record.mjs                the shared run record and its success gate
 │   ├── pr-state.mjs                  created / checks passed / ready to merge
 │   ├── plan-check.mjs                requirement-to-unit coverage
-│   ├── rewrite-check.mjs             facts and doubt kept through a rewrite
-│   ├── verify/                       layout and console helpers (Playwright)
+│   ├── rewrite-check.mjs             facts and doubt kept through a rewrite; writing tells
+│   ├── verify/                       layout and console helpers (Playwright); feature-map shape
 │   ├── session-status-hook.mjs       SessionStart handler
 │   ├── post-tool-validate-hook.mjs   PostToolUse handler
 │   └── lib/
@@ -580,9 +581,7 @@ project-memory/
     ├── quickstart.md                 the beginner's first run
     ├── advanced.md                   worktrees, Codex, CI, teams
     ├── architecture.md               this file
-    ├── limitations.md                what the system does not guarantee
-    ├── coverage.md                   each upstream skill and where it lives here
-    └── benchmark/                    reviews of the three upstreams
+    └── limitations.md                what the system does not guarantee
 ```
 
 `docs/`, `tests/`, and the repository metadata are development artifacts; nothing

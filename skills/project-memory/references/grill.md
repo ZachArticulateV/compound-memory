@@ -37,7 +37,8 @@ Memory is orientation. Where it disagrees with the code, the disagreement is a
 
 ## 3. Interview
 
-Read `memory/glossary.md` if it exists, and speak its terms. When the user
+Read the project's glossary if it has one (`memory/glossary.md`, or the
+`GLOSSARY.md` or `GLOSSARY-MAP.md` it already keeps), and speak its terms. When the user
 uses a word the glossary lists under `_Avoid_`, or a vague word for a concept
 the glossary names, ask which concept they mean before building on the answer.
 
@@ -68,7 +69,7 @@ making any. Each settled item goes to exactly one home:
 | A branch the user left open | `memory/next-actions.md` under Blocked, naming the open question as the blocker |
 | Done criteria for a feature | `memory/acceptance-criteria.md`, status `unverified` |
 | The plan's target architecture | `memory/current-state.md`, under Intended direction only |
-| A term the interview sharpened | `memory/glossary.md`, created on its first entry; the rejected words go under `_Avoid_` |
+| A term the interview sharpened | the project's glossary (`memory/glossary.md`, created on its first entry, unless the project keeps one elsewhere); the rejected words go under `_Avoid_` |
 
 A settled item that fails all three decision tests is not a decision record.
 It lives in the action it produces, or nowhere. Most grillings produce one or

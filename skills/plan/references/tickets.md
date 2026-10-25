@@ -14,7 +14,9 @@ and the paths it touches.
 - **Wide refactors** (a rename or retype that breaks every caller at once) use
   expand and contract: one ticket adds the new form beside the old, migrate
   tickets move callers in batches sized by blast radius, and a final ticket
-  deletes the old form once nothing uses it.
+  deletes the old form once nothing uses it. When a batch cannot pass on its
+  own, the batches share an integration branch and all block one final
+  integrate-and-verify ticket, the only one that promises green.
 
 Describe behavior from the user's side. In **Touches**, name directories or
 modules, not lines: coarse areas stay true longer and are enough to show which
@@ -33,6 +35,9 @@ Iterate until they approve. In an `autopilot` run, go on with your breakdown.
   shape given there.
 - **An issue tracker** the project already uses: one issue per ticket, created
   blockers first, with the tracker's native blocking links where it has them.
+  When the work came from an issue, read its body and comments first, make
+  each ticket its sub-issue (or link the parent), and leave the parent open and
+  unedited. Apply the project's existing ready label when it has one.
 
 ## Check the graph
 
