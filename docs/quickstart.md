@@ -104,7 +104,7 @@ since changed.
 Before you run `/clear`, close the terminal, or switch to another task:
 
 ```bash
-/project-memory handoff
+/handoff
 ```
 
 Claude writes `memory/handoff.md`: what you were doing, what was actually
@@ -112,8 +112,7 @@ tested (and what was not), and the exact next step. It ends by printing a short
 **resume prompt**. Paste that into the next session, yours or a colleague's,
 and it picks up where you stopped.
 
-Add a few words to aim the next session: `/project-memory handoff finish the
-login form`.
+Add a few words to aim the next session: `/handoff finish the login form`.
 
 It works for any kind of work, not only code. A deploy, a bug hunt, a document,
 or a plan each gets the verification that fits it: a deploy records the health
@@ -121,7 +120,7 @@ check you saw, a plan records what you agreed versus what was only proposed.
 Anything durable the session learned (a decision, a confirmed bug, a new task)
 is filed into the memory file that owns it, and the handoff links to it.
 
-When the work is finished and merged, run `/project-memory handoff close`. It
+When the work is finished and merged, run `/handoff close`. It
 files whatever the handoff still holds and retires it, so the next session is
 not handed instructions for work that is already done.
 
@@ -130,12 +129,12 @@ not handed instructions for work that is already done.
 | When | Run |
 | --- | --- |
 | Once per project | `/project-memory init` |
-| Before `/clear` or stopping | `/project-memory handoff` |
+| Before `/clear` or stopping | `/handoff` |
 | "Is memory still accurate?" | `/project-memory status` (read-only, always safe) |
-| After shipping something substantial | `/project-memory sync` |
-| Before building something big | `/project-memory grill <your plan>` |
-| "Memory says something I do not believe" | `/project-memory audit`, then `/project-memory repair` |
-| Memory feels heavy, repetitive, or out of date | `/project-memory cleanup` |
+| After shipping something substantial | `/sync` |
+| Before building something big | `/grill <your plan>` |
+| "Memory says something I do not believe" | `/project-memory audit`, then `/repair` |
+| Memory feels heavy, repetitive, or out of date | `/cleanup` |
 
 When you want more (several branches at once, Codex, CI checks), read
 [`advanced.md`](advanced.md).
@@ -172,8 +171,8 @@ lessons `learn` saved. When memory exists, all of them read it first.
 | "this project has no `memory/` directory" at session start | `init` has not run here | `/project-memory init`, or ignore it in projects you do not track |
 | A session-start line saying a memory file names paths that changed | That code changed after the memory was committed | `/project-memory status`, then `sync` if it recommends one |
 | "not committed: no baseline commit" in `status` | Memory has never been committed | Commit `memory/` |
-| "active handoff ... was written on branch ..." | The handoff belongs to another workstream | Do not act on it; `/project-memory handoff` on this branch when you stop |
-| A validator error after editing memory | A broken link, a leftover `{{placeholder}}`, or a secret | Fix it by hand, or `/project-memory repair` |
+| "active handoff ... was written on branch ..." | The handoff belongs to another workstream | Do not act on it; `/handoff` on this branch when you stop |
+| A validator error after editing memory | A broken link, a leftover `{{placeholder}}`, or a secret | Fix it by hand, or `/repair` |
 
 ## Words you will see
 

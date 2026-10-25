@@ -1,6 +1,6 @@
 ---
 name: write
-description: "Write and edit prose its reader understands on the first read: docs, READMEs, guides, reports, PR descriptions, and commit messages for people; skills, CLAUDE.md, AGENTS.md, and prompts for agents; or a plain explanation of something that did not land. Use when the user asks to write, edit, tighten, or check documentation or agent instructions, or says they did not follow something."
+description: "Writes and edits prose its reader gets on the first read: docs for people, instructions for agents, or a plain re-explanation. Use when the user asks to write, edit, or tighten docs or agent instructions, or says they did not follow something."
 argument-hint: "[docs|agents|plain] [text, file path, or nothing for the last message]"
 allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/rewrite-check.mjs" *)
 ---

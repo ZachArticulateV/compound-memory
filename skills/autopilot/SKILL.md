@@ -1,6 +1,6 @@
 ---
 name: autopilot
-description: "Take a request from idea or bug report to a reviewed, verified pull request without stopping, by running this plugin's skills in order: plan or debug, build, simplify, verify, review, learn, and ship. Use when the user asks for hands-off, end-to-end, or autonomous work, such as \"take it all the way\" or \"just do it\"."
+description: "Carries a request from idea or bug report to verified, reviewed commits without stopping, and to a pull request when the project has a hosted remote. Use when the user asks for hands-off, end-to-end work, such as \"take it all the way\" or \"just do it\"."
 argument-hint: "[feature, bug, issue, or plan path]"
 allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/tickets-check.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/findings-check.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/memory-validate.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/run-record.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/pr-state.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/changes.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/plan-check.mjs" *)
 ---
@@ -8,15 +8,17 @@ allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/tickets-check.mjs" *
 # Autopilot
 
 Carry one request to its end state without waiting on the user: for a code
-change, an open pull request with CI decided, the change verified and
-reviewed, and everything unresolved written where the user will see it.
+change, verified and reviewed commits on a branch, everything unresolved
+written where the user will see it, and, when the project has a hosted
+remote, an open pull request with CI decided.
 
 **Done when:** every stage below ran or is named in the report with the reason
-it did not; `run-record.mjs gate` passes on the final code; and the PR is
-created, with its checks passed on the current head and open items in its
-body. Or the run stopped, said why and which state the PR is in (created,
-checks failed, checks pending), and pushed nothing that was not already
-pushed. A red check is never reported as a pass, explained or not.
+it did not; `run-record.mjs gate` passes on the final code; and the work is
+committed on a branch with its open items in the report. With a hosted remote,
+the PR is also created, with its checks passed on the current head and the open
+items in its body. Or the run stopped, said why (and, with a PR, which state it
+is in: created, checks failed, checks pending), and pushed nothing that was not
+already pushed. A red check is never reported as a pass, explained or not.
 
 ## Route by what the request is
 
@@ -71,10 +73,12 @@ run stopped, and how the end of the run knows what still holds.
    until it passes. A required check that fails three times stops the run.
 7. **Learn:** `learn capture` when the run produced a lesson the code, tests,
    and plan do not carry.
-8. **Ship:** `ship commit`, `ship pr`, then `ship watch` until `pr-state.mjs`
-   reports checks passed or the fix rounds run out. With no Git remote, stop
-   at local commits.
-9. **Report** with `catch-up chat`, using the three PR states from `ship`.
+8. **Ship:** `ship commit`. On a local project (no hosted remote, or the user
+   did not ask to publish), the run ends at the commits. Otherwise `ship pr`,
+   then `ship watch` until `pr-state.mjs` reports checks passed or the fix
+   rounds run out.
+9. **Report** with `catch-up chat`: the commits, and for a PR the three states
+   from `ship`.
 
 ## Working without a user
 

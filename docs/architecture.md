@@ -437,6 +437,19 @@ metadata. The skill is model-invoked in both harnesses, so it sets no
 `allow_implicit_invocation` policy; a test fails if the two harnesses ever
 disagree about who may invoke it.
 
+### Five shortcuts
+
+`grill`, `handoff`, `sync`, `cleanup`, and `repair` are the memory modes typed
+most, so each also has its own skill directory: `/handoff` instead of
+`/project-memory handoff`. A shortcut is user-invoked in both harnesses
+(`disable-model-invocation: true`, and `allow_implicit_invocation: false` in its
+`agents/openai.yaml`), so its description never sits in the model's context.
+Its body points at the router and the one playbook; the instructions live only
+in `skills/project-memory/`, and the shortcut pre-approves exactly the router's
+scripts. `tests/skills.test.mjs` pins all of that, and that each shortcut names
+a mode the router routes. Every skill and shortcut description is two sentences
+at most.
+
 ### Eleven engineering skills
 
 `plan`, `prototype`, `build`, `debug`, `review`, `verify`, `ship`, `autopilot`,
@@ -572,6 +585,9 @@ project-memory/
 │   ├── references/                   one file per mode, loaded one at a time
 │   ├── templates/                    learn only: lesson.md, guardrails.md
 │   └── agents/openai.yaml            Codex picker metadata
+├── skills/<grill|handoff|sync|cleanup|repair>/
+│   ├── SKILL.md                      a typed shortcut that runs one memory mode
+│   └── agents/openai.yaml            Codex metadata, implicit invocation off
 ├── tests/
 │   ├── *.test.mjs                    unit suites, one per component
 │   ├── acceptance/                   scenario-labelled composed runs, plus a

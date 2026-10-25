@@ -1,6 +1,6 @@
 ---
 name: prototype
-description: "Build a throwaway prototype that answers one design question before the real build: a single-file HTML demo for logic, state, or data shape, or switchable UI variants of a screen. Use when the user wants to try a layout, compare design options, or check that a state model or flow feels right."
+description: "Builds a throwaway prototype that answers one design question: a clickable logic demo or switchable UI variants. Use when the user wants to try a layout, compare designs, or check that a state model or flow feels right."
 argument-hint: "[logic|ui] [the question, and the page or module it is for]"
 ---
 

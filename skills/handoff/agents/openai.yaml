@@ -1,0 +1,5 @@
+interface:
+  display_name: "Handoff"
+  short_description: "Capture where the work stopped and the next step"
+policy:
+  allow_implicit_invocation: false

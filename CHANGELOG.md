@@ -6,6 +6,23 @@ All notable changes to this plugin are documented here. Format follows
 
 ## [Unreleased]
 
+### Added
+
+- **Five typed shortcuts:** `/grill`, `/handoff`, `/sync`, `/cleanup`, and
+  `/repair` each run one memory mode (decision 012). They are user-invoked in
+  both hosts, so they cost no context, and they point at the existing
+  playbooks rather than copying them.
+
+### Changed
+
+- Every skill description is two sentences at most, and a test keeps it so.
+  The manifests' description is two sentences too.
+- `autopilot` and `ship` treat a local project as finished at reviewed,
+  verified commits; a pull request, CI, and review comments are the extra step
+  when there is a hosted remote.
+- The transcript-folder rule covers Windows paths (`C:\work\app` is
+  `C--work-app`).
+
 ### Removed
 
 - The coverage map, the benchmark reviews, their test, and every skill's

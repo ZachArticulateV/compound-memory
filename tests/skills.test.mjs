@@ -21,7 +21,13 @@ export const SKILLS = [
   'autopilot', 'build', 'catch-up', 'debug', 'learn', 'plan',
   'project-memory', 'prototype', 'review', 'ship', 'verify', 'write',
 ]
+/** User-invoked shortcuts, each running one project-memory mode. */
+export const SHORTCUTS = ['cleanup', 'grill', 'handoff', 'repair', 'sync']
 const ENGINEERING = SKILLS.filter((s) => s !== 'project-memory')
+const ALL = [...SKILLS, ...SHORTCUTS]
+/** A description says what the skill does and when to use it, in two sentences at most. */
+const DESCRIPTION_SENTENCES = 2
+const DESCRIPTION_CHARS = 300
 
 /**
  * Codex truncates an explicitly invoked skill's main prompt past this many
@@ -57,12 +63,12 @@ function skillTexts(name) {
   return out
 }
 
-test('the skills directory holds exactly the twelve documented skills', () => {
+test('the skills directory holds exactly the twelve skills and five shortcuts', () => {
   const found = readdirSync(skillsDir).filter((d) => isDir(join(skillsDir, d)) && existsSync(join(skillsDir, d, 'SKILL.md')))
-  assert.deepEqual(found.sort(), [...SKILLS].sort())
+  assert.deepEqual(found.sort(), [...ALL].sort())
 })
 
-for (const name of SKILLS) {
+for (const name of ALL) {
   test(`${name}: frontmatter names the skill and says when to use it`, () => {
     const skill = parseSkill(name)
     assert.equal(skill.field('name'), name)
@@ -70,7 +76,10 @@ for (const name of SKILLS) {
     assert.ok(description.length > 0, 'no description')
     assert.ok(description.length <= DESCRIPTION_LIMIT, `description is ${description.length} chars; keep it under ${DESCRIPTION_LIMIT}`)
     assert.match(description, /\bUse when\b/, 'the description needs a "Use when" clause carrying its triggers')
-    assert.ok(skill.field('argument-hint'), 'no argument-hint')
+    const sentences = description.replace(/\b(?:e\.g|i\.e|etc)\./g, '').match(/[.!?](?=\s|$)/g)?.length ?? 0
+    assert.ok(sentences <= DESCRIPTION_SENTENCES, `description has ${sentences} sentences; keep it to ${DESCRIPTION_SENTENCES}`)
+    assert.ok(description.length <= DESCRIPTION_CHARS, `description is ${description.length} chars; keep it under ${DESCRIPTION_CHARS}`)
+    if (!/takes\s+no\s+argument/.test(skill.body)) assert.ok(skill.field('argument-hint'), 'no argument-hint')
   })
 
   test(`${name}: SKILL.md fits the 8,000-byte router ceiling`, () => {
@@ -175,6 +184,17 @@ for (const name of ENGINEERING) {
   })
 }
 
+for (const name of SHORTCUTS) {
+  test(`${name}: a user-invoked shortcut that runs the project-memory mode of the same name`, () => {
+    const skill = parseSkill(name)
+    assert.match(skill.frontmatter, /^disable-model-invocation:\s*true$/m, 'a shortcut is typed, never picked by the model')
+    assert.match(skill.body, new RegExp(`\`\\.\\./project-memory/references/${name}\\.md\``), 'it must load the mode playbook')
+    assert.match(skill.body, /`\.\.\/project-memory\/SKILL\.md`/, 'it must follow the router\'s steps and standing rules')
+    assert.equal(skill.field('allowed-tools'), parseSkill('project-memory').field('allowed-tools'), 'it pre-approves exactly the router\'s scripts')
+    assert.match(parseSkill('project-memory').body, new RegExp(`^\\| \`${name}\` \\|`, 'm'), `project-memory routes no ${name} mode`)
+  })
+}
+
 test('the modes other skills invoke by name exist', () => {
   // `plan tickets`, `learn capture`, `verify run`: a mode named in prose
   // anywhere in the plugin must be routed by that skill's table.
@@ -220,6 +240,7 @@ test('the lesson template passes the lesson-format check once rendered', async (
 
 test('the README introduces every skill', () => {
   const readme = read(repoRoot, 'README.md')
-  for (const name of SKILLS) assert.ok(readme.includes(`\`${name}\``), `README never names \`${name}\``)
+  for (const name of ALL) assert.ok(readme.includes(`\`${name}\``) || readme.includes(`/${name}`), `README never names \`${name}\``)
   assert.match(readme, /\btwelve skills\b/i, 'README no longer states the skill count')
+  assert.match(readme, /\bfive shortcuts\b/i, 'README no longer states the shortcut count')
 })

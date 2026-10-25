@@ -1,6 +1,6 @@
 ---
 name: review
-description: "Review a change or a document through separate lenses that cannot mask each other: does it do what was asked (spec), does it follow the project's standards, and is it correct (bugs, security, data loss), with every finding tied to a quoted line. Use when the user asks to review code, a diff, a branch, a PR, or a plan or spec."
+description: "Reviews a change or a document through separate spec, standards, and correctness lenses, each finding tied to a quoted line. Use when the user asks to review code, a diff, a branch, a pull request, or a plan or spec."
 argument-hint: "[code|doc] [branch, PR, commit, or path]"
 allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/findings-check.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/changes.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/run-record.mjs" *)
 ---

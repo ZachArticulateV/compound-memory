@@ -4,7 +4,7 @@ What is true about this project right now. A snapshot, not a journal — obsolet
 state is replaced here rather than appended to. History lives in Git and in
 `decisions/`.
 
-Updated: 2026-10-24
+Updated: 2026-10-25
 
 ## Release
 
@@ -44,6 +44,11 @@ Eleven skills beside `project-memory` (decision 009): `plan`, `prototype`,
 `catch-up`. Each has an outcome, a Done when line, a mode table, and a Works
 with section, and composes through the artifacts in `references/artifacts.md`.
 The skills are the plugin's own: they name no other skill set or author.
+Five typed shortcuts (`/grill`, `/handoff`, `/sync`, `/cleanup`, `/repair`)
+each run one memory mode (decision 012). Every description is two sentences at
+most. Everything works on a local project with no remote; `autopilot` and
+`ship` end at commits there, and only pull requests, CI, and review comments
+need a hosted remote.
 
 **Verified:**
 
@@ -84,8 +89,8 @@ and two Claude Code hooks. The Codex manifest opts out of the hooks
 
 **Verified:**
 
-- `node --test`: 757 tests, 736 passed, 0 failed, 21 skipped, on Linux,
-  2026-10-24. CI runs Ubuntu and Windows.
+- `node --test`: 797 tests, 776 passed, 0 failed, 21 skipped, on Linux,
+  2026-10-25. CI runs Ubuntu and Windows.
 - `claude plugin validate . --strict` and `node scripts/memory-validate.mjs`
   passed on the same tree.
 

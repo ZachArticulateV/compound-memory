@@ -1,6 +1,6 @@
 ---
 name: learn
-description: "Make the project and its agents learn from experience: capture a lesson from work just done, turn a repeated mistake into a check that prevents it, run a retrospective on a session, refresh stale lessons, or update the user's working profile from their history. Use when the user says to remember a lesson, says an agent keeps making the same mistake or corrects one, asks for a retro, or asks agents to work the way they do."
+description: "Turns experience into lessons, checks that stop repeated mistakes, retrospectives, and an updated working profile. Use when the user says to remember a lesson, corrects a repeated mistake, asks for a retro, or asks agents to work their way."
 argument-hint: "[capture|correct|retro|refresh|profile] [topic or session]"
 allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/memory-validate.mjs" *)
 ---

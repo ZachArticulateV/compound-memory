@@ -1,0 +1,5 @@
+interface:
+  display_name: "Repair"
+  short_description: "Fix what an audit or the validator found in memory"
+policy:
+  allow_implicit_invocation: false

@@ -6,7 +6,10 @@ A Claude Code and Codex plugin of twelve skills: `project-memory`, which keeps a
 project's canonical memory under `memory/` accurate, minimal, and
 evidence-backed, and eleven engineering skills (plan, prototype, build, debug,
 review, verify, ship, autopilot, learn, write, catch-up) that hand work to each
-other through the files in `references/artifacts.md`. This repository ships the
+other through the files in `references/artifacts.md`, plus five typed shortcuts
+(`/grill`, `/handoff`, `/sync`, `/cleanup`, `/repair`) that each run one memory
+mode. Everything works on a local project; only pull requests, CI, and review
+comments need a hosted remote. This repository ships the
 plugin and tracks its own development in its own `memory/` tree.
 
 ## Critical Commands
@@ -27,6 +30,8 @@ plugin and tracks its own development in its own `memory/` tree.
   anatomy `tests/skills.test.mjs` pins.
 - The skills are this plugin's own: they name no other skill set, project, or
   author, and carry no attribution lines.
+- A skill description is two sentences at most: what it does, then when to
+  use it. `tests/skills.test.mjs` enforces it.
 - The engineering skills state outcomes and trust the model (decision 009).
   Add a script for a fact that must be exact rather than a prohibition.
 - `.claude-plugin/plugin.json` and `.codex-plugin/plugin.json` keep identical

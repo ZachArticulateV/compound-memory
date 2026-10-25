@@ -1,6 +1,6 @@
 ---
 name: plan
-description: "Shape and plan software work: settle requirements through an interview, make a judgment call with evidence, write an implementation-ready plan, or split a plan into dependency-ordered tickets. Use when the user wants to plan a feature, think through requirements, choose between approaches, or break work into tasks or tickets."
+description: "Settles requirements, decides between options with evidence, writes an implementation-ready plan, or splits it into tickets. Use when the user wants to plan a feature, think through requirements, choose an approach, or break work into tasks."
 argument-hint: "[brainstorm|decide|plan|tickets] [idea, question, plan path, or issue]"
 allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/tickets-check.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/plan-check.mjs" *)
 ---

@@ -37,11 +37,10 @@ test('description stays under the skill-listing character cap', () => {
 test('description routes ordinary coding work away from memory', () => {
   // The skill stays model-invocable rather than setting
   // disable-model-invocation, so what keeps routine coding work from firing an
-  // audit is the routing clause in the description. It is written as where
-  // that work goes (the sibling engineering skills), not as a prohibition.
+  // audit is the routing clause in the description: coding work is not a
+  // memory operation.
   const description = field('description') ?? ''
   assert.match(description, /coding|refactor/i)
-  assert.match(description, /\bgo to this plugin's plan, build, debug, review, and verify skills\b/)
   assert.match(description, /not a memory operation/)
 })
 

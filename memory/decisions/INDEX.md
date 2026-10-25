@@ -13,3 +13,4 @@
 | 009 | [The plugin ships engineering skills beside memory](009-engineering-skills.md) | accepted |
 | 010 | [The plugin is renamed compound-memory](010-rename-compound-memory.md) | accepted |
 | 011 | [Runs share one temporary result record, checked by code](011-run-record.md) | accepted |
+| 012 | [The memory modes typed most get their own shortcuts](012-typed-shortcuts.md) | accepted |

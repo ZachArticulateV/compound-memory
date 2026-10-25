@@ -1,6 +1,6 @@
 ---
 name: project-memory
-description: Project memory under memory/: init, status, sync, handoff, grill, audit, repair, cleanup. Use when the user runs /project-memory, asks to set up project memory, asks whether memory has drifted, asks to sync memory after implementation work, asks for a handoff before /clear or to another session or Codex, asks to grill a plan against memory, or asks to audit or repair memory against the repository, or asks to clean up memory, find contradictions in it, or prune stale content, or asks to record a decision or define a project term. Ordinary coding, refactoring, debugging, test-writing, and code review go to this plugin's plan, build, debug, review, and verify skills instead: writing code in a project that has memory is not a memory operation, and routine work leaves memory and its audit alone.
+description: "Keeps the project's committed memory under memory/ accurate through init, status, sync, handoff, grill, audit, repair, and cleanup. Use when the user asks to set up, check, update, hand off, audit, repair, or clean up project memory; ordinary coding work is not a memory operation."
 argument-hint: "[init|status|sync|handoff|grill|audit|repair|cleanup] [focus or plan]"
 allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/project-state.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/memory-validate.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/auditor-bridge.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/memory-hygiene.mjs" *)
 ---

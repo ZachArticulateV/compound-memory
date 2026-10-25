@@ -34,8 +34,9 @@ read another project's history without being asked, and never quietly cap
    older than sessions in the window (the probe reports when each memory file
    last changed).
    Claude Code keeps them in `~/.claude/projects/<slug>/<session>.jsonl`
-   (the workspace path with each `/` and `.` turned into `-`); Codex in
-   `~/.codex/sessions/`. Order by modification time, search the topic first,
+   (the workspace path with every character other than a letter or digit
+   turned into `-`; see `../learn/references/retro.md` for Windows paths);
+   Codex in `~/.codex/sessions/`. Order by modification time, search the topic first,
    and read only the matching parts; skip this session and subagent, eval,
    and test transcripts. Read a transcript in full when the answer depends on
    what an agent actually ran. For more than two sessions, give each

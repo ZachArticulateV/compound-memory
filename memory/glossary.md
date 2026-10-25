@@ -14,7 +14,7 @@ The committed directory of a target repository that holds its canonical project 
 _Avoid_: notes folder, knowledge base
 
 **Skill**:
-One of the plugin's twelve directories under `skills/`, each invoked on its own: the memory skill and eleven engineering skills.
+One of the plugin's twelve model-invoked directories under `skills/`: the memory skill and eleven engineering skills. The five typed shortcuts (`/grill`, `/handoff`, `/sync`, `/cleanup`, `/repair`) also live under `skills/` and each run one memory mode.
 
 **Mode**:
 One of the operations a skill routes to through its mode table. The memory skill has eight: init, status, sync, handoff, grill, audit, repair, cleanup.

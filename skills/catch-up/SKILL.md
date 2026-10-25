@@ -1,6 +1,6 @@
 ---
 name: catch-up
-description: "Catch the user up: what changed in this conversation since their last message, or where a piece of work stands across sessions, branches, and PRs, ending with the decisions that wait on them and the next move. Use when the user asks to be caught up, for a status or summary of what happened, where they left off, or what they were working on. For the health of the memory tree itself, use project-memory status."
+description: "Sums up what changed in this conversation, or where a piece of work stands across sessions, ending with the decisions waiting on the user. Use when the user asks to be caught up, for a status or summary, or where they left off."
 argument-hint: "[chat|work] [topic or time window]"
 allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/project-state.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/tickets-check.mjs" *)
 ---

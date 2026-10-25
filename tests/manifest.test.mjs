@@ -66,13 +66,19 @@ const NUMBER_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'sev
 test('the description names every skill and states how many there are', () => {
   const { description } = readManifest('.claude-plugin/plugin.json')
   const skillsDir = join(repoRoot, 'skills')
-  const skills = readdirSync(skillsDir).filter((name) => existsSync(join(skillsDir, name, 'SKILL.md')))
-  for (const skill of skills) {
+  const all = readdirSync(skillsDir).filter((name) => existsSync(join(skillsDir, name, 'SKILL.md')))
+  for (const skill of all) {
     assert.match(description, new RegExp(`\\b${skill}\\b`), `the description does not name the ${skill} skill`)
   }
-  const countWord = NUMBER_WORDS[skills.length]
-  assert.ok(countWord, `no number word for ${skills.length} skills`)
-  assert.match(description, new RegExp(`\\b${countWord} skills\\b`, 'i'), `the description should say "${countWord} skills"`)
+  // A shortcut is typed, never model-invoked; the description counts the two kinds apart.
+  const shortcut = (name) => /^disable-model-invocation:\s*true$/m.test(readFileSync(join(skillsDir, name, 'SKILL.md'), 'utf8'))
+  const counts = { skills: all.filter((n) => !shortcut(n)).length, shortcuts: all.filter(shortcut).length }
+  for (const [noun, n] of Object.entries(counts)) {
+    if (n === 0) continue
+    assert.ok(NUMBER_WORDS[n], `no number word for ${n} ${noun}`)
+    assert.match(description, new RegExp(`\\b${NUMBER_WORDS[n]} ${noun}\\b`, 'i'), `the description should say "${NUMBER_WORDS[n]} ${noun}"`)
+  }
+  assert.ok((description.match(/[.!?](?=\\s|$)/g) ?? []).length <= 2, 'keep the description to two sentences')
 })
 
 test('homepage and repository point at the repository named after the plugin', () => {

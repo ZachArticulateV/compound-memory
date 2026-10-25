@@ -102,7 +102,7 @@ lines into its resume prompt, so the other agent works to the same contract.
 
 ## Planning with `grill`
 
-`/project-memory grill <plan>` interviews you about a plan before you build it.
+`/grill <plan>` interviews you about a plan before you build it.
 Questions come in rounds, each with a recommended answer; Claude looks up facts
 itself and asks you only for decisions. Every answer is checked against
 accepted decisions, the brief's out-of-scope list, what works today, open
@@ -211,10 +211,10 @@ not to gate CI.
   Resolved bugs and finished work move to `memory/archive/`, which is almost
   never loaded.
 - **Run `cleanup` now and then.** After a long run of sessions, before a new
-  person joins, or when memory starts to feel heavy, `/project-memory cleanup`
+  person joins, or when memory starts to feel heavy, `/cleanup`
   reads the whole tree for contradictions and rot and proposes the fixes. It
   writes nothing until you accept them.
-- **Close handoffs when work lands.** `/project-memory handoff close` files
+- **Close handoffs when work lands.** `/handoff close` files
   what a finished workstream's handoff still holds and retires it, so nobody
   is handed instructions for merged work.
 - **Keep `CLAUDE.md` and `AGENTS.md` lean.** Both load on every session in

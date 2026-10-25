@@ -2,7 +2,8 @@
 
 Memory, planning, building, review, verification, shipping, and learning for
 coding agents: twelve skills for Claude Code and Codex that each work alone and
-hand work to one another through files in your repository.
+hand work to one another through files in your project, plus five shortcuts
+for the memory commands you type most.
 
 A fresh agent session opens your repository knowing nothing about it, plans
 thinly, reviews what it wrote by reading its own summary, and forgets what the
@@ -33,8 +34,8 @@ blocks a success claim.
 | `debug` | Reproduce a bug with a tight loop, find the root cause, fix it behind a regression test |
 | `review` | Review code or a document in separate spec, standards, and correctness lenses, with quote-checked findings |
 | `verify` | Generate a verification skill for your app, drive the real app, and keep the evidence |
-| `ship` | Commit, open a PR that states how it was verified, watch CI, and answer review comments |
-| `autopilot` | Take a request to a reviewed, verified pull request without stopping |
+| `ship` | Commit in reviewable pieces; with a hosted remote, also open a PR, watch CI, and answer review comments |
+| `autopilot` | Take a request to reviewed, verified commits without stopping, and to a pull request when there is a remote |
 | `learn` | Capture lessons, turn repeated mistakes into checks, run retros, refresh lessons, update your working profile |
 | `write` | Write docs for people, instructions for agents, or a plain explanation |
 | `catch-up` | Summarize what changed since your last message, or where work stands across sessions |
@@ -43,6 +44,22 @@ In Claude Code, plugin skills are namespaced: `/compound-memory:plan`,
 `/compound-memory:review code`, and so on. The bare name (`/plan`) also works
 when no other command claims it. Every skill is also model-invoked, so asking
 "review this branch" or "why is this test flaky?" reaches the right one.
+
+The five shortcuts are typed, never picked by the model, so they cost no
+context until you use them. Each runs one memory mode:
+
+| Shortcut | Same as |
+| --- | --- |
+| `/grill [plan]` | `/project-memory grill` |
+| `/handoff [focus]` | `/project-memory handoff` |
+| `/sync` | `/project-memory sync` |
+| `/cleanup` | `/project-memory cleanup` |
+| `/repair` | `/project-memory repair` |
+
+Everything works on a local project with no remote and no GitHub account:
+memory, planning, building, debugging, review, verification, learning, and
+`ship commit`. Only opening a pull request, watching CI, and answering review
+comments need a hosted remote.
 
 ## Alone, together, or end to end
 
@@ -127,12 +144,12 @@ request), and `/project-memory handoff for codex: <focus>` prints a ready
 | --- | --- |
 | `/project-memory init` | Inspect the project and build the memory system. Reconstructs state for mature repos; interviews you for new ones. |
 | `/project-memory status` | Read-only health report. Never writes. |
-| `/project-memory sync` | Reconcile memory with what actually changed. Idempotent — often reports no changes required. |
-| `/project-memory handoff [focus]` | Capture continuation state before `/clear`, a context switch, or the end of a session, for any kind of work: code, debugging, deploys, docs, research, planning. Files what the session learned into the memory file that owns it, so the handoff never holds the only copy. Optional focus tailors it to the next session's job; ends with a paste-ready resume prompt. `handoff close` retires a finished workstream's handoff. |
-| `/project-memory grill [plan]` | Interview you about a plan in rounds, checking each answer against memory and code, then record the decisions and actions it settled. |
+| `/sync` | Reconcile memory with what actually changed. Idempotent — often reports no changes required. |
+| `/handoff [focus]` | Capture continuation state before `/clear`, a context switch, or the end of a session, for any kind of work: code, debugging, deploys, docs, research, planning. Files what the session learned into the memory file that owns it, so the handoff never holds the only copy. Optional focus tailors it to the next session's job; ends with a paste-ready resume prompt. `handoff close` retires a finished workstream's handoff. |
+| `/grill [plan]` | Interview you about a plan in rounds, checking each answer against memory and code, then record the decisions and actions it settled. |
 | `/project-memory audit` | Independently check memory against repository reality. Returns evidence, not edits. |
-| `/project-memory repair` | Correct the problems an audit or the validator found, preserving valid human-authored context. |
-| `/project-memory cleanup` | Read the whole tree for contradictions between files, claims the checkout disproves, and context rot (finished tasks, duplicated claims, expired handoffs, diary-style state), then fix what you accept. |
+| `/repair` | Correct the problems an audit or the validator found, preserving valid human-authored context. |
+| `/cleanup` | Read the whole tree for contradictions between files, claims the checkout disproves, and context rot (finished tasks, duplicated claims, expired handoffs, diary-style state), then fix what you accept. |
 
 Each mode loads exactly one playbook. Running `status` does not read the `audit`
 instructions, and neither of them costs anything during ordinary coding work.
@@ -156,7 +173,7 @@ you instead of inventing an architecture.
 **Then, day to day:**
 
 ```bash
-/project-memory handoff     # before /clear, a context switch, or stopping
+/handoff     # before /clear, a context switch, or stopping
 ```
 
 That is the one that pays for itself immediately. Run it before you clear the
@@ -169,11 +186,11 @@ what it must not assume.
 | Symptom | Command |
 | --- | --- |
 | "Is any of this still true?" | `/project-memory status` — read-only, safe any time |
-| "Before I build this, poke holes in it" | `/project-memory grill <plan>` |
-| "I just shipped something substantial" | `/project-memory sync` |
+| "Before I build this, poke holes in it" | `/grill <plan>` |
+| "I just shipped something substantial" | `/sync` |
 | "Memory says something I do not believe" | `/project-memory audit` |
-| "The audit was right; fix it" | `/project-memory repair` |
-| "Memory feels heavy, repetitive, or contradicts itself" | `/project-memory cleanup` |
+| "The audit was right; fix it" | `/repair` |
+| "Memory feels heavy, repetitive, or contradicts itself" | `/cleanup` |
 
 You do not have to remember to run `status`. When memory has drifted behind the
 code, a session-start line says so, naming the memory file that trails the

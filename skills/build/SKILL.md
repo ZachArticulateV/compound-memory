@@ -1,6 +1,6 @@
 ---
 name: build
-description: "Implement planned work with proof at every step: execute a plan or tickets unit by unit, running independent units in parallel; refine code just written; or improve a measured metric, keeping only the wins that clear the noise. Use when the user asks to implement, build, execute a plan or ticket, clean up freshly written code, or make something faster or smaller."
+description: "Implements planned work unit by unit with a check for each, refines code just written, or improves a measured metric. Use when the user asks to implement, build, or execute a plan or ticket, clean up new code, or make something faster or smaller."
 argument-hint: "[work|simplify|optimize] [plan path, ticket, or goal]"
 allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/tickets-check.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/measure.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/run-record.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/changes.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/project-state.mjs" *)
 ---

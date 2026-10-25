@@ -1,0 +1,5 @@
+interface:
+  display_name: "Grill"
+  short_description: "Stress-test a plan against memory and the code"
+policy:
+  allow_implicit_invocation: false

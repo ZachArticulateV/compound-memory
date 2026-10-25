@@ -1,14 +1,16 @@
 ---
 name: ship
-description: "Get finished work merged cleanly: write commits that follow the repository's conventions, open or update a pull request that says how the change was verified, watch CI and fix what fails at the root, and answer review comments. Use when the user asks to commit, push, open or update a PR, check or fix CI, address PR feedback, or whether a PR is ready to merge."
+description: "Commits finished work in reviewable pieces and, on a hosted remote, opens the pull request, watches CI, and answers review comments. Use when the user asks to commit, push, open a PR, fix CI, answer feedback, or whether a PR is ready to merge."
 argument-hint: "[commit|pr|watch|feedback] [PR number or URL]"
 allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/changes.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/pr-state.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/run-record.mjs" *)
 ---
 
 # Ship
 
-Move verified work from a branch to a mergeable pull request, and keep it
-mergeable until a person merges it.
+Turn verified work into commits a reviewer can read, and, when the project has
+a hosted remote, into a mergeable pull request kept mergeable until a person
+merges it. `commit` works in any local repository; `pr`, `watch`, and
+`feedback` need a remote on GitHub (through `gh` or the host's GitHub tool).
 
 **Done when:** the mode's result holds and is reported in the words below:
 commits made with only the intended work staged; a PR created with its
@@ -26,7 +28,8 @@ waiting on the user.
 | `feedback` | Answer and resolve review comments | `references/feedback.md` |
 
 Pick the mode the request describes. "Ship it" with uncommitted work runs
-`commit`, then `pr`, then `watch`.
+`commit`, then, when there is a hosted remote, `pr` and `watch`. With no
+remote, report the commits and stop there; that is a finished ship.
 
 ## Say which state the PR is in
 

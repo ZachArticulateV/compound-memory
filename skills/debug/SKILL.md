@@ -1,6 +1,6 @@
 ---
 name: debug
-description: "Find the root cause of a bug and fix it with proof: reproduce the failure, test competing explanations, trace the cause from trigger to symptom, and fix it behind a regression test. Use when something is broken, failing, flaky, slower than it used to be, or behaving differently than expected."
+description: "Finds the root cause of a bug and fixes it behind a regression test. Use when something is broken, failing, flaky, slower than before, or behaving unexpectedly."
 argument-hint: "[symptom, failing test, error, or issue]"
 allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/measure.mjs" *)
 ---

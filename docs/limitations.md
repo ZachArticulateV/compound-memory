@@ -175,9 +175,10 @@ off by default (`PROJECT_MEMORY_LIVE_ACCEPTANCE=1`), costs model tokens, and is
 not a CI gate. Re-run it after changing a skill's wording.
 
 Claude Code lists every skill's description in a shared budget of about one
-percent of the context window. The twelve descriptions total about 4,600
-characters; alongside many other plugins, the least-used descriptions are the
-first Claude Code drops.
+percent of the context window. The twelve model-invoked descriptions total
+about 2,800 characters, two sentences each; the five shortcuts are typed only
+and cost nothing there. Alongside many other plugins, the least-used
+descriptions are the first Claude Code drops.
 
 ## Test coverage: what is machine-verified and what is not
 

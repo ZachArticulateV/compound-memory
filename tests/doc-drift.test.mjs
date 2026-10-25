@@ -10,7 +10,7 @@
 
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 
@@ -219,8 +219,11 @@ test('the onboarding docs exist, are linked, and cover every mode', () => {
   const skillBody = readFileSync(join(repoRoot, 'skills', 'project-memory', 'SKILL.md'), 'utf8')
   const modes = [...skillBody.matchAll(/^\| `([a-z]+)` \| `references\/\1\.md` \|$/gm)].map((m) => m[1])
   assert.equal(modes.length, 8, `router playbook table changed shape: ${modes}`)
+  // A mode with its own shortcut may be shown by the shortcut (`/handoff`).
+  const shortcut = (mode) => existsSync(join(repoRoot, 'skills', mode, 'SKILL.md'))
   for (const mode of modes) {
-    assert.ok(quickstart.includes(`/project-memory ${mode}`), `quickstart never shows /project-memory ${mode}`)
+    const shown = quickstart.includes(`/project-memory ${mode}`) || (shortcut(mode) && new RegExp(`\`/${mode}\\b`).test(quickstart))
+    assert.ok(shown, `quickstart never shows /project-memory ${mode}`)
   }
   // Codex guidance matches the shipped manifest: hooks opted out.
   assert.match(advanced, /No hooks run/)

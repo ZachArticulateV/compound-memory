@@ -9,7 +9,9 @@ home.
 The session the user names, or the current one. Transcripts live in:
 
 - Claude Code: `~/.claude/projects/<slug>/<session>.jsonl`, where `<slug>` is
-  the workspace path with each `/` and `.` turned into `-`; subagent
+  the workspace path with every character other than a letter or digit turned
+  into `-` (`/home/me/app` is `-home-me-app`; on Windows, `C:\work\app` is
+  `C--work-app`, under `%USERPROFILE%\.claude\projects\`); subagent
   transcripts sit under `<session>/subagents/`.
 - Codex: `~/.codex/sessions/`.
 

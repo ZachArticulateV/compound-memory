@@ -1,0 +1,5 @@
+interface:
+  display_name: "Sync"
+  short_description: "Bring memory up to date with the code and Git"
+policy:
+  allow_implicit_invocation: false
