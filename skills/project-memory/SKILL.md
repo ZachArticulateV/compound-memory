@@ -1,6 +1,6 @@
 ---
 name: project-memory
-description: "Maintain project context in memory/. Use when the user asks to initialize, check, sync, hand off, grill a plan against, audit, repair, or clean up project memory. Ordinary coding work goes to plan, build, debug, review, or verify; it does not trigger memory updates or an audit."
+description: "Maintain project context in memory/. Use when asked to init, check, sync, hand off, grill, audit, repair, or clean up memory; ordinary coding work goes to plan, build, debug, review, or verify and does not trigger memory updates or an audit."
 argument-hint: "[init|status|sync|handoff|grill|audit|repair|cleanup] [focus or plan]"
 allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/project-state.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/memory-validate.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/memory-hygiene.mjs" *)
 ---

@@ -1,6 +1,6 @@
 ---
 name: debug
-description: "Find a failure's cause and prove its fix. Use when the user asks to diagnose or fix a bug, failed test, flaky behavior, or a performance regression. A question about a bug does not authorize a fix."
+description: "Find a failure's cause and prove its fix. Use when the user asks to diagnose or fix a bug, failed test, flaky behavior, or a performance regression; a question about a bug does not authorize a fix."
 argument-hint: "[symptom, failing test, error, or issue]"
 allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/measure.mjs" *)
 ---

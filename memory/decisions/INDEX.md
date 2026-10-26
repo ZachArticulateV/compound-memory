@@ -18,3 +18,4 @@
 | 014 | [Verify read controls on each host](014-host-read-controls.md) | accepted |
 | 015 | [Keep specialist scope and review context separate](015-specialist-reports.md) | accepted |
 | 016 | [Keep execution bounded and memory signals optional](016-bounded-execution-and-memory-signals.md) | accepted |
+| 017 | [Keep explicit shortcuts and allow finished local work](017-shortcuts-and-local-shipping.md) | accepted |

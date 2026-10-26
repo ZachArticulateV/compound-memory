@@ -78,6 +78,9 @@ for (const name of SKILLS) {
     const description = skill.field('description') ?? ''
     assert.ok(description.length > 0, 'no description')
     assert.ok(description.length <= DESCRIPTION_LIMIT, `description is ${description.length} chars; keep it under ${DESCRIPTION_LIMIT}`)
+    const sentences = description.replace(/\b(?:e\.g|i\.e|etc)\./g, '').match(/[.!?](?=\s|$)/g)?.length ?? 0
+    assert.ok(sentences <= 2, `description has ${sentences} sentences; keep it to two`)
+    assert.ok(description.length <= 300, `description is ${description.length} chars; keep it under 300`)
     assert.match(description, /\bUse when\b/, 'the description needs a "Use when" clause carrying its triggers')
     assert.ok(skill.field('argument-hint'), 'no argument-hint')
   })
@@ -157,6 +160,16 @@ for (const name of SKILLS) {
     const userInvokedClaude = /^disable-model-invocation:\s*true$/m.test(parseSkill(name).frontmatter)
     const userInvokedCodex = /allow_implicit_invocation:\s*false/.test(yaml)
     assert.equal(userInvokedCodex, userInvokedClaude)
+  })
+}
+
+for (const name of SHORTCUTS) {
+  test(`${name}: explicit entry reads its existing memory playbook`, () => {
+    const skill = parseSkill(name)
+    assert.match(skill.frontmatter, /^disable-model-invocation:\s*true$/m)
+    assert.match(read(skillsDir, name, 'agents', 'openai.yaml'), /allow_implicit_invocation:\s*false/)
+    assert.ok(skill.body.includes(`../project-memory/references/${name}.md`))
+    assert.ok(parseSkill('project-memory').body.includes(`| \`${name}\` |`))
   })
 }
 

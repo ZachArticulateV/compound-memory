@@ -1,6 +1,6 @@
 ---
 name: sync
-description: "Update project memory after completed work. Use when the user explicitly selects this sync shortcut. Plain requests use project-memory."
+description: "Update project memory after completed work. Use when the user explicitly selects this sync shortcut; plain requests use project-memory."
 argument-hint: "[focus, plan, or finding list]"
 disable-model-invocation: true
 allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/project-state.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/memory-validate.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/memory-hygiene.mjs" *)

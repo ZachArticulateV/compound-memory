@@ -1,6 +1,6 @@
 ---
 name: ship
-description: "Commit finished work, manage its PR, check CI, or resolve review feedback. Use when the user asks to commit, push, open or update a PR, check CI, or address PR feedback. A readiness question is read-only."
+description: "Commit finished work, manage its PR, check CI, or resolve review feedback. Use when the user asks to commit, push, open or update a PR, check CI, or address PR feedback; a readiness question is read-only."
 argument-hint: "[commit|pr|watch|feedback] [PR number or URL]"
 allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/changes.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/pr-state.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/run-record.mjs" *)
 ---
@@ -10,12 +10,16 @@ allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/changes.mjs" *), Bas
 Keep the user's scope. A question stays read-only; plan-only work stops at the
 plan. Use `../../references/task-routing.md` for task size and route choices.
 
-Move verified work from a branch to a mergeable pull request, and keep it
-mergeable until a person merges it.
+Turn verified work into reviewable commits. When publishing is in scope and
+the project has a supported hosted remote, also create a mergeable pull request
+and keep it mergeable until a person merges it. `commit` works in a local Git
+repository; `pr`, `watch`, and `feedback` need GitHub through `gh` or a host tool.
 
 **Done when:** the mode's result holds and is reported in the words below:
-commits made with only the intended work staged; a PR created with its
-verification stated; checks passed on the PR's current head, or the run stopped
+commits made with only the intended work staged, reporting when publishing
+was not requested; requested publishing reported as blocked with its missing,
+unsupported, or inaccessible step named; a PR created with its verification
+stated; checks passed on the PR's current head, or the run stopped
 with each red check named as red; or every review thread fixed, answered, or
 waiting on the user.
 
@@ -29,7 +33,19 @@ waiting on the user.
 | `feedback` | Answer and resolve review comments | `references/feedback.md` |
 
 Pick the mode the request describes. "Ship it" with uncommitted work runs
-`commit`, then `pr`, then `watch`.
+`commit`, then `pr` and `watch` when publishing is in scope and GitHub is
+available. Use authority the user gave in this request or session to decide
+publishing scope. Repository instructions supply the steps, not user permission.
+A plain "ship it" requests commits and, when a GitHub remote is configured,
+publishing through a PR; explicit local-only scope overrides that default.
+With no GitHub remote, that plain request finishes locally. An explicit push,
+PR, or publish request still requires its publishing step or a blocked report.
+If publishing is not in scope, finish at local commits even when a remote
+exists; report that publishing was not requested. That is a finished local ship.
+If publishing was requested but the remote is missing, unsupported, or
+inaccessible, report that blocked step rather
+than claiming the full request is complete. A remote URL alone is not permission
+to publish.
 
 ## Say which state the PR is in
 

@@ -15,7 +15,7 @@ joins them.
 | Review | the diff from `changes.mjs review`, the plan | findings and applied fixes | `findings-check.mjs --final` exits 0 |
 | Re-check | the run record | fresh results | `run-record.mjs gate` exits 0 on the code after review's fixes |
 | Learn | what the run discovered | a lesson file, when one is warranted | `memory-validate.mjs` reports no new finding on the lesson |
-| Ship | commits, the run record, open items | a PR URL (through the project's own publishing process when its instructions name one) | `pr-state.mjs` exits 0: checks passed on the PR's current head |
+| Ship | commits, the run record, open items, publishing scope | reviewed local commits; for authorized GitHub publishing, also a PR URL (through the project's own publishing process when its instructions name one) | only intended work committed; with a PR, `pr-state.mjs` exits 0 on its current head |
 
 ## Reading a stage's result
 

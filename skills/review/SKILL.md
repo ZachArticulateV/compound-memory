@@ -1,6 +1,6 @@
 ---
 name: review
-description: "Check code or a document against the request, project rules, and likely faults. Use when the user asks to review a diff, branch, PR, plan, or spec. A review request does not authorize edits."
+description: "Check code or a document against the request, project rules, and likely faults. Use when the user asks to review a diff, branch, PR, plan, or spec; a review request does not authorize edits."
 argument-hint: "[code|doc] [branch, PR, commit, or path]"
 allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/findings-check.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/changes.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/run-record.mjs" *)
 ---

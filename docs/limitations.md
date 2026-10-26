@@ -174,10 +174,10 @@ their artifacts with the plugin's own scripts. Like the memory live tier it is
 off by default (`PROJECT_MEMORY_LIVE_ACCEPTANCE=1`), costs model tokens, and is
 not a CI gate. Re-run it after changing a skill's wording.
 
-Claude Code lists every skill's description in a shared budget of about one
-percent of the context window. The twelve descriptions total about 4,600
-characters; alongside many other plugins, the least-used descriptions are the
-first Claude Code drops.
+Skill listings use host context and can be shortened or omitted by the host.
+Each core skill and shortcut description is at most two sentences and 300
+characters. The five shortcuts require explicit selection on both hosts.
+Their invocation flags do not prove zero context use in every host or version.
 
 ## Test coverage: what is machine-verified and what is not
 
@@ -350,7 +350,8 @@ credential that reached memory; it does not make putting one there safe.
   Claude Code's at 1,536; Codex truncates an explicitly invoked skill's body
   past 8,000 bytes for some plugin formats, and Claude Code advises keeping
   `SKILL.md` under 500 lines. Each `SKILL.md` here stays under 8,000 bytes and
-  each description under 1,024 characters; `tests/skills.test.mjs` pins both.
+  each description at most 300 characters and two sentences;
+  `tests/skills.test.mjs` pins these package limits.
   The hosts can change these; re-read them before relying on a number.
 - The plugin depends on current Claude Code behavior for skills, hooks,
   path-scoped rules, and subagents. Those surfaces were verified against live
