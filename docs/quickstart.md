@@ -1,5 +1,10 @@
 # Quickstart
 
+For the 2.1.0-rc.1 candidate, see [operation and rollback](operations.md).
+The queue, timed reports, and status-line bridge are optional. Start with the
+ordinary skill flow below. A fresh interactive desktop setup is not part of
+the local CLI support claim.
+
 Your first project memory, start to finish, in about fifteen minutes.
 
 This guide describes version 2.0.0 or later. `/plugin` shows the installed

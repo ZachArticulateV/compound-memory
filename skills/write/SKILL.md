@@ -1,11 +1,14 @@
 ---
 name: write
-description: "Write and edit prose its reader understands on the first read: docs, READMEs, guides, reports, PR descriptions, and commit messages for people; skills, CLAUDE.md, AGENTS.md, and prompts for agents; or a plain explanation of something that did not land. Use when the user asks to write, edit, tighten, or check documentation or agent instructions, or says they did not follow something."
+description: "Write or revise docs, reports, and agent instructions, or explain text in plain words. Use when the user asks to write, edit, tighten, or explain prose. A short rewrite needs only a short reply."
 argument-hint: "[docs|agents|plain] [text, file path, or nothing for the last message]"
 allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/rewrite-check.mjs" *)
 ---
 
 # Write
+
+Keep the user's scope. A question stays read-only; plan-only work stops at the
+plan. Use `../../references/task-routing.md` for task size and route choices.
 
 Prose that does its job for one named reader on the first read, with every
 fact from the source still in it.
@@ -50,6 +53,9 @@ less like a machine" is `plain`.
   fails a check.
 - **This skill is the plugin's writing standard.** Other skills point here
   rather than restating it.
+
+For research, setup, UI feedback, intake, product reports, launch drafts, migration,
+release, and support, read the matching recipe in `../../references/workflow-recipes.md`.
 
 ## Works with
 

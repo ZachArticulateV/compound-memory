@@ -1,7 +1,8 @@
 // Codex parity.
 //
 // Codex reads AGENTS.md rather than CLAUDE.md, substitutes none of the
-// variables SKILL.md uses, and runs no Claude Code hooks. Each of those is a
+// variables SKILL.md uses. This package opts out of Codex hooks pending live
+// checks, even on hosts that support command hooks. Each of those is a
 // way for a Codex session to open the repository blind or run a command that
 // cannot work. These tests pin the pieces that close each gap.
 
@@ -40,20 +41,19 @@ test('invocation policy agrees across Claude Code and Codex', () => {
 test('the router tells a non-Claude agent how to read its variables', () => {
   const body = flat(skill)
   assert.match(body, /## Outside Claude Code/)
-  assert.match(body, /`\$\{CLAUDE_SKILL_DIR\}` is the directory holding this `SKILL.md`/)
+  assert.match(body, /`\$\{CLAUDE_SKILL_DIR\}` is (?:the directory holding this `SKILL.md`|this file's directory)/)
   assert.match(body, /`\$0` is the first word/)
-  assert.match(body, /opts out of its Claude Code hooks/)
+  assert.match(body, /opts out of its Claude Code hooks|Codex hooks are disabled/)
 })
 
 test('the Codex manifest opts out of the Claude Code hooks and names itself', () => {
-  // Codex loads hooks/hooks.json by default when the manifest has no `hooks`
-  // key. Under Codex the post-edit hook cannot see which file apply_patch
-  // touched, and ${CLAUDE_PLUGIN_ROOT} is not expanded under cmd.exe, so the
-  // hooks would fire and do nothing useful, or fail. An empty inline object is
-  // the opt-out Codex honors; an empty array falls back to the default file.
+  // Both portable and compatibility entry points must opt out. Parsing a
+  // synthetic event does not prove live hook trust, dispatch, or shell behavior.
   const codex = JSON.parse(read(repoRoot, '.codex-plugin', 'plugin.json'))
   assert.deepEqual(codex.hooks, {})
   assert.equal(codex.interface?.displayName, 'Compound Memory')
+  const portable = JSON.parse(read(repoRoot, 'plugin.json'))
+  assert.deepEqual(portable.extensions['com.openai'].hooks, {})
 })
 
 test('AGENTS.md is part of the governed project contract', () => {

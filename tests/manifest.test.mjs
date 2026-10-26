@@ -12,9 +12,10 @@ const readManifest = (relPath) =>
 // Fields that must agree across ecosystems. Each manifest may carry extras
 // (a $schema for editor tooling, an explicit skills path for Codex); identity
 // and provenance must not drift between them.
-const SHARED_FIELDS = ['name', 'version', 'description', 'license', 'repository']
+const SHARED_FIELDS = ['name', 'version', 'description', 'author', 'homepage', 'license', 'repository', 'keywords']
 
-test('both manifests parse as JSON', () => {
+test('portable and legacy manifests parse as JSON', () => {
+  assert.doesNotThrow(() => readManifest('plugin.json'))
   assert.doesNotThrow(() => readManifest('.claude-plugin/plugin.json'))
   assert.doesNotThrow(() => readManifest('.codex-plugin/plugin.json'))
 })
@@ -24,12 +25,25 @@ test('shared metadata is identical across the Claude and Codex manifests', () =>
   const codex = readManifest('.codex-plugin/plugin.json')
 
   for (const field of SHARED_FIELDS) {
-    assert.equal(
+    assert.deepEqual(
       codex[field],
       claude[field],
       `${field} drifted between .claude-plugin and .codex-plugin`
     )
   }
+  const portable = readManifest('plugin.json')
+  for (const field of SHARED_FIELDS) assert.deepEqual(portable[field], claude[field], `portable ${field} drifted`)
+})
+
+test('portable manifest uses the standard shape and the same OpenAI overlay', () => {
+  const portable = readManifest('plugin.json')
+  const codex = readManifest('.codex-plugin/plugin.json')
+  assert.equal(portable.$schema, 'https://agent-plugins.org/schemas/1.0.0/plugin.schema.json')
+  const allowed = new Set(['$schema', ...SHARED_FIELDS, 'extensions'])
+  assert.deepEqual(Object.keys(portable).filter(key => !allowed.has(key)), [])
+  assert.deepEqual(portable.extensions, {'com.openai': {skills:codex.skills, hooks:codex.hooks, interface:codex.interface}})
+  assert.equal(portable.extensions['com.openai'].skills, './skills/')
+  assert.deepEqual(portable.extensions['com.openai'].hooks, {})
 })
 
 test('plugin name is kebab-case with no spaces', () => {
@@ -61,7 +75,7 @@ test('the plugin root carries no CLAUDE.md', () => {
 // The description is what a marketplace shows before anyone installs. It names
 // every skill and states their count, so adding or removing a skill without
 // updating it would leave the listing describing a different plugin.
-const NUMBER_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen']
+const NUMBER_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen']
 
 test('the description names every skill and states how many there are', () => {
   const { description } = readManifest('.claude-plugin/plugin.json')

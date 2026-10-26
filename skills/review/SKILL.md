@@ -1,11 +1,14 @@
 ---
 name: review
-description: "Review a change or a document through separate lenses that cannot mask each other: does it do what was asked (spec), does it follow the project's standards, and is it correct (bugs, security, data loss), with every finding tied to a quoted line. Use when the user asks to review code, a diff, a branch, a PR, or a plan or spec."
+description: "Check code or a document against the request, project rules, and likely faults. Use when the user asks to review a diff, branch, PR, plan, or spec. A review request does not authorize edits."
 argument-hint: "[code|doc] [branch, PR, commit, or path]"
 allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/findings-check.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/changes.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/run-record.mjs" *)
 ---
 
 # Review
+
+Keep the user's scope. A question stays read-only; plan-only work stops at the
+plan. Use `../../references/task-routing.md` for task size and route choices.
 
 Tell the author what would go wrong if this shipped, lens by lens, with each
 finding tied to the line that causes it. A change can follow every standard and
@@ -47,6 +50,11 @@ decide it, use `code`. The lenses themselves are in `references/lenses.md`.
 5. **Try to disprove** each kept P0 and P1, record the verdict on it, and run
    `findings-check.mjs --final`. Only its safe-to-fix list may be fixed.
 6. **Report each lens under its own heading.** Do not rerank across lenses.
+
+For a specialist or blind review, use `../../references/agents.md` and
+`references/isolated-review.md`. The lead prepares a fixed copy and a narrow
+packet. A fresh critic gets the exact saved prompt, not the builder's chat.
+The copy is evidence, not a tool permission boundary.
 
 Review reports; it changes code only when the user asks it to fix the findings
 (or `autopilot` does). A fix changes the code every earlier check ran on, so

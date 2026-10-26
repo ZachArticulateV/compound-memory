@@ -33,8 +33,8 @@ memory file.
 
 - That a playbook instruction is enforced. Most of this plugin is Markdown a
   model follows; `docs/limitations.md` names the three properties code enforces.
-- That the Codex path has been exercised by a live Codex session. It is tested
-  structurally, not live.
+- That a live CLI check proves all Codex workflows or desktop/cloud support.
+  Only cases named in the phase reports and completion report have live evidence.
 - That the skipped tests ran. They are live-tier tests gated off by default.
 
 ## Important

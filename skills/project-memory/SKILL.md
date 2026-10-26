@@ -1,41 +1,36 @@
 ---
 name: project-memory
-description: Project memory under memory/: init, status, sync, handoff, grill, audit, repair, cleanup. Use when the user runs /project-memory, asks to set up project memory, asks whether memory has drifted, asks to sync memory after implementation work, asks for a handoff before /clear or to another session or Codex, asks to grill a plan against memory, or asks to audit or repair memory against the repository, or asks to clean up memory, find contradictions in it, or prune stale content, or asks to record a decision or define a project term. Ordinary coding, refactoring, debugging, test-writing, and code review go to this plugin's plan, build, debug, review, and verify skills instead: writing code in a project that has memory is not a memory operation, and routine work leaves memory and its audit alone.
+description: "Maintain project context in memory/. Use when the user asks to initialize, check, sync, hand off, grill a plan against, audit, repair, or clean up project memory. Ordinary coding work goes to plan, build, debug, review, or verify; it does not trigger memory updates or an audit."
 argument-hint: "[init|status|sync|handoff|grill|audit|repair|cleanup] [focus or plan]"
-allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/project-state.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/memory-validate.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/auditor-bridge.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/memory-hygiene.mjs" *)
+allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/project-state.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/memory-validate.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/memory-hygiene.mjs" *)
 ---
 
 # Project Memory
 
-Canonical project memory lives at `memory/` in the working repository and is
-committed to Git. This skill initializes it, reports on it, reconciles it with
-reality, captures continuation state, grills plans against it, audits it,
-repairs it, and cleans it up.
+Keep the user's scope. A question stays read-only; plan-only work stops at the
+plan. Use `../../references/task-routing.md` for task size and route choices.
+
+Canonical project memory lives in the repository's `memory/` folder and is
+committed to Git. Select one mode below for the requested memory task.
 
 Memory is an orientation layer. Evidence that a feature works comes from code,
 tests, runtime behavior, and Git.
 
-The plugin's other skills (`plan`, `build`, `debug`, `review`, `verify`,
-`ship`, `learn`, and the rest) read this tree when it exists. `learn` owns
+Other skills read this tree when it exists. `learn` owns
 `memory/lessons/` and `memory/guardrails.md`; `references/memory-schema.md`
 describes both.
 
 ## Outside Claude Code
 
-In Codex or another agent, nothing substitutes the variables this file uses.
-Read them this way:
+Outside Claude Code, substitute these variables yourself:
 
 - `$0` is the first word of the user's request after the skill name, and
   `$ARGUMENTS` is everything after the skill name.
-- `${CLAUDE_SKILL_DIR}` is the directory holding this `SKILL.md`. The bundled
-  scripts are at `../../scripts/` from it. Substitute the real path before
-  running a command; an unset variable expands to nothing and the command
-  fails.
+- `${CLAUDE_SKILL_DIR}` is this file's directory. Scripts live at
+  `../../scripts/` from it. Use the real path in commands.
 
-The plugin's Codex manifest opts out of its Claude Code hooks, so no
-session-start line or post-edit validation appears there: run `status` at the
-start of substantial work, and let each mode's closing validation stand in for
-the edit hook.
+Codex hooks are disabled. Use `status` when memory needs checking and each
+mode's closing validation after writes.
 
 ## Routing
 
@@ -59,9 +54,8 @@ describes ("hand off before I clear" is `handoff`, "is memory still right?" is
 `status`) and say which you picked. When the request could mean two modes,
 print the table above and ask.
 
-Words after the mode are that mode's argument: the next session's focus for
-`handoff` (or `close`), the plan to test for `grill`. The other modes take none. The full
-input is `$ARGUMENTS`.
+Words after the mode give its focus, plan, or finding list.
+The full input is `$ARGUMENTS`.
 
 ### 2. Inspect existing state
 
@@ -71,10 +65,8 @@ Before loading any playbook, run the state probe and read its output:
 node "${CLAUDE_SKILL_DIR}/../../scripts/project-state.mjs" --json
 ```
 
-This is deterministic and cheap. It tells you whether memory exists, which core
-files are present, the current branch and worktree situation, which handoff is
-active, and whether memory trails changes to the paths it references. Every
-playbook assumes you have already run it.
+The probe reports memory files, branch, worktree, active handoff, and drift.
+Every playbook assumes this step is done.
 
 ### 3. Load exactly one playbook
 
@@ -91,8 +83,7 @@ Read only the playbook for the resolved mode:
 | `repair` | `references/repair.md` |
 | `cleanup` | `references/cleanup.md` |
 
-Load another playbook when you switch to its mode. Loading seven playbooks to run one mode is the context
-inflation this system exists to prevent.
+Load another playbook only when you switch modes.
 
 ### 4. Consult shared references when the playbook calls for them
 
@@ -144,5 +135,12 @@ is your call.
 - **Build on an initialized system.** Extend or repair existing memory; rebuild
   it from scratch when the user asks for that.
 
-If a permission prompt appears for one of the bundled scripts, approve it — the
-scripts are read-only inspectors bundled with this plugin.
+## Script effects and authority
+
+The state probe, validator, and hygiene check inspect local files and Git.
+The auditor bridge can make model calls and create temporary output outside the
+repository. An audit is not a free local check. Its filesystem limit does not
+prove that external tools are disabled; use the host setup checks.
+The bridge has no automatic tool grant. Use authority already granted by the
+user and the host's permission rules. Do not ask again for the same authority.
+Check the command's effects when the host requests permission.

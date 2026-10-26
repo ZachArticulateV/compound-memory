@@ -1,5 +1,5 @@
 {
-  "description": "Two deterministic signals: an orientation line at session start when project memory needs attention, and structural warnings after a memory file is edited. Both are advisory, both are read-only, and neither can block.",
+  "description": "Non-blocking session orientation, memory validation, and passive continuity requests. Hooks never change canonical memory or launch an agent. The active lead saves pending handoffs after local bridge setup.",
   "hooks": {
     "SessionStart": [
       {
@@ -14,31 +14,23 @@
     ],
     "PostToolUse": [
       {
-        "matcher": "Edit|Write",
+        "matcher": "*",
         "hooks": [
           {
             "type": "command",
             "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/post-tool-validate-hook.mjs\"",
-            "timeout": 5,
-            "if": "Edit(memory/**/*.md)"
-          },
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/post-tool-validate-hook.mjs\"",
-            "timeout": 5,
-            "if": "Edit(CLAUDE.md)"
-          },
-          {
-            "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/post-tool-validate-hook.mjs\"",
-            "timeout": 5,
-            "if": "Edit(.claude/CLAUDE.md)"
-          },
-          {
-            "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/post-tool-validate-hook.mjs\"",
-            "timeout": 5,
-            "if": "Edit(AGENTS.md)"
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/continuity-hook.mjs\"",
+            "timeout": 5
           }
         ]
       }

@@ -1,0 +1,5 @@
+interface:
+  display_name: "Cleanup"
+  short_description: "Find contradictions and stale memory."
+policy:
+  allow_implicit_invocation: false

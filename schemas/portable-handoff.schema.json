@@ -1,0 +1,268 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "compound-memory/portable-handoff/v1",
+  "title": "Portable handoff v1",
+  "description": "Transport shape. scripts/lib/handoff.mjs also verifies hashes, paths, stop evidence, plan identity, checkout state, and ledger fields. This schema alone does not prove a safe import.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "kind",
+    "sourceHost",
+    "targetHost",
+    "created",
+    "sourceRoot",
+    "state",
+    "checkout",
+    "evidence",
+    "sha256"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "kind": {
+      "const": "portable-handoff"
+    },
+    "sourceHost": {
+      "enum": [
+        "claude",
+        "codex"
+      ]
+    },
+    "targetHost": {
+      "enum": [
+        "claude",
+        "codex"
+      ]
+    },
+    "created": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "sourceRoot": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "state": {
+      "type": "object",
+      "required": [
+        "schemaVersion",
+        "kind",
+        "transferId",
+        "ledger",
+        "submissions"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "kind": {
+          "const": "run-export"
+        },
+        "transferId": {
+          "type": "string"
+        },
+        "ledger": {
+          "type": "object"
+        },
+        "submissions": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "checkout": {
+      "type": "object",
+      "required": [
+        "kind",
+        "head",
+        "branch",
+        "files",
+        "workers"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "git",
+            "files"
+          ]
+        },
+        "head": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "branch": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "workers": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "files": {
+          "type": "array",
+          "maxItems": 5000,
+          "items": {
+            "type": "object",
+            "required": [
+              "path",
+              "included",
+              "tasks",
+              "base",
+              "source",
+              "current",
+              "index"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "included": {
+                "type": "boolean"
+              },
+              "tasks": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "base": {
+                "$ref": "#/$defs/fileHash"
+              },
+              "source": {
+                "$ref": "#/$defs/fileHash"
+              },
+              "current": {
+                "$ref": "#/$defs/fileBytes"
+              },
+              "index": {
+                "$ref": "#/$defs/fileBytes"
+              }
+            }
+          }
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "required": [
+        "included",
+        "files",
+        "missing"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "included": {
+          "type": "boolean"
+        },
+        "missing": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "files": {
+          "type": "array",
+          "maxItems": 2000,
+          "items": {
+            "type": "object",
+            "required": [
+              "path",
+              "sha256",
+              "bytes"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "bytes": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "fileHash": {
+      "type": "object",
+      "required": [
+        "sha256",
+        "mode"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "sha256": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "mode": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 511
+        }
+      }
+    },
+    "fileBytes": {
+      "type": "object",
+      "required": [
+        "sha256",
+        "mode",
+        "bytes"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "sha256": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "mode": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 511
+        },
+        "bytes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
+  }
+}

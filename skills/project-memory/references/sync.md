@@ -2,6 +2,15 @@
 
 Reconcile canonical memory with what the project actually became.
 
+At an accepted work boundary, use `proposeMemoryUpdate` from
+`scripts/lib/integrity-state.mjs` to prepare bounded replacements.
+The proposal records the current file hashes and a stable update id.
+`applyMemoryUpdate` requires existing authority for canonical memory writes.
+It takes one writer lock, checks those hashes, saves backups, and records the id.
+The same id and content are repeat-safe. A competing change fails before writes.
+Inspect and propose do not change canonical memory. A worker report cannot grant
+repair authority. Keep source and proof links; do not paste the report body.
+
 The discipline here is subtraction. A sync that rewrites every file because the
 skill ran has destroyed the thing that makes memory readable — the fact that a
 change in it means something changed. Update only the concepts that moved.

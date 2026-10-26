@@ -2,7 +2,7 @@
 
 How Compound Memory is built, what each piece is for, and what it actually does.
 
-This document describes shipped behavior. Where a claim is about what the code
+This document describes the current source tree. Where a claim is about what the code
 does, it was read off the code. Where it is about what a playbook instructs a
 model to do, it says so — and it matters, because instruction and enforcement are
 not the same guarantee.
@@ -10,13 +10,80 @@ not the same guarantee.
 **Read this before reading anything else here.** Most of this plugin is Markdown
 that a model reads: the memory router, eight mode playbooks, four shared
 references, the auditor prompt, the writing rule, and ten templates, plus eleven
-engineering skills with their references and the plugin-root
+engineering skills, five explicit shortcuts, and the plugin-root
 `references/artifacts.md` and `references/principles.md`. Those shape behavior; they
-do not constrain it the way code does. Exactly three properties are mechanically
-enforced, and [`docs/limitations.md`](./limitations.md) names them: the bundled
-auditor cannot write because its tool grant contains no writer, the Codex tier
-cannot write because it runs under `-s read-only`, and validation warnings cannot
-block an edit because the hook always exits 0.
+do not constrain it the way code does. Actual tool grants, host controls, and
+script checks determine the enforced limits. A filesystem read-only setting
+alone does not remove external action tools. See [host support](host-support.md)
+for the tested scope. Validation hooks remain advisory and exit 0.
+
+## Shared work contracts
+
+Phase 1 adds an opt-in version 2 path. See [shared work rules](../references/work-contracts.md).
+Static plans are JSON. They contain scope and checks, not progress.
+A separate run ledger owns assignments, attempts, lead ownership, and acceptance.
+Workers write immutable result files. They do not replace the lead's ledger.
+The new proof command captures actual process results under host authority.
+The existing pre-approved run-record helper still never executes arbitrary commands.
+
+The file contracts remain host-neutral. Skills still compose through files.
+Exact graph, ownership, and proof rules belong in scripts.
+Choice of model, method, and depth remains with the lead within the user's request.
+No new hook, worker launcher, or schedule is added in Phase 1.
+
+Legacy Markdown plans, tickets, and version 1 run receipts remain readable.
+The new mode changes two old conventions only when it is selected:
+task progress moves from ticket fields to one run ledger, and required acceptance
+uses captured proof rather than caller-reported receipts.
+No automatic migration or release version change occurs.
+
+## Host setup and task selection
+
+Phase 3 adds a shared catalog with a main-session lead and seven specialist
+workers. The role files declare purpose, inputs, result rules, tool needs, and
+stop conditions. Claude loads plugin agent entries. Codex uses explicit task
+packets. Neither metadata nor a packet proves actual tool access.
+See [specialist contracts](../references/agents.md).
+
+The code scout's map is a bounded static scan. It reports exclusions, unreadable
+paths, source hashes, and import candidates. It does not execute code or prove
+a runtime call path. Cached parse facts require a current matching content hash.
+
+The lead prepares explicit file copies for review. The review helper checks
+both source and copied bytes after the review, plus the actual sent prompt.
+Its UI evidence check matches app identity, version, origin, and artifact bytes.
+It cannot establish an observation that no browser driver made.
+
+The integrity helper copies selected memory and source files, then captures
+three fixed inspection commands on that copy. The reviewer receives the captured
+output and selected claims on file-read tools. Report validation checks scope,
+quotes, independent source references, and unknown coverage. The lead still
+checks meaning. The inspection helper itself makes no canonical repairs. The due consumer now
+records scoped source coverage. The authorized memory writer applies checked
+proposals separately. Bounded dispatch and the optional local scheduler are
+described in [operation and rollback](operations.md).
+
+The portable and compatibility manifests point to the same skills.
+Five explicit-only shortcuts read the existing memory playbooks.
+Core skill descriptions guide plain requests. They do not force selection.
+See [task selection](../references/task-routing.md) for the command map.
+
+The setup checker reads package files and reports host limits.
+Its packet command reads an existing plan and live assignment.
+It does not create a claim, run a model, or change settings.
+The shared task and result formats remain those from Phase 1.
+
+Claude command hooks stay non-blocking. File checks run in the script so they
+do not depend on host-specific `if` filters. Codex hook discovery stays off.
+The event normalizer covers native edits and patch paths. Shell changes need
+a manual boundary check. An unknown context value stays unknown.
+The integrity queue and status-line bridge are opt-in. The local polling
+scheduler works with either CLI. No host hook launches an integrity model.
+The local bridge also queues a passive memory save at 50% measured use.
+Session, prompt, and tool hooks deliver the request. The lead prepares and
+applies the memory and handoff changes. A pending request is not a saved handoff.
+See [the continuity contract](../references/continuity.md). This save does not
+transfer the run or end the session.
 
 Two sections below — [The eight modes](#the-eight-modes) and much of
 [Safeguards](#safeguards) — describe playbook instructions. They are labelled at
@@ -507,7 +574,8 @@ project-memory/
 ├── CHANGELOG.md
 ├── LICENSE
 ├── agents/
-│   └── memory-auditor.md             second-tier auditor; tools: Read, Grep, Glob
+│   ├── memory-auditor.md             second-tier auditor; tools: Read, Grep, Glob
+│   └── six other role files         code, scout, UI, blind, test, integrity
 ├── hooks/
 │   └── hooks.json                    SessionStart + PostToolUse; no Stop hook
 ├── rules/
@@ -971,11 +1039,11 @@ the code. It is path-scoped, so it coexists with any other rules a project has
 and loads only for memory and contract edits. An existing local copy that differs
 is never overwritten silently.
 
-**Subagents.** The plugin ships one, `memory-auditor`, used only when `audit`
-directs it. Its description tells the model not to use it for code review,
-debugging, or research. Modes may dispatch general-purpose investigators for
-breadth during reconnaissance and audit evidence-gathering — they return
-evidence, and the coordinator writes.
+**Subagents.** The plugin ships seven worker entries. The memory auditor keeps
+its existing deep-audit role. Six other entries cover code, scouting, UI, blind
+review, tests, and bounded memory integrity. See the shared role catalog for
+each tool profile. The coordinator owns canonical memory and shared run state.
+Lead-directed waves use the host's existing tools. Automated dispatch is later work.
 
 **Hooks.** Two, both advisory, both exit 0 always, neither writes. No `Stop` hook
 is registered — a `Stop` hook that appended to memory on every turn would produce

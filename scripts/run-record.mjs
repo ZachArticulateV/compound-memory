@@ -35,6 +35,7 @@ import { isAbsolute, join, relative, resolve } from 'node:path'
 
 import { SCRATCH_DIR, codeFingerprint, scratchIgnored } from './lib/changes.mjs'
 import { USAGE_EXIT_CODE, emit, parseCliArgs } from './lib/report.mjs'
+import { proofHash, validateProof } from './lib/proof.mjs'
 
 export const RECORD_SCHEMA_VERSION = 1
 export const EVIDENCE_DIR = `${SCRATCH_DIR}/evidence`
@@ -160,6 +161,7 @@ export function addCheck(root, record, { name, command = null, exit = null, stat
   if (!code.ok) return { error: code.error }
   const attempt = record.checks.filter((c) => c.name === name).length + 1
   const entry = {
+    basis: 'reported',
     name,
     command,
     required: !optional,
@@ -177,6 +179,20 @@ export function addCheck(root, record, { name, command = null, exit = null, stat
   return { record, entry }
 }
 
+/** Link an already captured proof. This helper never executes its command. */
+export function addProof(root, record, { name, proofPath, optional = false, now = new Date() }) {
+  const reportedEnvironment = Object.fromEntries(Object.entries(record.environment).filter(([key]) => !['node', 'platform', 'arch', 'fingerprint'].includes(key)))
+  const checked = validateProof(root, proofPath, { checkId: name, paths: record.paths, env: reportedEnvironment })
+  if (!checked.ok) return { error: checked.problems.map(p => p.message).join('; ') }
+  const proof = checked.proof
+  const result = addCheck(root, record, { name, command: [proof.command.executable, ...proof.command.args].join(' '), exit: 0, output: proof.outputs[0].path, optional, now })
+  if (result.error) return result
+  result.entry.basis = 'captured'
+  result.entry.proof = { path: proofPath, sha256: proofHash(readFileSync(resolve(root, proofPath))) }
+  writeRecord(root, record)
+  return result
+}
+
 export function addNote(root, record, { open = [], next = null, resolve: done = [] }) {
   for (const item of open) if (!record.open.includes(item)) record.open.push(item)
   record.open = record.open.filter((item) => !done.includes(item))
@@ -190,7 +206,7 @@ export function addNote(root, record, { open = [], next = null, resolve: done = 
  * `env` is the caller's current view of the extra environment pairs; with none
  * given, the recorded pairs are assumed unchanged.
  */
-export function gateRun(root, record, { env = null, attemptLimit = ATTEMPT_LIMIT } = {}) {
+export function gateRun(root, record, { env = null, attemptLimit = ATTEMPT_LIMIT, requireCaptured = false } = {}) {
   const code = codeFingerprint(root, { paths: record.paths })
   if (!code.ok) return { error: code.error }
   const recordedExtra = Object.fromEntries(Object.entries(record.environment).filter(([k]) => !['node', 'platform', 'arch', 'fingerprint'].includes(k)))
@@ -203,6 +219,19 @@ export function gateRun(root, record, { env = null, attemptLimit = ATTEMPT_LIMIT
     const failures = record.checks.filter((x) => x.name === name && x.status === 'failed').length
     let state = c.status
     const why = []
+    const basis = c.basis === 'captured' ? 'captured' : 'reported'
+    if (basis === 'captured') {
+      const proof = validateProof(root, c.proof?.path, { checkId: name, paths: record.paths, env: env ?? recordedExtra })
+      let unchanged = false
+      try { unchanged = c.proof.sha256 === proofHash(readFileSync(resolve(root, c.proof.path))) } catch { /* missing proof */ }
+      if (!proof.ok || !unchanged) {
+        state = 'invalid-proof'
+        why.push(...proof.problems.map(p => p.message), ...(!unchanged ? ['the captured proof record changed or is missing'] : []))
+      }
+    } else if (requireCaptured && c.status !== 'unchecked') {
+      state = 'reported-only'
+      why.push('this exit code was supplied by the caller, not captured')
+    }
     if (c.status !== 'unchecked') {
       if (c.code !== code.fingerprint) {
         state = 'stale'
@@ -222,6 +251,7 @@ export function gateRun(root, record, { env = null, attemptLimit = ATTEMPT_LIMIT
     } else if (c.reason) why.push(c.reason)
     rows.push({
       name,
+      basis,
       // A check named at start stays required however it was recorded later.
       required: c.required || record.required.includes(name),
       state,
@@ -255,6 +285,8 @@ export function gateRun(root, record, { env = null, attemptLimit = ATTEMPT_LIMIT
     code: { now: code.fingerprint, atStart: record.code.fingerprint, head: code.head, dirty: code.dirty },
     verdict,
     mayClaimSuccess: verdict === 'passed',
+    requireCaptured,
+    basis: rows.some(r => r.basis !== 'captured' && r.state !== 'not-run') ? 'reported-or-mixed' : 'captured',
     checks: rows,
     passed: rows.filter((r) => r.state === 'passed').map((r) => r.name),
     failed: rows.filter((r) => r.state === 'failed').map((r) => r.name),
@@ -267,6 +299,7 @@ export function gateRun(root, record, { env = null, attemptLimit = ATTEMPT_LIMIT
 
 function renderGate(g) {
   const out = [`Run ${g.runId}: ${g.task}`, `Scope: ${g.scope}`, `Code now ${g.code.now}${g.code.dirty ? ' (uncommitted changes)' : ''}`, '']
+  out.push(g.basis === 'captured' ? 'Basis: captured proof receipts were checked.' : 'Basis: reported receipts are included. This gate does not prove those commands ran.')
   if (g.checks.length === 0) out.push('No checks recorded.')
   else if (g.passed.length === 0) out.push('No check has passed.')
   for (const c of g.checks) {
@@ -292,6 +325,8 @@ const USAGE = `Usage:
   run-record.mjs add   --run <id|latest> --check <name> --status unchecked --reason "<why>" [--optional]
   run-record.mjs note  --run <id|latest> [--open "<item>"] [--resolve "<item>"] [--next "<action>"]
   run-record.mjs gate  --run <id|latest> [--env k=v,...] [--json]
+  run-record.mjs add-proof --run <id|latest> --check <name> --proof <file> [--optional]
+  run-record.mjs gate --run <id|latest> --require-captured [--json]
 
 A stage inside a larger run (verify inside autopilot) records into that run
 with --run <id>; it starts its own record only when there is none.
@@ -308,7 +343,7 @@ export function main(argv = process.argv.slice(2)) {
     process.stdout.write(USAGE)
     return 0
   }
-  if (!['start', 'add', 'note', 'gate', 'show'].includes(mode)) {
+  if (!['start', 'add', 'add-proof', 'note', 'gate', 'show'].includes(mode)) {
     process.stderr.write(`run-record: the first argument must be start, add, note, gate, or show\n\n${USAGE}`)
     return USAGE_EXIT_CODE
   }
@@ -328,6 +363,8 @@ export function main(argv = process.argv.slice(2)) {
       command: { type: 'string' },
       reason: { type: 'string' },
       optional: { type: 'boolean', default: false },
+      proof: { type: 'string' },
+      'require-captured': { type: 'boolean', default: false },
       open: { type: 'string', multiple: true },
       resolve: { type: 'string', multiple: true },
       next: { type: 'string' },
@@ -372,6 +409,13 @@ export function main(argv = process.argv.slice(2)) {
   if (read.error) return fail(read.error)
   const record = read.record
 
+  if (mode === 'add-proof') {
+    const result = addProof(absRoot, record, { name: values.check, proofPath: values.proof, optional: values.optional })
+    if (result.error) return fail(result.error)
+    emit(result.entry, `Linked captured proof for ${values.check}.`, { json: values.json })
+    return 0
+  }
+
   if (mode === 'add') {
     let exit = null
     if (values.exit !== undefined) {
@@ -396,7 +440,7 @@ export function main(argv = process.argv.slice(2)) {
     emit(record, JSON.stringify(record, null, 2), { json: values.json })
     return 0
   }
-  const g = gateRun(absRoot, record, { env: values.env === undefined ? null : pairs.pairs })
+  const g = gateRun(absRoot, record, { env: values.env === undefined ? null : pairs.pairs, requireCaptured: values['require-captured'] })
   if (g.error) return fail(g.error)
   emit(g, renderGate(g), { json: values.json })
   return g.mayClaimSuccess ? 0 : 1

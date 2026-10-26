@@ -1,7 +1,18 @@
 # Compound Memory
 
+Specialist agents can support a bounded task: code specialist, code scout,
+UI reviewer, blind critic, test specialist, memory integrity specialist, and
+the existing memory auditor. The main session stays in charge. Each worker
+gets the task and needed files, then returns results and evidence.
+See [the role guide](references/agents.md) for Claude entries, Codex packets,
+access limits, and review steps. Version 2.1.0-rc.1 adds bounded CLI worker
+dispatch, portable handoffs, and optional local memory reports.
+See [operation and rollback](docs/operations.md) and the
+[completion report](docs/plans/2026-10-26-completion-results.md).
+Queues and timed reports start off. No global setup is needed for ordinary work.
+
 Memory, planning, building, review, verification, shipping, and learning for
-coding agents: twelve skills for Claude Code and Codex that each work alone and
+coding agents: twelve core skills and five explicit shortcuts for Claude Code and Codex that each work alone and
 hand work to one another through files in your repository.
 
 A fresh agent session opens your repository knowing nothing about it, plans
@@ -41,8 +52,11 @@ blocks a success claim.
 
 In Claude Code, plugin skills are namespaced: `/compound-memory:plan`,
 `/compound-memory:review code`, and so on. The bare name (`/plan`) also works
-when no other command claims it. Every skill is also model-invoked, so asking
-"review this branch" or "why is this test flaky?" reaches the right one.
+when no other command claims it. Core skills can also be selected from plain
+requests. Selection is model behavior; the package does not guarantee it.
+The five shortcuts are explicit-only: `handoff`, `sync`, `grill`, `cleanup`,
+and `repair`. They read the existing memory playbooks.
+See [task selection](references/task-routing.md) for scope and name collisions.
 
 ## Alone, together, or end to end
 
@@ -109,8 +123,10 @@ install line above. Your `memory/` trees are untouched; the memory skill keeps
 its name, so `/project-memory <mode>` (fully, `/compound-memory:project-memory
 <mode>`) works as before.
 
-**Codex:** the repository also ships `.codex-plugin/plugin.json`, so the same
-skill installs as a Codex plugin. `init` writes the memory pointer into
+**Codex:** the repository ships a portable `plugin.json` and the legacy
+`.codex-plugin/plugin.json`. Both point to the same skills. Package checks
+do not prove live use. See the [host test record](docs/host-support.md) before
+using a host feature. `init` writes the memory pointer into
 `AGENTS.md` as well as `CLAUDE.md` (when the project has an `AGENTS.md`, or on
 request), and `/project-memory handoff for codex: <focus>` prints a ready
 `codex "..."` launch line. The Claude Code hooks do not run under Codex, so run

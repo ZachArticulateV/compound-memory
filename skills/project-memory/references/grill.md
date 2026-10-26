@@ -3,6 +3,10 @@
 Stress-test a plan against the project's memory and code, then record what the
 interview settled.
 
+For a question-only or no-write request, keep the interview and its results
+in the reply. Do not record files in that case. A request to save the settled
+plan or memory gives that write authority; use authority already given.
+
 Run it before building something substantial: a feature, a migration, a change
 of direction, a refactor that crosses modules. A plan that survives a grilling
 is cheaper to build than one that meets its contradictions halfway through
@@ -56,8 +60,10 @@ often leaves implicit:
 
 ## 4. Propose the writes
 
-Once the user has confirmed the shared understanding, list every write before
-making any. Each settled item goes to exactly one home:
+Once the shared understanding is settled, identify the writes within the
+user's scope. Do not ask again for writes already accepted. If the request
+was only to question the plan, report the proposed records without writing.
+Each settled item goes to exactly one home:
 
 | Settled item | Home |
 | --- | --- |

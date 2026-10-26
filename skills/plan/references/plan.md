@@ -17,6 +17,19 @@ parallel subagents and keep only their conclusions:
 - **Outside docs:** only when the work leans on a framework or API whose
   behavior you would otherwise guess.
 
+For the repository-pattern question, give the code scout a bounded source map:
+
+```bash
+node "${CLAUDE_SKILL_DIR}/../../scripts/repo-map.mjs" --scope src --exclude src/private --max-files 100 --json # not pre-approved
+```
+
+Choose literal scope and exclusion paths for this project. The map reads no
+links or known private/generated paths. It reports source hashes, omissions,
+and partial coverage. JavaScript import and call entries are static candidates;
+the scout must check their cited lines before claiming a call path. Other
+languages receive an inventory only. Rerun the map when source changes. A
+saved map is evidence for its source version, not a current full code audit.
+
 For user-facing behavior, walk each flow (the normal path, empty input, an
 error, an interruption, a repeat) and add what is missing as a requirement or
 an open question.
@@ -24,6 +37,18 @@ an open question.
 ## Write
 
 Follow the plan shape in `../../references/artifacts.md`.
+
+For work that needs saved task state, shared resources, or phase gates, use the
+version 2 JSON contract in `../../references/work-contracts.md` and
+`../../schemas/plan.schema.json`. The examples in `../../examples/contracts/`
+show a small plan and a plan with phases. Keep scope, requirements, task IDs,
+and check IDs in that one static file. Narrative notes point to those IDs.
+The run ledger owns progress. Do not add task status to the plan or maintain
+a second set of checkboxes in tickets.
+
+For a small legacy plan, keep the Markdown form below. An unmarked Markdown
+file is version 1. Phase or gate prose in it does not create a checked version
+2 execution graph. An unknown explicit version is rejected.
 
 - **Terms** define only the words a reader could take two ways ("active
   ticket", "reply due"), in the project's glossary words when
@@ -71,10 +96,15 @@ Run the part code can check:
 node "${CLAUDE_SKILL_DIR}/../../scripts/plan-check.mjs" <plan file>
 ```
 
+Use the same command with `<plan.json>` for version 2. It checks the combined
+task and gate graph, phase links, required checks, and literal path and
+resource claims. Valid shared claims wait in order. Phase numbers do not
+create hidden dependencies. Invalid graphs expose no ready tasks.
+
 It exits 1 when a requirement has no unit, a unit has no `Verify` or still says
 TBD, a `Depends on` names a unit that does not exist, Out of scope is missing,
 an open question is not marked answered, deferred, or assumed, or two IDs
-collide. Then judge the rest yourself:
+collide, or unit dependencies form a cycle. Then judge the rest yourself:
 
 - Every unit's `Verify` could fail (a command that always passes proves
   nothing).

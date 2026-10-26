@@ -1,0 +1,5 @@
+interface:
+  display_name: "Grill"
+  short_description: "Question a plan against memory and code."
+policy:
+  allow_implicit_invocation: false

@@ -19,6 +19,7 @@ import { basename, resolve } from 'node:path'
 
 import { isDirectory, listFiles, readTextContained, relPosix } from './lib/fs-utils.mjs'
 import { USAGE_EXIT_CODE, emit, parseCliArgs } from './lib/report.mjs'
+import { isPlanPath } from './lib/plan-contract.mjs'
 
 export const TICKETS_SCHEMA_VERSION = 1
 // Anchored, so "not done" and the unfilled "ready | in-progress | done" are open.
@@ -56,6 +57,9 @@ export function parseTouches(value) {
 
 /** Two touched paths collide when either contains the other. */
 export function touchesOverlap(a, b) {
+  a = a.replace(/\\/g, '/').replace(/\/+$/, '').toLowerCase()
+  b = b.replace(/\\/g, '/').replace(/\/+$/, '').toLowerCase()
+  if (a === '.' || b === '.') return true
   return a === b || a.startsWith(`${b}/`) || b.startsWith(`${a}/`)
 }
 
@@ -116,6 +120,7 @@ export function analyzeTickets(tickets) {
     if (!t.done && (t.verifyWith === null || t.verifyWith === '')) {
       problems.push({ kind: 'missing-verify', ticket: t.path, message: 'no "Verify with" line, so done cannot be checked' })
     }
+    for (const path of t.touches) if (!isPlanPath(path)) problems.push({ kind: 'invalid-path', ticket: t.path, message: `Touches must use literal repository paths, not ${path}` })
   }
   const cycles = findCycles(tickets.filter((t) => t.id !== null))
   for (const c of cycles) problems.push({ kind: 'cycle', ticket: byId.get(c[0])?.path ?? c[0], message: `cycle: ${c.join(' -> ')}` })
@@ -123,14 +128,19 @@ export function analyzeTickets(tickets) {
   // A number is done only when every ticket carrying it is done.
   const isDone = (id) => (allById.get(id) ?? []).length > 0 && allById.get(id).every((t) => t.done)
   const open = tickets.filter((t) => !t.done && t.id !== null)
-  const frontier = open.filter((t) => t.blockedBy.every((b) => !byId.has(b) || isDone(b)))
+  const frontier = problems.length === 0 ? open.filter((t) => t.blockedBy.every((b) => isDone(b))) : []
 
-  // Waves: Kahn layering over open tickets, treating done and unknown blockers as satisfied.
+  // Invalid graphs never offer work. Valid dependency layers are split into
+  // conflict-free waves. An absent path claim cannot prove parallel safety.
   const waves = []
   const placed = new Set()
-  let remaining = open.filter((t) => !cycles.some((c) => c.includes(t.id)))
+  let remaining = problems.length === 0 ? open : []
   while (remaining.length > 0) {
-    const wave = remaining.filter((t) => t.blockedBy.every((b) => !byId.has(b) || isDone(b) || placed.has(b)))
+    const candidates = remaining.filter((t) => t.blockedBy.every((b) => isDone(b) || placed.has(b)))
+    const wave = []
+    for (const ticket of candidates) {
+      if (!wave.some(other => ticket.touches.length === 0 || other.touches.length === 0 || ticket.touches.some(a => other.touches.some(b => touchesOverlap(a, b))))) wave.push(ticket)
+    }
     if (wave.length === 0) break
     waves.push(wave.map((t) => t.id))
     for (const t of wave) placed.add(t.id)
@@ -198,8 +208,9 @@ const USAGE = `Usage: tickets-check.mjs --dir <tickets-dir> [--json] [--cwd <dir
 
 Report the frontier, parallel waves, cycles, unknown blockers, missing verify
 commands, and path collisions for a directory of NN-<slug>.md tickets.
-Read-only. Exits 0 when it ran; 1 when it found a cycle, an unknown blocker, or
-a duplicate number; 2 on a usage error.
+Read-only. Exits 0 for a valid graph; 1 on any graph, path, or required-check
+problem; 2 on a usage error. Missing path claims are serialized, not treated
+as proof that tickets are independent.
 `
 
 export function main(argv = process.argv.slice(2)) {
@@ -218,7 +229,7 @@ export function main(argv = process.argv.slice(2)) {
     return USAGE_EXIT_CODE
   }
   emit(result, renderTicketsText(result), { json: values.json })
-  return result.problems.some((p) => ['cycle', 'unknown-blocker', 'duplicate-id'].includes(p.kind)) ? 1 : 0
+  return result.problems.length > 0 ? 1 : 0
 }
 
 const invokedDirectly =

@@ -1,10 +1,13 @@
 ---
 name: prototype
-description: "Build a throwaway prototype that answers one design question before the real build: a single-file HTML demo for logic, state, or data shape, or switchable UI variants of a screen. Use when the user wants to try a layout, compare design options, or check that a state model or flow feels right."
+description: "Build a throwaway demo to answer one design question. Use when the user asks to try a layout, compare UI options, or test a proposed state model or flow before production work."
 argument-hint: "[logic|ui] [the question, and the page or module it is for]"
 ---
 
 # Prototype
+
+Keep the user's scope. A question stays read-only; plan-only work stops at the
+plan. Use `../../references/task-routing.md` for task size and route choices.
 
 A prototype is throwaway code that answers one question. The question decides
 its shape, and the answer, not the code, is what the project keeps.
@@ -55,6 +58,9 @@ ask, pick one, and state the assumption at the top of the prototype.
    scope) in the same change, mark the replaced decision as superseded, and
    run `plan-check.mjs` on the plan. When it confirms the plan, say so in the
    decision.
+
+For research, setup, UI feedback, intake, product reports, launch drafts, migration,
+release, and support, read the matching recipe in `../../references/workflow-recipes.md`.
 
 ## Works with
 

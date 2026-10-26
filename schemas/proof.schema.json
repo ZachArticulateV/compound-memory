@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://compound-memory.local/schemas/proof.schema.json",
+  "title": "Captured proof version 2",
+  "description": "Local tamper-evident evidence. Identity and descriptive environment labels are caller supplied, not authenticated. Only the separate capture entry point runs commands.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "kind", "basis", "context", "checkId", "command", "cwd", "paths", "startedAt", "finishedAt", "limits", "code", "environment", "exitCode", "signal", "captureError", "outcome", "outputs"],
+  "properties": {
+    "schemaVersion": { "const": 2 },
+    "kind": { "const": "proof" },
+    "basis": { "const": "captured" },
+    "context": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/context" }] },
+    "checkId": { "$ref": "#/$defs/id" },
+    "command": {
+      "type": "object", "additionalProperties": false,
+      "required": ["executable", "args", "shell"],
+      "properties": {
+        "executable": { "type": "string", "minLength": 1, "pattern": "^[^\\u0000]+$" },
+        "args": { "type": "array", "items": { "type": "string", "pattern": "^[^\\u0000]*$" } },
+        "shell": { "const": false }
+      }
+    },
+    "cwd": { "type": "string", "minLength": 1 },
+    "paths": { "type": "array", "description": "Sorted canonical relative prefixes. Empty means the whole repository. The runtime also checks Git ignore rules.", "uniqueItems": true, "items": { "$ref": "#/$defs/scopePath" } },
+    "startedAt": { "$ref": "#/$defs/captureTime" },
+    "finishedAt": { "$ref": "#/$defs/captureTime" },
+    "limits": {
+      "type": "object", "additionalProperties": false, "required": ["timeoutMs", "maxOutputBytes"],
+      "properties": {
+        "timeoutMs": { "type": "integer", "minimum": 1, "maximum": 3600000 },
+        "maxOutputBytes": { "type": "integer", "minimum": 1, "maximum": 16777216 }
+      }
+    },
+    "code": {
+      "type": "object", "additionalProperties": false, "required": ["before", "after", "head"],
+      "properties": {
+        "before": { "type": "string", "pattern": "^[a-f0-9]{16}$" },
+        "after": { "anyOf": [{ "type": "string", "pattern": "^[a-f0-9]{16}$" }, { "type": "null" }] },
+        "head": { "type": ["string", "null"] }
+      }
+    },
+    "environment": {
+      "type": "object", "additionalProperties": false, "required": ["observed", "reported", "fingerprint"],
+      "properties": {
+        "observed": {
+          "type": "object", "additionalProperties": false, "required": ["node", "platform", "arch"],
+          "properties": { "node": { "type": "string" }, "platform": { "type": "string" }, "arch": { "type": "string" } }
+        },
+        "reported": { "type": "object", "description": "Non-secret descriptive labels. The reader rejects credential-shaped label names.", "propertyNames": { "$ref": "#/$defs/id" }, "additionalProperties": { "type": "string", "maxLength": 2048 } },
+        "fingerprint": { "$ref": "#/$defs/hash" }
+      }
+    },
+    "exitCode": { "type": ["integer", "null"], "minimum": -9007199254740991, "maximum": 9007199254740991 },
+    "signal": { "type": ["string", "null"] },
+    "captureError": {
+      "anyOf": [
+        { "type": "null" },
+        { "type": "object", "additionalProperties": false, "required": ["code", "message"], "properties": { "code": { "type": "string" }, "message": { "type": "string" } } }
+      ]
+    },
+    "outcome": { "enum": ["passed", "failed", "stale", "capture-failed"] },
+    "outputs": {
+      "type": "array", "minItems": 2, "maxItems": 2,
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["stream", "path", "bytes", "sha256"],
+        "properties": {
+          "stream": { "enum": ["stdout", "stderr"] },
+          "path": { "type": "string", "pattern": "^\\.verify/(proofs|evidence)/" },
+          "bytes": { "type": "integer", "minimum": 0, "maximum": 16777216 },
+          "sha256": { "$ref": "#/$defs/hash" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$" },
+    "hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "captureTime": { "type": "string", "format": "date-time", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$" },
+    "scopePath": { "type": "string", "pattern": "^(?!(?:\\.[gG][iI][tT]|\\.[vV][eE][rR][iI][fF][yY])(?:/|$))(?!\\.{1,2}(?:/|$))(?!.*\\/\\.{1,2}(?:/|$))[^\\\\/:*?\\[\\]\\u0000]+(?:/[^\\\\/:*?\\[\\]\\u0000]+)*$" },
+    "context": {
+      "type": "object", "additionalProperties": false,
+      "required": ["runId", "planId", "planRevision", "taskId", "attempt", "ownerVersion", "workerId", "assignmentId"],
+      "properties": {
+        "runId": { "$ref": "#/$defs/id" }, "planId": { "$ref": "#/$defs/id" }, "taskId": { "$ref": "#/$defs/id" },
+        "workerId": { "$ref": "#/$defs/id" }, "assignmentId": { "$ref": "#/$defs/id" },
+        "planRevision": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 }, "attempt": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 }, "ownerVersion": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 }
+      }
+    }
+  }
+}

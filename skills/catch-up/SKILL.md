@@ -1,11 +1,14 @@
 ---
 name: catch-up
-description: "Catch the user up: what changed in this conversation since their last message, or where a piece of work stands across sessions, branches, and PRs, ending with the decisions that wait on them and the next move. Use when the user asks to be caught up, for a status or summary of what happened, where they left off, or what they were working on. For the health of the memory tree itself, use project-memory status."
+description: "Report what changed or where work stands, with open decisions and the next step. Use when the user asks for a progress update, a session summary, or where they left off. Memory health belongs to project-memory status."
 argument-hint: "[chat|work] [topic or time window]"
 allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/project-state.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/tickets-check.mjs" *)
 ---
 
 # Catch up
+
+Keep the user's scope. A question stays read-only; plan-only work stops at the
+plan. Use `../../references/task-routing.md` for task size and route choices.
 
 Give the user, in a minute's reading, what changed, where things stand, and the
 calls only they can make.
@@ -35,6 +38,9 @@ last message, and `work` otherwise.
   action item; name it on one line as remaining work.
 - **Plain words.** Call each PR, branch, or agent by a name the user would
   know. Leave out hashes, paths, and counts unless the user needs one to act.
+
+For research, setup, UI feedback, intake, product reports, launch drafts, migration,
+release, and support, read the matching recipe in `../../references/workflow-recipes.md`.
 
 ## Works with
 

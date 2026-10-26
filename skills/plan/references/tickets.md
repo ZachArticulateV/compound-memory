@@ -4,6 +4,18 @@ Split a plan, spec, or conversation into tickets: tracer-bullet vertical
 slices, each one demoable on its own, each declaring the tickets that block it
 and the paths it touches.
 
+When the source is a version 2 JSON plan, keep tasks in that plan's `tasks`
+array. A ticket is a view that points to the plan ID, revision, and task ID.
+It does not own copied scope, checks, or task status. The run ledger owns
+progress. See `../../references/work-contracts.md`. Check the source with:
+
+```bash
+node "${CLAUDE_SKILL_DIR}/../../scripts/plan-check.mjs" <plan.json>
+```
+
+The local Markdown ticket format below remains the version 1 route.
+Do not mix its status fields with a version 2 run ledger.
+
 ## Slice
 
 - Each ticket cuts a narrow, complete path through every layer (schema, API,
@@ -45,13 +57,15 @@ Iterate until they approve. In an `autopilot` run, go on with your breakdown.
 node "${CLAUDE_SKILL_DIR}/../../scripts/tickets-check.mjs" --dir docs/plans/<slug>/tickets
 ```
 
-Fix every cycle and unknown blocker it reports. When two frontier tickets touch
-the same paths, add an edge between them or merge them; otherwise two agents
-will edit the same files at once.
+Fix every reported graph, path, or required-check problem. An invalid graph
+has no frontier or waves. The frontier names candidates. Use the conflict-free
+waves for parallel work. Shared paths and unknown path scopes run in turn.
+Keep dependency edges for true ordering needs.
 
-When the project has a memory tree, the frontier tickets can go into
+For legacy tickets, when the project has a memory tree, the frontier can go into
 `memory/next-actions.md` as delegated items: the ticket's `Verify with` is the
 `Done when` line.
+For version 2, memory points to the plan and run instead of copying live status.
 
 ## Done check
 

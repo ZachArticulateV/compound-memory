@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://compound-memory.local/schemas/result.schema.json",
+  "title": "Version 2 immutable worker result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "resultId",
+    "context",
+    "status",
+    "changedPaths",
+    "proofs",
+    "blockers",
+    "findings",
+    "summary"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 2
+    },
+    "kind": {
+      "const": "result"
+    },
+    "resultId": {
+      "$ref": "#/$defs/id"
+    },
+    "context": {
+      "$ref": "#/$defs/context"
+    },
+    "status": {
+      "enum": [
+        "completed",
+        "failed"
+      ]
+    },
+    "changedPaths": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Reported relative changed paths. The lead must inspect the actual diff."
+    },
+    "proofs": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^\\.verify/"
+      }
+    },
+    "blockers": {
+      "$ref": "#/$defs/texts"
+    },
+    "findings": {
+      "$ref": "#/$defs/texts"
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+    },
+    "texts": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "runId",
+        "planId",
+        "planRevision",
+        "taskId",
+        "attempt",
+        "ownerVersion",
+        "workerId",
+        "assignmentId"
+      ],
+      "properties": {
+        "runId": {
+          "$ref": "#/$defs/id"
+        },
+        "planId": {
+          "$ref": "#/$defs/id"
+        },
+        "planRevision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "taskId": {
+          "$ref": "#/$defs/id"
+        },
+        "attempt": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "ownerVersion": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "workerId": {
+          "$ref": "#/$defs/id"
+        },
+        "assignmentId": {
+          "$ref": "#/$defs/id"
+        }
+      }
+    },
+    "submission": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Host-generated immutable envelope stored in inbox/<resultId>.json. The worker sends only the result payload.",
+      "required": [
+        "schemaVersion",
+        "kind",
+        "receivedAt",
+        "workerLeaseUntil",
+        "ownerLeaseUntil",
+        "resultFingerprint",
+        "result"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": 2
+        },
+        "kind": {
+          "const": "submission"
+        },
+        "receivedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "workerLeaseUntil": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ownerLeaseUntil": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "resultFingerprint": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "result": {
+          "$ref": "#"
+        }
+      }
+    }
+  }
+}

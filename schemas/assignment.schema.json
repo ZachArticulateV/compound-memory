@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://compound-memory.local/schemas/assignment.schema.json",
+  "title": "Version 2 task assignment",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "runId",
+    "planId",
+    "planRevision",
+    "taskId",
+    "attempt",
+    "ownerVersion",
+    "workerId",
+    "assignmentId",
+    "role",
+    "workspace",
+    "baseFingerprint",
+    "leaseUntil",
+    "timeLimitMs",
+    "outputLimitBytes"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 2
+    },
+    "kind": {
+      "const": "assignment"
+    },
+    "runId": {
+      "$ref": "result.schema.json#/$defs/id"
+    },
+    "planId": {
+      "$ref": "result.schema.json#/$defs/id"
+    },
+    "planRevision": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "taskId": {
+      "$ref": "result.schema.json#/$defs/id"
+    },
+    "attempt": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "ownerVersion": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "workerId": {
+      "$ref": "result.schema.json#/$defs/id"
+    },
+    "assignmentId": {
+      "$ref": "result.schema.json#/$defs/id"
+    },
+    "role": {
+      "type": "string",
+      "minLength": 1
+    },
+    "workspace": {
+      "type": "string",
+      "minLength": 1
+    },
+    "baseFingerprint": {
+      "type": "string",
+      "minLength": 1
+    },
+    "leaseUntil": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "timeLimitMs": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Claim lease must not exceed this bound. This does not terminate a process.",
+      "maximum": 9007199254740991
+    },
+    "outputLimitBytes": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Maximum UTF-8 bytes of a serialized result. Proof capture has its own output bounds.",
+      "maximum": 9007199254740991
+    }
+  }
+}

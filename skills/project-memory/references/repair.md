@@ -37,7 +37,9 @@ The auditor read the repository. It did not see the conversation, the user's
 intent, the reason a claim is phrased the way it is, or the change that is half
 landed. Some of what it flagged is deliberate.
 
-Work from findings the user accepted. When a finding is ambiguous or the fix
+Work from findings the user accepted. A request to apply the supplied findings
+is that acceptance; do not ask for it again. A read-only request to explain
+repairs stays in the reply. When a finding is ambiguous or the fix
 would discard something, ask before touching the file — the cost of asking is one
 question; the cost of guessing is a file nobody can reconstruct.
 
