@@ -41,8 +41,8 @@ test('description routes ordinary coding work away from memory', () => {
   // that work goes (the sibling engineering skills), not as a prohibition.
   const description = field('description') ?? ''
   assert.match(description, /coding|refactor/i)
-  assert.match(description, /\bgo to this plugin's plan, build, debug, review, and verify skills\b/)
-  assert.match(description, /not a memory operation/)
+  assert.match(description, /\bgoes to plan, build, debug, review, or verify\b/)
+  assert.match(description, /does not trigger memory updates or an audit/)
 })
 
 test('the body routes exactly the eight documented modes', () => {

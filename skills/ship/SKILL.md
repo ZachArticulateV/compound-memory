@@ -1,11 +1,14 @@
 ---
 name: ship
-description: "Get finished work merged cleanly: write commits that follow the repository's conventions, open or update a pull request that says how the change was verified, watch CI and fix what fails at the root, and answer review comments. Use when the user asks to commit, push, open or update a PR, check or fix CI, address PR feedback, or whether a PR is ready to merge."
+description: "Commit finished work, manage its PR, check CI, or resolve review feedback. Use when the user asks to commit, push, open or update a PR, check CI, or address PR feedback. A readiness question is read-only."
 argument-hint: "[commit|pr|watch|feedback] [PR number or URL]"
 allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/changes.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/pr-state.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/run-record.mjs" *)
 ---
 
 # Ship
+
+Keep the user's scope. A question stays read-only; plan-only work stops at the
+plan. Use `../../references/task-routing.md` for task size and route choices.
 
 Move verified work from a branch to a mergeable pull request, and keep it
 mergeable until a person merges it.
@@ -56,6 +59,9 @@ head (`references/watch.md`):
 - **Resume from files.** A run record (`../../references/artifacts.md`), the
   branch, and the PR say where shipping stopped; read them before redoing a
   step. Three failed fix rounds on one check means stop and report.
+
+For research, setup, UI feedback, intake, product reports, launch drafts, migration,
+release, and support, read the matching recipe in `../../references/workflow-recipes.md`.
 
 ## Works with
 

@@ -454,3 +454,14 @@ of startup context.
 Many readers, one writer. Subagents and external evaluators may inspect, test,
 and recommend. Only the coordinating session writes canonical memory. This
 matters most for `current-state.md` and `decisions/`. See `evidence-policy.md`.
+
+## Source coverage and local run state
+
+The optional integrity index is `.verify/integrity/state.json`.
+It stores each selected claim, source hashes, report path, basis, and coverage.
+`node scripts/integrity-due.mjs status <root>` reads it without writing.
+A changed source means review-needed. Age alone does not make a claim false.
+Unchecked claims stay unchecked. A checked contradiction is not a healthy claim.
+The index is disposable runtime state. If it is lost, coverage is unknown until
+a new scoped check runs. Durable memory links to the result and states its scope.
+Do not copy model replies or full logs into memory.

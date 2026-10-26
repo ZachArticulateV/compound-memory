@@ -6,6 +6,11 @@ reconstructing this conversation.
 Run it when stopping substantial unfinished work, before `/clear` or a context
 reset, when switching tasks or agents, or when handing work to someone else.
 
+A passive context trigger also saves continuation state while work continues.
+Use `../../references/continuity.md` for its pending
+request and checked memory write. Do not stop the session, export a run, or
+transfer ownership for that save. The memory and evidence rules below still apply.
+
 A handoff is a continuation pointer, not a session log. It is written from
 observed evidence, and the parts it cannot evidence it says it cannot evidence.
 
@@ -281,6 +286,39 @@ when the evidence does not say which.
 
 Say that commit identifiers are unavailable. A handoff missing HEAD for a stated
 reason is honest; one missing it silently reads like an oversight.
+
+## Portable run state
+
+For a version 2 task run, a Markdown pointer alone is not a portable handoff.
+Use `scripts/handoff.mjs` from the plugin root. Its `--help` gives the input
+fields. `export` and `import` are deliberate write actions. Do not add them to
+a read-only tool grant. `preview` only reads.
+
+1. Confirm that the host stopped the old lead and each active worker. Record
+   the actual stop evidence. A lease timeout or an evidence string does not
+   stop a process. Retain each unfinished worker copy.
+2. Name the unfinished files in `workPaths`. Supply each external worker's
+   checked manifest in `workspaceManifests`, keyed by task ID. Export includes
+   the full ledger and result receipts. Named file bytes include current work
+   and the original Git index bytes. Optional large proof files can stay out.
+3. Run `export --run <id> --plan <plan.json> --input <export-options.json>`.
+   Export fences the source lead. Keep the emitted bundle with the handoff.
+   Keep its recovery copy under `.verify/runs/<id>/` until import succeeds.
+4. In the target checkout, run `preview --bundle <bundle.json> --plan
+   <plan.json>`. Resolve each missing edit or byte-level checkout conflict.
+   Line-ending changes can be a conflict. Do not force them over user work.
+5. Run `import` with the same bundle and plan plus input containing
+   `newOwnerId`, `leaseMs`, and `applyWork: true` when files must be restored.
+   Import preserves the target Git index. Review the saved index bytes before
+   later staging. File backups remain under `.verify/handoff-imports/`.
+6. Inspect the restored run. Accepted history is retained, but missing or
+   foreign-checkout proof remains stale. Recheck it before claiming success.
+
+Import is repeat-safe for the same bundle. An old owner or late worker cannot
+write to the transferred local run. Separate offline copies cannot enforce
+one owner across machines; confirm the source stopped through the host.
+After a failed partial import, keep the bundle, backups, and worker copies.
+Inspect the reported applied paths before retry. Never delete them as cleanup.
 
 ## 9. When there is no memory yet
 

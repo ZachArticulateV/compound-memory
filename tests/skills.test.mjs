@@ -17,11 +17,13 @@ import { dirname, join, resolve } from 'node:path'
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..')
 const skillsDir = join(repoRoot, 'skills')
 
-export const SKILLS = [
+export const CORE_SKILLS = [
   'autopilot', 'build', 'catch-up', 'debug', 'learn', 'plan',
   'project-memory', 'prototype', 'review', 'ship', 'verify', 'write',
 ]
-const ENGINEERING = SKILLS.filter((s) => s !== 'project-memory')
+export const SHORTCUTS = ['cleanup', 'grill', 'handoff', 'repair', 'sync']
+export const SKILLS = [...CORE_SKILLS, ...SHORTCUTS]
+const ENGINEERING = CORE_SKILLS.filter((s) => s !== 'project-memory')
 
 /**
  * Codex truncates an explicitly invoked skill's main prompt past this many
@@ -36,15 +38,22 @@ const DESCRIPTION_LIMIT = 1024
 const read = (...parts) => readFileSync(join(...parts), 'utf8')
 const isDir = (p) => existsSync(p) && statSync(p).isDirectory()
 
+function fieldValue(frontmatter, key) {
+  const m = new RegExp(`^${key}:[ \\t]*(.*)$`, 'm').exec(frontmatter)
+  return m ? m[1].trim().replace(/^"(.*)"$/, '$1').replace(/\\"/g, '"') : undefined
+}
+
 function parseSkill(name) {
   const raw = read(skillsDir, name, 'SKILL.md')
   const [, frontmatter = '', ...rest] = raw.split(/^---$/m)
-  const field = (key) => {
-    const m = new RegExp(`^${key}:\\s*(.+)$`, 'm').exec(frontmatter)
-    return m ? m[1].trim().replace(/^"(.*)"$/, '$1').replace(/\\"/g, '"') : undefined
-  }
+  const field = (key) => fieldValue(frontmatter, key)
   return { name, raw, frontmatter, body: rest.join('---'), field }
 }
+
+test('an empty frontmatter field does not borrow the next line', () => {
+  assert.equal(fieldValue('name:  \ndescription: next line\n', 'name'), '')
+  assert.equal(fieldValue('name:  \r\ndescription: next line\r\n', 'name'), '')
+})
 
 /** All Markdown under a skill: SKILL.md plus references and templates. */
 function skillTexts(name) {
@@ -57,7 +66,7 @@ function skillTexts(name) {
   return out
 }
 
-test('the skills directory holds exactly the twelve documented skills', () => {
+test('the skills directory holds twelve core skills and five explicit shortcuts', () => {
   const found = readdirSync(skillsDir).filter((d) => isDir(join(skillsDir, d)) && existsSync(join(skillsDir, d, 'SKILL.md')))
   assert.deepEqual(found.sort(), [...SKILLS].sort())
 })
@@ -126,9 +135,8 @@ for (const name of SKILLS) {
     for (const [file, text] of skillTexts(name)) {
       for (const m of text.matchAll(/^\s*node "(\$\{CLAUDE_SKILL_DIR\}[^"]+)"(.*)$/gm)) {
         const command = `node "${m[1]}"${m[2]}`.trim()
-        // A helper that runs code the agent supplies (a journey module) is
-        // marked in the text and must stay out of allowed-tools, or the
-        // pre-approval would be a shell grant.
+        // Helpers that execute supplied code or launch another model have an
+        // explicit authority boundary and must stay out of automatic grants.
         if (/# not pre-approved\b/.test(m[2])) {
           const script = m[1]
           assert.ok(!rules.some((rule) => rule.startsWith(`node "${script}"`)), `${name}/${file} marks ${script} not pre-approved, but allowed-tools approves it`)
@@ -221,5 +229,6 @@ test('the lesson template passes the lesson-format check once rendered', async (
 test('the README introduces every skill', () => {
   const readme = read(repoRoot, 'README.md')
   for (const name of SKILLS) assert.ok(readme.includes(`\`${name}\``), `README never names \`${name}\``)
-  assert.match(readme, /\btwelve skills\b/i, 'README no longer states the skill count')
+  assert.match(readme, /\btwelve (?:core )?skills\b/i, 'README no longer states the core skill count')
+  assert.match(readme, /\bfive (?:explicit )?shortcuts\b/i, 'README no longer states the shortcut count')
 })

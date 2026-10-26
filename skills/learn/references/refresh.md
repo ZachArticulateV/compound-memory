@@ -3,6 +3,10 @@
 Re-check lessons against the code as it is now, so lookup keeps returning
 lessons that are true.
 
+Use `scripts/learning-policy.mjs` for a bounded retirement proposal.
+Name the existing lesson, current source quotes, and the retirement reason.
+A missing source or changed quote stops the proposal. Age alone is not a reason.
+
 ## Steps
 
 1. **List them,** including stale and retired ones, then the active ones whose

@@ -37,7 +37,7 @@ import {
 } from '../scripts/auditor-bridge.mjs'
 import { redactSecrets } from '../scripts/lib/memory-model.mjs'
 import { readTextSafe } from '../scripts/lib/fs-utils.mjs'
-import { cleanupAfter, completeMemoryTree, makeFixture, makeTempRoot } from './fixtures/build.mjs'
+import { childEnv, cleanupAfter, completeMemoryTree, makeFixture, makeTempRoot } from './fixtures/build.mjs'
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..')
 const BRIDGE = join(repoRoot, 'scripts', 'auditor-bridge.mjs')
@@ -216,7 +216,7 @@ function makeExec(scriptPaths, calls) {
     return execFile(
       process.execPath,
       [script, ...effectiveArgs],
-      { cwd: options.cwd, encoding: 'utf8', windowsHide: true, maxBuffer: options.maxBuffer },
+      { cwd: options.cwd, encoding: 'utf8', windowsHide: true, maxBuffer: options.maxBuffer, env: childEnv() },
       callback
     )
   }
@@ -326,6 +326,41 @@ test('a write-enabling argv is refused before it can be executed', () => {
   )
   assert.throws(() => assertNoWriteEnablingFlags(['exec', '--full-auto', 'prompt']), /write-enabling/)
   assert.doesNotThrow(() => assertNoWriteEnablingFlags(['exec', '-s', 'read-only', 'prompt']))
+})
+
+test('audit launch requests disabled action features and selects MXC only on Windows', async (t) => {
+  const disabled = ['apps', 'plugins', 'browser_use', 'browser_use_external', 'computer_use',
+    'image_generation', 'multi_agent', 'multi_agent_v2', 'hooks', 'memories',
+    'in_app_browser', 'workspace_dependencies']
+  for (const platform of ['win32', 'linux', 'darwin']) {
+    const argv = composeCodexArgv({ root: '/fixture', outputPath: '/temp/result.json', platform })
+    assert.ok(argv.includes('--ignore-user-config'))
+    assert.ok(argv.includes('--ephemeral'))
+    assert.equal(argv[argv.indexOf('-s') + 1], 'read-only')
+    const config = argv.flatMap((value, i) => value === '-c' ? [argv[i + 1]] : [])
+    assert.ok(config.includes('approval_policy="never"'))
+    assert.ok(config.includes('web_search="disabled"'))
+    assert.deepEqual(config.filter(value => value.startsWith('windows.sandbox=')),
+      platform === 'win32' ? ['windows.sandbox="mxc"'] : [])
+    assert.deepEqual(argv.flatMap((value, i) => value === '--disable' ? [argv[i + 1]] : []), disabled)
+  }
+  const { root, calls, options } = harness(t, { codex: CODEX_OK })
+  await runAudit(root, { ...options, platform: 'win32' })
+  const [call] = callsTo(calls, 'codex')
+  assert.ok(call.args.includes('windows.sandbox="mxc"'), 'the platform seam reaches the actual process')
+  assert.ok(call.args.includes('--ignore-user-config'))
+})
+
+test('an unsupported MXC mode demotes once without a weaker process retry', async (t) => {
+  const unavailable = `process.stderr.write('Error loading config: unknown variant \\'mxc\\' for windows.sandbox\\n'); process.exit(1)`
+  const { root, calls, options } = harness(t, { codex: unavailable })
+  const result = await runAudit(root, { ...options, platform: 'win32' })
+  assert.equal(result.status, 'fallback')
+  assert.equal(result.directive, 'subagent-fallback')
+  assert.equal(result.demotions[0].kind, 'environment')
+  assert.equal(callsTo(calls, 'codex').length, 1)
+  assert.deepEqual(result.findings, [])
+  assert.equal(result.attempts[0].outcome, 'environment')
 })
 
 test('every child_process call receives an array argv and no shell', async (t) => {
@@ -721,7 +756,7 @@ test('the CLI exits 3 with a subagent-fallback directive when no evaluator is in
 
   // Both spellings are set: Windows environment blocks are case-insensitive and
   // node's process.env carries `Path`.
-  const env = { ...process.env, PATH: empty, Path: empty }
+  const env = childEnv({ ...process.env, PATH: empty, Path: empty })
 
   assert.throws(
     () => execFileSync(process.execPath, [BRIDGE, '--json', '--cwd', root], { encoding: 'utf8', stdio: 'pipe', env }),
@@ -737,14 +772,16 @@ test('the CLI exits 3 with a subagent-fallback directive when no evaluator is in
 })
 
 test('--help exits 0 and documents the exit codes', () => {
-  const stdout = execFileSync(process.execPath, [BRIDGE, '--help'], { encoding: 'utf8' })
+  const stdout = execFileSync(process.execPath, [BRIDGE, '--help'], { encoding: 'utf8', env: childEnv() })
   assert.match(stdout, /Exit codes:/)
   assert.match(stdout, /3 {2}no external evaluator available/)
+  assert.match(stdout, /calls a model and creates temporary output outside the project/)
+  assert.match(stdout, /uses MXC/)
 })
 
 test('an unknown flag prints usage and exits 2 rather than a stack trace', () => {
   assert.throws(
-    () => execFileSync(process.execPath, [BRIDGE, '--nope'], { encoding: 'utf8', stdio: 'pipe' }),
+    () => execFileSync(process.execPath, [BRIDGE, '--nope'], { encoding: 'utf8', stdio: 'pipe', env: childEnv() }),
     (err) => {
       assert.equal(err.status, EXIT_CODES.usage)
       assert.match(err.stderr, /Usage: auditor-bridge\.mjs/)
@@ -756,7 +793,7 @@ test('an unknown flag prints usage and exits 2 rather than a stack trace', () =>
 
 test('an unknown --tier is a usage error, not a silent full-tier run', () => {
   assert.throws(
-    () => execFileSync(process.execPath, [BRIDGE, '--tier', 'claude'], { encoding: 'utf8', stdio: 'pipe' }),
+    () => execFileSync(process.execPath, [BRIDGE, '--tier', 'claude'], { encoding: 'utf8', stdio: 'pipe', env: childEnv() }),
     (err) => {
       assert.equal(err.status, EXIT_CODES.usage)
       assert.match(err.stderr, /unknown tier/)
@@ -1229,6 +1266,7 @@ test('the installed codex actually executes through the resolved entry point', (
   const spawn = resolveSpawn(binary, ['--version'])
   const stdout = execFileSync(spawn.file, spawn.args, {
     encoding: 'utf8',
+    env: childEnv(),
     timeout: 120_000,
     windowsHide: true,
   })

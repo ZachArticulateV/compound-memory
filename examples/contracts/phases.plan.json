@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 2,
+  "kind": "plan",
+  "planId": "phases-example",
+  "revision": 1,
+  "title": "Build two clients on one shared format",
+  "requirements": [
+    {"id": "R1", "description": "Both clients use the same checked data format."},
+    {"id": "R2", "description": "Both clients work together in one process."}
+  ],
+  "decisions": [{"id": "D1", "choice": "Freeze the shared format before client work starts.", "owner": "project-owner"}],
+  "exclusions": ["No deployment."],
+  "risks": ["The clients use one test port and must take turns there."],
+  "phases": [
+    {"id": "P1", "title": "Shared format"},
+    {"id": "P2", "title": "Clients and combined checks"}
+  ],
+  "checks": [
+    {"id": "C1", "description": "The schema accepts valid data and rejects a seeded invalid record."},
+    {"id": "C2", "description": "Client A passes its normal and failed-request checks."},
+    {"id": "C3", "description": "Client B passes its normal and failed-request checks."},
+    {"id": "C4", "description": "Both clients pass the combined flow on the final files."}
+  ],
+  "finalChecks": ["C4"],
+  "gates": [{"id": "G1", "phaseId": "P1", "dependsOn": ["U1"], "requiredChecks": ["C1"]}],
+  "tasks": [
+    {"id": "U1", "title": "Define the shared format", "phaseId": "P1", "covers": ["R1"], "dependsOn": [], "requiresGates": [], "paths": ["src/shared", "tests/shared"], "resources": ["shared-format"], "requiredChecks": ["C1"]},
+    {"id": "U2", "title": "Build client A", "phaseId": "P2", "covers": ["R1", "R2"], "dependsOn": ["U1"], "requiresGates": ["G1"], "paths": ["src/client-a", "tests/client-a"], "resources": ["port:3100"], "requiredChecks": ["C2"]},
+    {"id": "U3", "title": "Build client B", "phaseId": "P2", "covers": ["R1", "R2"], "dependsOn": ["U1"], "requiresGates": ["G1"], "paths": ["src/client-b", "tests/client-b"], "resources": ["port:3100"], "requiredChecks": ["C3"]}
+  ]
+}

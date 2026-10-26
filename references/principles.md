@@ -59,10 +59,21 @@ Each fact, rule, or path has one home; everything else points to it. When two
 documents say the same thing, keep the one closest to where it is used and link
 to it from the other.
 
+For version 2 work, use [the shared work rules](work-contracts.md).
+The plan owns scope. The run ledger owns task state. Workers own their result files.
+Only the current lead accepts results. A result needs current proof, not just a success label.
+The host controls access. A task packet or helper flag cannot grant permission.
+
 ## Hand off in files
 
 What the next session or skill needs goes into the artifact named in
 `artifacts.md`, not only into the reply. A reply ends; a file is read again.
+
+During substantial authorized work, handle passive continuity requests at the
+next safe task boundary using [the continuity recipe](continuity.md). Refresh
+memory, save the handoff and plan/proof links, then keep working. Do not ask for
+routine approval or close the session. With no host percentage signal, use
+accepted task boundaries. Explicit read-only scope still takes priority.
 
 ## Use more agents when they pay
 

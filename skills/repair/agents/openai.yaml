@@ -1,0 +1,5 @@
+interface:
+  display_name: "Repair"
+  short_description: "Fix accepted memory audit or validator findings."
+policy:
+  allow_implicit_invocation: false

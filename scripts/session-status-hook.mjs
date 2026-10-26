@@ -2,7 +2,7 @@
 // session-status-hook.mjs — SessionStart orientation signal.
 //
 // WHAT THIS IS: three facts a fresh session cannot see for itself and would
-// otherwise have to be told twice — memory is absent, the active handoff belongs
+// otherwise have to be told twice — memory is absent or incomplete, the active handoff belongs
 // to a different branch, or memory names paths that have changed since it was
 // written.
 //
@@ -12,7 +12,9 @@
 // budget the memory architecture exists to protect (R26), and would do it
 // before Claude knows whether the task has anything to do with memory.
 //
-// SILENCE IS THE COMMON CASE. Healthy, current memory emits nothing at all.
+// Healthy, current memory emits nothing. A project without memory emits one
+// setup hint on each supported SessionStart orientation event; this hook keeps no state to
+// suppress repeated hints across sessions.
 //
 // THE NO-MEMORY PATH IS THE HOT PATH. This plugin installs at user scope, so
 // this hook runs in every repository its owner opens, most of which will never
@@ -21,7 +23,8 @@
 // execFileSync that throws.
 //
 // It cannot block a session (SessionStart has no blocking form) and it never
-// writes. Any unexpected failure exits 0 in silence — a hook that throws
+// changes canonical memory. Explicit local setup can enable queue and context
+// bookkeeping under .verify. Any unexpected failure exits 0 in silence — a hook that throws
 // degrades every session in every repository where the plugin is installed.
 
 import { fileURLToPath } from 'node:url'
@@ -30,6 +33,10 @@ import { resolve } from 'node:path'
 import { findProjectRoot, isDirectory, joinRel } from './lib/fs-utils.mjs'
 import { MEMORY_DIRNAME } from './lib/memory-model.mjs'
 import { collectProjectState } from './project-state.mjs'
+import { hookPolicy, normalizeHostEvent } from './hosts/events.mjs'
+import { queueHostEvent, localHooksEnabled } from './hosts/integrity-events.mjs'
+import { compactContext } from './hosts/context.mjs'
+import { continuitySignal } from './hosts/continuity.mjs'
 
 export const HOOK_EVENT = 'SessionStart'
 
@@ -75,7 +82,7 @@ export function sessionContext(root, options = {}) {
 
   // --- hot path: no memory tree, no Git, no probe ---------------------------
   if (!isDirectory(joinRel(absRoot, MEMORY_DIRNAME))) {
-    return 'project-memory: this project has no `memory/` directory — run `/project-memory init` to create one.'
+    return 'project-memory: this project has no `memory/` directory — run `/compound-memory:project-memory init` to create one.'
   }
 
   const state = collectProjectState(absRoot, options)
@@ -84,7 +91,7 @@ export function sessionContext(root, options = {}) {
   const missing = state.memory.core.filter((f) => !f.present).map((f) => f.name)
   if (missing.length > 0) {
     lines.push(
-      `project-memory: \`memory/\` is incomplete — missing ${listPaths(missing)}. Run \`/project-memory status\`.`
+      `project-memory: \`memory/\` is incomplete — missing ${listPaths(missing)}. Run \`/compound-memory:project-memory status\`.`
     )
   }
 
@@ -106,7 +113,7 @@ export function sessionContext(root, options = {}) {
     const one = stale.length === 1
     lines.push(
       `project-memory: ${listPaths(stale)} ${one ? 'names' : 'name'} paths that changed since ` +
-        `${one ? 'it was' : 'they were'} last committed — run \`/project-memory status\` before ` +
+        `${one ? 'it was' : 'they were'} last committed — run \`/compound-memory:project-memory status\` before ` +
         `trusting ${one ? 'it' : 'them'}.`
     )
   }
@@ -153,16 +160,18 @@ export function buildOutput(context, eventName = HOOK_EVENT) {
  */
 export function runSessionHook(raw, options = {}) {
   try {
+    if (!hookPolicy(options.env).enabled) return { code: 0, stdout: '' }
     const payload = parsePayload(raw)
-    const event =
-      typeof payload.hook_event_name === 'string' && payload.hook_event_name.trim() !== ''
-        ? payload.hook_event_name
-        : HOOK_EVENT
+    if (normalizeHostEvent(payload).kind !== 'orientation') return { code: 0, stdout: '' }
 
-    const context = sessionContext(payloadRoot(payload), options)
+    const root = payloadRoot(payload)
+    if(!localHooksEnabled(root))return {code:0,stdout:''}
+    if(payload.source==='compact')compactContext(root,{sessionId:payload.session_id})
+    const queued = queueHostEvent(root, normalizeHostEvent(payload), {env:options.env??process.env})
+    const context = clampToBudget([continuitySignal(root,payload,options), sessionContext(root, options), queued].filter(Boolean).join('\n')) || null
     if (context === null) return { code: 0, stdout: '' }
 
-    return { code: 0, stdout: `${JSON.stringify(buildOutput(context, event))}\n` }
+    return { code: 0, stdout: `${JSON.stringify(buildOutput(context))}\n` }
   } catch {
     return { code: 0, stdout: '' }
   }

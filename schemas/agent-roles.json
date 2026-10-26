@@ -1,0 +1,14 @@
+{
+  "$schema": "./agent-roles.schema.json",
+  "schemaVersion": 1,
+  "roles": [
+    {"name":"lead","dispatch":"main-session","source":"references/agents.md","profile":"coordinator","tools":[],"maxContextBytes":65536},
+    {"name":"code-specialist","dispatch":"worker","source":"agents/code-specialist.md","profile":"code","tools":["Read","Grep","Glob","Edit","Write","Bash"],"maxContextBytes":65536},
+    {"name":"code-scout","dispatch":"worker","source":"agents/code-scout.md","profile":"file-read","tools":["Read","Grep","Glob"],"maxContextBytes":65536},
+    {"name":"ui-reviewer","dispatch":"worker","source":"agents/ui-reviewer.md","profile":"evidence","tools":["Read","Grep","Glob","Bash"],"maxContextBytes":65536},
+    {"name":"blind-critic","dispatch":"worker","source":"agents/blind-critic.md","profile":"file-read","tools":["Read","Grep","Glob"],"maxContextBytes":65536},
+    {"name":"test-specialist","dispatch":"worker","source":"agents/test-specialist.md","profile":"evidence","tools":["Read","Grep","Glob","Bash"],"maxContextBytes":65536},
+    {"name":"memory-integrity","dispatch":"worker","source":"agents/memory-integrity.md","profile":"file-read","tools":["Read","Grep","Glob"],"maxContextBytes":65536},
+    {"name":"memory-auditor","dispatch":"worker","source":"agents/memory-auditor.md","profile":"file-read","tools":["Read","Grep","Glob"],"maxContextBytes":65536}
+  ]
+}

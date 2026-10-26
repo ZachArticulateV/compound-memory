@@ -1,11 +1,14 @@
 ---
 name: debug
-description: "Find the root cause of a bug and fix it with proof: reproduce the failure, test competing explanations, trace the cause from trigger to symptom, and fix it behind a regression test. Use when something is broken, failing, flaky, slower than it used to be, or behaving differently than expected."
+description: "Find a failure's cause and prove its fix. Use when the user asks to diagnose or fix a bug, failed test, flaky behavior, or a performance regression. A question about a bug does not authorize a fix."
 argument-hint: "[symptom, failing test, error, or issue]"
 allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/measure.mjs" *)
 ---
 
 # Debug
+
+Keep the user's scope. A question stays read-only; plan-only work stops at the
+plan. Use `../../references/task-routing.md` for task size and route choices.
 
 Explain why the failure happens, from trigger to symptom with no gaps, and
 change the code so it cannot happen again. A fix without an explanation is a
@@ -88,6 +91,9 @@ causal chain is written down.
 loop's result after the fix
 **Residual risk:** what this fix does not cover
 ```
+
+For research, setup, UI feedback, intake, product reports, launch drafts, migration,
+release, and support, read the matching recipe in `../../references/workflow-recipes.md`.
 
 ## Works with
 

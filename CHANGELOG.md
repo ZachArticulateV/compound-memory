@@ -6,6 +6,28 @@ All notable changes to this plugin are documented here. Format follows
 
 ## [Unreleased]
 
+- Changed the 50% context action to a passive continuity save after local setup.
+  The active lead updates memory, saves a handoff and plan/proof links, then
+  continues work. Failed saves stay pending. Hooks never block or reset a session.
+- Added checked prepare/save receipts, bounded reminders, unknown-usage fallbacks,
+  and continuity lock recovery. Codex uses the shared task-boundary recipe.
+
+## [2.1.0-rc.1] - Unreleased candidate
+
+- Added checked version 2 plans, owned task state, captured proof, and portable
+  handoffs. Existing Markdown memory and legacy receipts remain readable.
+- Added seven specialist workers, fixed review copies, source-linked integrity
+  checks, and bounded native CLI dispatch with combined-code verification.
+- Added opt-in due signals, context checkpoints, and a local report scheduler.
+  They do not repair memory automatically. Codex hooks remain disabled.
+- Added workflow recipes, bounded learning proposals, migration preview,
+  byte backups, rollback, and owned setup disable/removal.
+- Added seeded failure controls, live CLI trials, and an explicit inconclusive
+  context trial. See the completion report for tested scope and skipped checks.
+
+The notes below describe earlier unreleased work. The new coverage map in
+`docs/coverage.md` is a dated scope comparison, not a runtime replacement claim.
+
 ### Removed
 
 - The coverage map, the benchmark reviews, their test, and every skill's

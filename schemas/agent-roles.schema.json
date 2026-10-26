@@ -1,0 +1,23 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "title":"Shared specialist role catalog",
+  "type":"object",
+  "additionalProperties":false,
+  "required":["$schema","schemaVersion","roles"],
+  "properties":{
+    "$schema":{"const":"./agent-roles.schema.json"},
+    "schemaVersion":{"const":1},
+    "roles":{"type":"array","minItems":1,"items":{
+      "type":"object","additionalProperties":false,
+      "required":["name","dispatch","source","profile","tools","maxContextBytes"],
+      "properties":{
+        "name":{"type":"string","pattern":"^[a-z][a-z0-9-]*$"},
+        "dispatch":{"enum":["main-session","worker"]},
+        "source":{"type":"string","pattern":"^(agents/[a-z][a-z0-9-]*\\.md|references/agents\\.md)$"},
+        "profile":{"enum":["coordinator","file-read","code","evidence"]},
+        "tools":{"type":"array","uniqueItems":true,"items":{"enum":["Read","Grep","Glob","Edit","Write","Bash"]}},
+        "maxContextBytes":{"type":"integer","minimum":1024,"maximum":1048576}
+      }
+    }}
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "compound-memory",
+  "version": "2.1.0-rc.1",
+  "description": "Project memory and development work for Claude Code and Codex. Seventeen skills: project-memory, plan, prototype, build, debug, review, verify, ship, autopilot, learn, write, catch-up, handoff, sync, grill, cleanup, and repair. The last five are explicit memory shortcuts. Shared plans, task results, captured proof, specialist roles, bounded CLI workers, and portable handoffs stay in project files. Optional local memory checks are off until enabled. Claude has advisory hooks. Codex hooks remain disabled; manual boundaries and the local polling runner are available. See host-support.md for tested versions and limits.",
+  "author": {
+    "name": "Zachary W.",
+    "url": "https://articulatevision.com"
+  },
+  "homepage": "https://github.com/ZachArticulateV/compound-memory",
+  "repository": "https://github.com/ZachArticulateV/compound-memory",
+  "license": "MIT",
+  "keywords": [
+    "memory",
+    "context-engineering",
+    "project-context",
+    "handoff",
+    "codex",
+    "planning",
+    "code-review",
+    "verification",
+    "debugging",
+    "tickets",
+    "lessons",
+    "autonomous",
+    "evidence",
+    "worktrees"
+  ],
+  "extensions": {
+    "com.openai": {
+      "skills": "./skills/",
+      "hooks": {},
+      "interface": {
+        "displayName": "Compound Memory",
+        "shortDescription": "Project memory plus plan, build, debug, review, verify, ship, and learn skills",
+        "developerName": "Zachary W.",
+        "category": "Productivity"
+      }
+    }
+  }
+}
