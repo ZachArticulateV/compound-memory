@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Bounded memory integrity report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "kind", "bundleId", "snapshotFingerprint", "checkedClaims", "uncheckedClaims", "findings", "repairProposals", "nextDueReasons", "summary"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "kind": {"const": "integrity-report"},
+    "bundleId": {"type": "string"},
+    "snapshotFingerprint": {"type": "string"},
+    "checkedClaims": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+    "uncheckedClaims": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["claimId", "reason"], "properties": {"claimId": {"type": "string"}, "reason": {"type": "string", "minLength": 1, "maxLength": 4000}}}},
+    "findings": {"type": "array", "minItems": 1, "maxItems": 20, "items": {"type": "object", "additionalProperties": false, "required": ["claimId", "classification", "reason", "evidence"], "properties": {
+      "claimId": {"type": "string"},
+      "classification": {"enum": ["VALID", "STALE", "CONTRADICTED", "UNVERIFIABLE", "DUPLICATED", "MISPLACED", "TOO_VERBOSE", "MISSING"]},
+      "reason": {"type": "string", "minLength": 1, "maxLength": 4000},
+      "evidence": {"type": "array", "maxItems": 10, "items": {"type": "object", "additionalProperties": false, "required": ["path", "line", "quote"], "properties": {"path": {"type": "string"}, "line": {"type": "integer", "minimum": 1}, "quote": {"type": "string", "minLength": 1, "maxLength": 4000}}}}
+    }}},
+    "repairProposals": {"type": "array", "maxItems": 20, "items": {"type": "object", "additionalProperties": false, "required": ["claimId", "proposal"], "properties": {"claimId": {"type": "string"}, "proposal": {"type": "string", "minLength": 1, "maxLength": 4000}}}},
+    "nextDueReasons": {"type": "array", "maxItems": 10, "items": {"type": "string", "minLength": 1, "maxLength": 500}},
+    "summary": {"type": "string", "minLength": 1, "maxLength": 4000}
+  }
+}

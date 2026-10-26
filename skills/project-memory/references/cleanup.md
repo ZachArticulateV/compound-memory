@@ -137,7 +137,7 @@ superseded rather than edited; `project-brief.md`, which is frozen; and
 `archive/`, which exists to hold what was retired. Prose that is merely
 unpolished is not a finding either.
 
-## 6. Present the plan, then stop
+## 6. Present the findings and check write scope
 
 Report the findings in three groups — contradictions, inaccuracies, rot —
 ordered within each by the harm of acting on the claim. A false statement about
@@ -153,10 +153,10 @@ CONTRADICTED  memory/current-state.md:24 vs memory/bugs-and-risks.md:9
 Then say what was checked and what was not: the claims you verified, the ones
 `UNVERIFIABLE` from this checkout, and that this pass is not independent.
 
-Ask the user which items to apply: all, some, or none. Nothing is written
-before that answer. Removal and archiving lose information from the startup
-read, and some of what looks like rot is deliberate — a duplicate kept as a
-signpost, a hedge the user wants.
+For a read-only request, stop after the findings. When the user already
+accepted a named set of repairs, apply that set without asking again.
+Otherwise ask which items to apply before writing. Removal and archiving
+change the startup read, and some apparent rot can be deliberate.
 
 ## 7. Apply what was accepted
 

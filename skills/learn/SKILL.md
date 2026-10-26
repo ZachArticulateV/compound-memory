@@ -1,11 +1,14 @@
 ---
 name: learn
-description: "Make the project and its agents learn from experience: capture a lesson from work just done, turn a repeated mistake into a check that prevents it, run a retrospective on a session, refresh stale lessons, or update the user's working profile from their history. Use when the user says to remember a lesson, says an agent keeps making the same mistake or corrects one, asks for a retro, or asks agents to work the way they do."
+description: "Save and maintain lessons from experience. Use when the user asks to capture a lesson, address a repeated mistake, run a retrospective, refresh lessons, or update their working profile."
 argument-hint: "[capture|correct|retro|refresh|profile] [topic or session]"
 allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/memory-validate.mjs" *)
 ---
 
 # Learn
+
+Keep the user's scope. A question stays read-only; plan-only work stops at the
+plan. Use `../../references/task-routing.md` for task size and route choices.
 
 Make each unit of work leave the next one easier: knowledge that the code
 cannot carry becomes a lesson the next task finds, and a mistake that happens

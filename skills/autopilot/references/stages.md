@@ -23,6 +23,15 @@ Advance only on a result that carries its evidence. "Done" without the check
 output, a PR without a URL, or a review without its findings file counts as not
 done: run the stage again once, then stop and report.
 
+For version 2 parallel plans, Build uses the bounded wave and external copy flow
+in `../build/references/work.md`. The lead accepts worker reports in dependency
+order. It keeps worker proof separate from checks on the integrated source.
+Review names a fixed combined source fingerprint. Re-check calls
+`verifyIntegration` from `scripts/agents/dispatch.mjs` with that review and the
+explicit final check commands. A worker pass does not clear the final gate.
+Failed or unmerged copies stay available for recovery. A stop needs current
+process evidence before retry or handoff.
+
 ## Open items
 
 Write every one of these into the PR body's Open items list (or the final

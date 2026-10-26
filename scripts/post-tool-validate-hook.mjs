@@ -13,7 +13,8 @@
 //      Exit code 1 is non-blocking but is still an error report, which would
 //      surface plumbing noise in every session. So: 0, always, including on
 //      malformed input and on an internal failure.
-//   2. IT NEVER WRITES. No repair, no reformat, no cache, no log file. The
+//   2. IT NEVER WRITES CANONICAL MEMORY. Explicit local setup can enable a
+//      bounded due queue under .verify. No repair or reformat. The
 //      writing rule is that only the coordinating session writes memory (R19);
 //      a hook that silently corrected files would be a second writer with no
 //      evidence discipline. Asserted in the suite by comparing every mtime in
@@ -22,11 +23,8 @@
 //      The disclaimer travels with the findings so the distinction cannot be
 //      lost between here and the model.
 //
-// hooks.json narrows this to memory files and CLAUDE.md with an `if` condition,
-// but the path check below is the actual guarantee rather than an optimization:
-// permission-rule anchoring depends on where the session started, and a
-// validation report about a file the user never touched is worse than no
-// report.
+// hooks.json selects supported file tools. This script owns path filtering, so each
+// event runs one handler and does not rely on host-specific `if` conditions.
 
 import { fileURLToPath } from 'node:url'
 import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path'
@@ -35,6 +33,9 @@ import { findProjectRoot, isDirectory, joinRel, statSafe, toPosix } from './lib/
 import { CLAUDE_MD_SCOPE, GLOSSARY_FILENAME, MEMORY_DIRNAME } from './lib/memory-model.mjs'
 import { STRUCTURAL_DISCLAIMER } from './lib/report.mjs'
 import { validateMemory } from './memory-validate.mjs'
+import { hookPolicy, normalizeHostEvent } from './hosts/events.mjs'
+import { queueHostEvent, localHooksEnabled } from './hosts/integrity-events.mjs'
+import { continuitySignal } from './hosts/continuity.mjs'
 
 export const HOOK_EVENT = 'PostToolUse'
 
@@ -167,7 +168,7 @@ export function renderFindings(findings) {
     out.push(`- ${f.severity} [${f.check}] \`${where}\` — ${f.message}`)
   }
   const rest = sorted.length - MAX_FINDINGS
-  if (rest > 0) out.push(`- (+${rest} more finding(s); run \`/project-memory status\` for the full list)`)
+  if (rest > 0) out.push(`- (+${rest} more finding(s); run \`/compound-memory:project-memory status\` for the full list)`)
 
   out.push(`Nothing was modified by this check. ${STRUCTURAL_DISCLAIMER}`)
   return clampToBudget(out.join('\n'))
@@ -179,19 +180,28 @@ export function renderFindings(findings) {
  * no memory tree, and a structurally sound tree.
  */
 export function validationContext(root, filePath) {
+  return validationContexts(root, [filePath])
+}
+
+/** Validate once for a multi-file edit, then return one bounded report. */
+export function validationContexts(root, filePaths) {
   const absRoot = resolve(root)
   if (!isDirectory(absRoot)) return null
   const foldCase = filesystemFoldsCase(absRoot)
-  if (!isMemoryScoped(absRoot, filePath, { foldCase })) return null
+  const scoped = filePaths.filter((filePath) => isMemoryScoped(absRoot, filePath, { foldCase }))
+  if (scoped.length === 0) return null
 
   // No memory tree means nothing to validate, even for a CLAUDE.md edit.
   if (!isDirectory(joinRel(absRoot, MEMORY_DIRNAME))) return null
 
   const result = validateMemory(absRoot)
-  const editedAbs = isAbsolute(filePath) ? resolve(filePath) : resolve(absRoot, filePath)
-  const editedRel = toPosix(relative(absRoot, editedAbs))
-
-  return renderFindings(selectFindings(result.findings, editedRel, { foldCase }))
+  const selected = new Set()
+  for (const filePath of scoped) {
+    const editedAbs = isAbsolute(filePath) ? resolve(filePath) : resolve(absRoot, filePath)
+    const editedRel = toPosix(relative(absRoot, editedAbs))
+    for (const finding of selectFindings(result.findings, editedRel, { foldCase })) selected.add(finding)
+  }
+  return renderFindings([...selected])
 }
 
 /** Parse a hook payload without ever throwing. Returns {} for anything unusable. */
@@ -225,25 +235,26 @@ export function buildOutput(context, eventName = HOOK_EVENT) {
  * Pure core: raw stdin in, {code, stdout} out.
  * The code is 0 on every path, including failure. See the header.
  */
-export function runPostToolHook(raw) {
+export function runPostToolHook(raw, options = {}) {
   try {
+    if (!hookPolicy(options.env).enabled) return { code: 0, stdout: '' }
     const payload = parsePayload(raw)
-    const event =
-      typeof payload.hook_event_name === 'string' && payload.hook_event_name.trim() !== ''
-        ? payload.hook_event_name
-        : HOOK_EVENT
-
-    const filePath = editedPath(payload)
-    if (filePath === null) return { code: 0, stdout: '' }
+    const event = normalizeHostEvent(payload, { host: options.host ?? 'claude' })
+    if(payload.hook_event_name!=='PostToolUse')return {code:0,stdout:''}
 
     // A relative file path is relative to the session's cwd, not to the
     // project root found above it; resolve it before the root changes.
     const cwd = typeof payload.cwd === 'string' && payload.cwd.trim() !== '' ? payload.cwd : process.cwd()
-    const absFile = isAbsolute(filePath) ? filePath : resolve(cwd, filePath)
-    const context = validationContext(payloadRoot(payload), absFile)
+    const files = event.paths.map((filePath) => isAbsolute(filePath) ? filePath : resolve(cwd, filePath))
+    const root = payloadRoot(payload)
+    if(!localHooksEnabled(root))return {code:0,stdout:''}
+    const continuity = options.host==='codex'?null:continuitySignal(root,payload,options)
+    if(event.kind!=='file-change')return {code:0,stdout:continuity?`${JSON.stringify(buildOutput(continuity))}\n`:''}
+    queueHostEvent(root,event,{env:options.env??process.env})
+    const context = clampToBudget([continuity,validationContexts(root, files)].filter(Boolean).join('\n')) || null
     if (context === null) return { code: 0, stdout: '' }
 
-    return { code: 0, stdout: `${JSON.stringify(buildOutput(context, event))}\n` }
+    return { code: 0, stdout: `${JSON.stringify(buildOutput(context))}\n` }
   } catch {
     return { code: 0, stdout: '' }
   }

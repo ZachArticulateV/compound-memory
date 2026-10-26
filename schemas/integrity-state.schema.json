@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Local integrity coordination state",
+  "description": "Disposable local state. Checked coverage does not mean a healthy claim. Canonical memory is separate.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "revision", "queue", "coverage", "updates"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "revision": {"type": "integer", "minimum": 0},
+    "queue": {"type": "array", "maxItems": 100, "items": {"type": "object", "required": ["id", "target", "branch", "status", "generation", "lastAttempt", "lastSuccess", "lease", "reasons"]}},
+    "coverage": {"type": "array", "items": {"type": "object", "required": ["id", "target", "branch", "artifact", "claim", "sources", "checked", "classification", "reportPath", "checkedAt", "basis"]}},
+    "updates": {"type": "array", "maxItems": 500, "items": {"type": "object", "required": ["id", "fingerprint", "backupId"]}}
+  }
+}

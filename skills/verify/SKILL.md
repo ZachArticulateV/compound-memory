@@ -1,11 +1,14 @@
 ---
 name: verify
-description: "Prove software works the way a user experiences it: generate a project verification skill that launches and drives the real app, run it to capture evidence for a change, or keep its feature map current. Use when the user asks to verify a change, test it in the real app, prove something works, check a UI for clipped or broken layout, or set up repeatable verification."
+description: "Check a change in the real app and capture evidence, or maintain a repeatable check recipe. Use when the user asks to verify behavior, test a UI, prove a change works, or set up app checks."
 argument-hint: "[create|run|maintain] [feature, change, or URL]"
 allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/run-record.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/verify/feature-map-check.mjs" *)
 ---
 
 # Verify
+
+Keep the user's scope. A question stays read-only; plan-only work stops at the
+plan. Use `../../references/task-routing.md` for task size and route choices.
 
 Show that the change works by doing what a user does and keeping what you
 saw. A passing build, a green type check, or an agent's summary is a proxy;
@@ -57,6 +60,26 @@ errors during a journey) and recipes for other surfaces are in
   driver and record the check as unchecked, not to stop.
 - **Suspect the observation first** when a result contradicts the code: a
   stale build, a cached page, the wrong port.
+
+## Specialist checks
+
+Use `../../references/agents.md` for UI and test specialists. A file-only
+reviewer cannot drive an app or run tests. The lead or an assigned action role
+collects that evidence within the named test environment. Shell and browser
+access are not read-only file grants.
+
+Record expected and observed app identity, version, and exact origin before
+the user path. Keep a wrong-port control, a narrow-screen check, and a keyboard
+path when those apply. Save each action, outcome, artifact path, and hash.
+The validateAppEvidence helper in `../../scripts/agents/review-packet.mjs`
+checks these fields and saved bytes. It reports observations as reported;
+only the actual driver run proves what happened. A failed flow is useful
+evidence, not a passing behavior check. Missing paths stay unchecked with a
+reason. An unchecked required path blocks a behavior pass. An unchecked
+optional path stays in the returned unchecked list and needs no fake artifact.
+
+For research, setup, UI feedback, intake, product reports, launch drafts, migration,
+release, and support, read the matching recipe in `../../references/workflow-recipes.md`.
 
 ## Works with
 

@@ -49,3 +49,10 @@ plan, would repeat the mistake or rediscover the finding. Skip it when:
 
 One lesson per file; one subject per lesson. Report the lesson's path, or that
 nothing durable was found.
+
+For a bounded proposal, run `scripts/learning-policy.mjs <root> <proposal.json>`.
+It reads existing lessons before choosing capture or merge. It checks exact source
+quotes and returns a proposal only. Keep observed, inferred, and verified bases
+separate. An exact quote proves what the source says, not the meaning of the claim.
+The lead checks that meaning before writing. Repeated mechanical faults require
+a current captured check. A one-time observation cannot become a user-wide rule.

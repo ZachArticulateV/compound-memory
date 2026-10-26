@@ -1,11 +1,14 @@
 ---
 name: plan
-description: "Shape and plan software work: settle requirements through an interview, make a judgment call with evidence, write an implementation-ready plan, or split a plan into dependency-ordered tickets. Use when the user wants to plan a feature, think through requirements, choose between approaches, or break work into tasks or tickets."
+description: "Settle requirements, compare approaches, write a plan, or split it into tasks. Use when the user asks to plan work, explore requirements, choose an approach, or create tickets. Planning does not authorize implementation."
 argument-hint: "[brainstorm|decide|plan|tickets] [idea, question, plan path, or issue]"
 allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/tickets-check.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/plan-check.mjs" *)
 ---
 
 # Plan
+
+Keep the user's scope. A question stays read-only; plan-only work stops at the
+plan. Use `../../references/task-routing.md` for task size and route choices.
 
 Turn an idea into work another agent can build without guessing: requirements
 in the user's words, decisions with their reasons, units that each end in a
@@ -43,6 +46,9 @@ request to decide it, use `plan`. Read only the reference for the mode you run.
 4. **Check it** against the mode's done check before handing it on.
 
 The habits in `../../references/principles.md` apply throughout.
+
+For research, setup, UI feedback, intake, product reports, launch drafts, migration,
+release, and support, read the matching recipe in `../../references/workflow-recipes.md`.
 
 ## Works with
 

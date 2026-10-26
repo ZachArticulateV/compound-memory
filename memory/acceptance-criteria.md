@@ -9,7 +9,30 @@ Status values: `unverified`, `verified`, `failing`, `not-applicable`.
 A criterion moves to `verified` only with cited evidence — a test that ran, a
 behavior observed, an artifact checked. Existence of code is not evidence.
 
-Updated: 2026-10-23
+Updated: 2026-10-26
+
+## Candidate completion scope
+
+The [completion results](../docs/plans/2026-10-26-completion-results.md) map
+U16-U31 to code, tests, native trials, and limits. The candidate adds bounded
+parallel execution, portable handoffs, source-linked memory coverage, optional
+signals and reports, lesson policy, and migration. Existing small-task paths
+remain. Test counts and final review disposition live in that report.
+
+The shared native decision/schedule/due suite passed on both CLI hosts. Each
+found a false source claim without changing canonical memory. Context trials
+remain inconclusive. No broad desktop/cloud or catalog-replacement claim is
+made. Skipped tests remain unverified.
+
+## Phase 3 specialist scope
+
+The [Phase 3 results](../docs/plans/2026-10-26-phase-3-results.md) record A12-A16.
+All seven Claude CLI worker entries completed narrow cases. Codex completed one
+explicit scout packet. Frozen reviews reject source drift and changed prompts.
+Integrity reports reject self-cited truth and preserve unknown claims.
+Local browser controls detected flow, mobile, keyboard, and wrong-target faults.
+These are bounded verified cases, not certification of every host or workflow.
+The native report wrapper preserves review isolation before shared submission.
 
 ## Structural core
 
@@ -26,7 +49,7 @@ The probe, validator, and hooks behave as `docs/architecture.md` describes.
 
 | Criterion | Status | Evidence |
 | --- | --- | --- |
-| The skill runs `status` in a live Codex session | unverified | — |
+| The skill runs `status` in a live Codex session | verified | Phase 2 native installed skill and playbook reads; state probe and validator exited 0. See [closure](../docs/plans/2026-10-25-phase-2-closure.md). Windows CLI only. |
 | `handoff for codex:` output launches a Codex session that finds memory | unverified | — |
 
 ## Onboarding

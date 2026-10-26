@@ -4,6 +4,12 @@ Update the rules agents follow when working with this user, from evidence of
 how the user actually works. Improve the rules the user already keeps; do not
 start a second copy of them.
 
+User-wide writes require an explicit request that covers the profile.
+Project work alone does not grant that scope. One observed habit remains a local
+observation. An explicit user rule or repeated evidence can support a proposal.
+`scripts/learning-policy.mjs` checks the scope and evidence before that proposal.
+It never writes user settings. Keep profile changes separate from project lessons.
+
 ## 1. Find the existing rules
 
 Look where this user keeps working preferences: the user-scope `CLAUDE.md`

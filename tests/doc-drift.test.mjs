@@ -114,7 +114,7 @@ const skill = readFileSync(join(repoRoot, 'skills', 'project-memory', 'SKILL.md'
 
 /** Every Bash(...) rule in the skill's allowed-tools line. */
 function allowedBashRules(source) {
-  const line = /^allowed-tools:\s*(.+)$/m.exec(source)
+  const line = /^allowed-tools:[ \t]*(.*)$/m.exec(source)
   if (line === null) return []
   return [...line[1].matchAll(/Bash\(([^)]*)\)/g)].map((m) => m[1].trim())
 }
@@ -134,14 +134,20 @@ function documentedInvocations() {
   return found
 }
 
-test('every documented script invocation is covered by an allowed-tools rule', () => {
+test('local inspectors are granted; audit launch and integrity preparation keep separate authority', () => {
   const rules = allowedBashRules(skill)
   assert.ok(rules.length > 0, 'the skill declares no Bash pre-approvals at all')
+  assert.ok(!rules.some((rule) => rule.includes('auditor-bridge.mjs')), 'the model-launching bridge must not have an automatic grant')
+  assert.ok(!rules.some((rule) => rule.includes('agents/memory-integrity.mjs')), 'the snapshot and capture entry point must not have an automatic grant')
 
   const invocations = documentedInvocations()
   assert.ok(invocations.length > 0, 'no documented invocation was found, so this test proves nothing')
 
   for (const { name, command } of invocations) {
+    if (command.startsWith('node "${CLAUDE_SKILL_DIR}/../../scripts/auditor-bridge.mjs"') || command.startsWith('node "${CLAUDE_SKILL_DIR}/../../scripts/agents/memory-integrity.mjs"')) {
+      assert.match(command, /# not pre-approved\b/, 'the bridge example must state its separate authority boundary')
+      continue
+    }
     const covered = rules.some((rule) => {
       // Only the trailing-wildcard form is used here; match it the way Claude
       // Code does, as a prefix with a word boundary.
@@ -190,7 +196,7 @@ test('the README installs this plugin from a marketplace that is self-consistent
 test('the manifest version and the changelog agree', () => {
   const manifest = JSON.parse(readFileSync(join(repoRoot, '.claude-plugin', 'plugin.json'), 'utf8'))
   const changelog = readFileSync(join(repoRoot, 'CHANGELOG.md'), 'utf8')
-  const latest = /^## \[(\d+\.\d+\.\d+)\]/m.exec(changelog)
+  const latest = /^## \[(\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)\]/m.exec(changelog)
 
   assert.notEqual(latest, null, 'the changelog has no released version heading')
   assert.equal(

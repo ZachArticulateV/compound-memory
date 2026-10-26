@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "compound-memory/migration-plan/v1",
+  "title": "Local migration plan v1",
+  "description": "Preview data only. migrate.mjs recomputes the plan against current owned files before applying it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "kind", "root", "action", "targetVersion", "files", "preservedConflicts", "sha256"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "kind": {"const": "migration-plan"},
+    "root": {"type": "string", "minLength": 1},
+    "action": {"enum": ["upgrade", "disable", "remove"]},
+    "targetVersion": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[A-Za-z0-9.-]+)?$"},
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "preservedConflicts": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["path", "observedSha256", "reason"], "properties": {"path": {"type": "string"}, "observedSha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"}, "reason": {"type": "string"}}}},
+    "files": {
+      "type": "array", "maxItems": 1004,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["path", "beforeSha256", "afterSha256", "afterBase64", "reason"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "beforeSha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+          "afterSha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+          "afterBase64": {"type": ["string", "null"]},
+          "reason": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}

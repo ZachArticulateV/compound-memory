@@ -244,7 +244,7 @@ test('the frontier, waves, and collisions follow the blocking edges', () => {
   ]
   const result = analyzeTickets(tickets)
   assert.deepEqual(result.frontier, ['2', '3', '4'])
-  assert.deepEqual(result.waves, [['2', '3', '4'], ['5']])
+  assert.deepEqual(result.waves, [['2', '4'], ['3'], ['5']], 'overlapping lib claims wait for a separate wave')
   assert.deepEqual(result.collisions, [{ tickets: ['2', '3'], paths: ['lib'] }])
   assert.deepEqual(result.problems, [])
 })

@@ -469,6 +469,11 @@ test('rewrite-check --tells: the CLI exits 1 on a hit, 0 on clean text, and 2 wh
 
 const lesson = (paths) => `---\ntitle: Jobs are idempotent\ntags: [jobs]\napplies_when: Changing a job\npaths: ${paths}\nstatus: active\n---\n\n# Jobs are idempotent\n\n## Do this\n\nMake the job safe twice.\n`
 
+test('lesson commits: explicit numeric hashes are citations, plain counts and dates are not', () => {
+  const body = 'See commit 894298511110.\n\n## Evidence\n\n- commit `123456789012` (the fix)\n- 987654321012 rows\n- 20261026\n- 2026-10-26\n- The color deadbeef is not a commit.\n'
+  assert.deepEqual(citedCommits(body).sort(), ['123456789012', '894298511110'])
+})
+
 test('lesson commits: a cited commit that is missing or off HEAD is reported, and hex words are not commits', (t) => {
   const root = repo(t, { 'app/a.mjs': 'x\n' })
   const head = git(root, ['rev-parse', 'HEAD']).trim()
@@ -477,7 +482,9 @@ test('lesson commits: a cited commit that is missing or off HEAD is reported, an
   commitAll(root, 'side work')
   const side = git(root, ['rev-parse', 'HEAD']).trim()
   git(root, ['checkout', '-q', '-'])
-  const body = `${lesson('[app/]')}\nSee commit ${head.slice(0, 9)}; the color deadbeef is not a commit.\n\n## Evidence\n\n- ${head.slice(0, 12)} (the fix)\n- ${side.slice(0, 12)} (never merged)\n- abc1234 (typo)\n`
+  // A valid SHA prefix can contain only digits. Explicit citations distinguish
+  // those commits from ordinary numeric evidence such as counts and dates.
+  const body = `${lesson('[app/]')}\nSee commit ${head.slice(0, 9)}; the color deadbeef is not a commit.\n\n## Evidence\n\n- commit ${head.slice(0, 12)} (the fix)\n- commit ${side.slice(0, 12)} (never merged)\n- abc1234 (typo)\n`
   assert.deepEqual(citedCommits(body).sort(), [head.slice(0, 9), head.slice(0, 12), side.slice(0, 12), 'abc1234'].sort())
   writeTree(root, { 'memory/lessons/jobs.md': body })
   const result = checkLessonCommits(root)

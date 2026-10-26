@@ -2,7 +2,7 @@
 
 ## Purpose
 
-A Claude Code and Codex plugin of twelve skills: `project-memory`, which keeps a
+A Claude Code and Codex plugin of twelve core skills and five explicit shortcuts: `project-memory`, which keeps a
 project's canonical memory under `memory/` accurate, minimal, and
 evidence-backed, and eleven engineering skills (plan, prototype, build, debug,
 review, verify, ship, autopilot, learn, write, catch-up) that hand work to each

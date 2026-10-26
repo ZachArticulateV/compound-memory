@@ -19,6 +19,31 @@ The classification taxonomy and the many-readers-one-writer rule are in
 
 You have already run the state probe. Use its output rather than re-deriving.
 
+## Bounded integrity checks
+
+For selected changed claims, the lead can use the memory-integrity role from
+`../../references/agents.md`. Prepare a bundle with the separate
+`scripts/agents/memory-integrity.mjs` entry point. This is not a blanket-approved
+helper: it creates an explicit frozen copy and runs the three fixed inspection
+commands there. Use the user's task scope and the host's command rules.
+
+```bash
+node "${CLAUDE_SKILL_DIR}/../../scripts/agents/memory-integrity.mjs" prepare --input integrity-input.json # not pre-approved
+node "${CLAUDE_SKILL_DIR}/../../scripts/agents/memory-integrity.mjs" check --bundle integrity-bundle.json --report integrity-report.json --sent integrity-sent.txt # not pre-approved
+```
+
+Supply selected memory and source paths, at most twenty claims, due reasons,
+and a new snapshot directory. The bundle carries captured probe, format, and
+hygiene output. The file-only reviewer reuses the memory auditor's evidence
+rules. It returns coverage, unknown claims, findings, and repair proposals.
+Save the exact prompt bytes sent to the reviewer. The lead runs `check` with
+the original bundle, report, and `--sent` prompt file before acceptance.
+Changed source, changed copies, or altered captured output make the check fail.
+This checks structure and quoted evidence; the lead still checks claim meaning.
+No report repairs memory or updates a freshness record. Timers, hook dispatch,
+and context thresholds are later work. The ordinary audit bridge below remains
+available for the existing whole-memory audit flow.
+
 ## 1. Assemble the evidence the auditor cannot gather
 
 The bundled subagent tier has `Read`, `Grep`, and `Glob` and nothing else. It has
@@ -57,8 +82,12 @@ any.
 ## 2. Run the bridge
 
 ```bash
-node "${CLAUDE_SKILL_DIR}/../../scripts/auditor-bridge.mjs" --json --observations obs.txt
+node "${CLAUDE_SKILL_DIR}/../../scripts/auditor-bridge.mjs" --json --observations obs.txt # not pre-approved
 ```
+
+This command can launch a model and write temporary output. It has no skill
+tool grant. Use existing user authority and the host's permission rules;
+do not request the same approval again.
 
 Pass `--json`. The bridge prints a human report by default, and this mode needs
 the structured envelope. Add `--cwd <dir>` when auditing somewhere other than the
@@ -253,3 +282,26 @@ If nothing was found and the tier ran, say that plainly and recommend no repair.
 - Reimplementing `/doctor`'s trim proposals.
 - Applying findings without asking, or treating the finding list as a work order.
 - Auditing wording. Prose that is merely unpolished is not a finding.
+
+## Optional scoped due checks
+
+The project-local queue is off until explicit setup enables
+`.verify/integrity/config.json`. Hook events only mark due work.
+The lead calls `scripts/integrity-due.mjs consume <root> <input.json>` with
+`host`, `branch`, and a `prepare` object containing selected `paths` and `claims`.
+For Codex, set `prepare.readMethod` to `readonly-commands`.
+Claude uses `file-tools`. The runner must establish the matching read-only profile.
+A hook never starts the model. One consume call runs one bounded selected scope.
+Failures, cancellation, changed snapshots, and unknown claims do not become
+successful coverage. Coverage is a source-backed inspection, not a health badge.
+New events during a run remain due. Runtime state loss requires a new check.
+
+For context pressure, `scripts/hosts/status-line.mjs install <root>` is optional
+setup. Run it only within the user's setup authority. It saves an existing local
+status line and keeps its display. If the local field is absent, setup refuses
+until `--acknowledge-inherited` explicitly accepts temporary replacement of the
+unresolved inherited display. Removal then deletes only the plugin's local field,
+so project or user settings apply again. `remove` restores only a field still owned by this
+plugin. Missing telemetry remains unknown. The 50% trial saves one small
+checkpoint per context epoch; it does not prove model decline or run a long audit.
+Use `contextCheckpoint` for explicit handoff, time, and pre-compaction fallbacks.

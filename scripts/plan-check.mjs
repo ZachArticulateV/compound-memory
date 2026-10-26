@@ -29,6 +29,7 @@ import { fileURLToPath } from 'node:url'
 import { isAbsolute, join, resolve } from 'node:path'
 
 import { USAGE_EXIT_CODE, emit, parseCliArgs } from './lib/report.mjs'
+import { validatePlan, planFingerprint, readyTasks } from './lib/plan-contract.mjs'
 
 export const PLAN_CHECK_SCHEMA_VERSION = 1
 const TBD = /\b(TBD|TODO|to be decided|to be determined)\b|\?\?\?/i
@@ -112,9 +113,27 @@ export function parseUnits(body) {
 }
 
 export function checkPlan(text, { stage = 'plan' } = {}) {
+  if (typeof text !== 'string' || /^[ \t\r\n]*[\[{]/.test(text)) {
+    let plan
+    try { plan = typeof text === 'string' ? JSON.parse(text) : text } catch (err) {
+      return { schemaVersion: 2, stage, requirements: [], units: [], problems: [{ id: 'invalid-json', message: err.message }], ready: false }
+    }
+    const checked = validatePlan(plan)
+    return {
+      schemaVersion: 2, sourceVersion: plan?.schemaVersion ?? null, stage,
+      requirements: checked.ok ? plan.requirements.map(r => r.id) : [],
+      units: checked.ok ? plan.tasks.map(t => ({ id: t.id, covers: t.covers, dependsOn: t.dependsOn, verify: t.requiredChecks.join(', ') })) : [],
+      problems: checked.problems.map(p => ({ id: p.kind, message: p.message })), ready: checked.ok,
+      ...(checked.ok ? { planId: plan.planId, revision: plan.revision, fingerprint: planFingerprint(plan), frontier: readyTasks(plan).ready } : {}),
+    }
+  }
   const secs = sections(text)
   const problems = []
   const add = (id, message) => problems.push({ id, message })
+  // Version metadata belongs before the first section, not in a code example.
+  const metadata = text.split(/^##[ \t]/m)[0]
+  const version = /^[ \t]*(?:schema[ _-]?version|format[ _-]?version):[ \t]*(\S*)/im.exec(metadata)?.[1]
+  if (version !== undefined && version !== '1') add('unsupported-version', `Markdown uses legacy version 1; explicit version ${version || '(empty)'} is not supported. Use version 2 JSON for the shared graph.`)
 
   const reqBody = find(secs, 'requirements')
   if (reqBody === null) add('no-requirements', 'no Requirements section')
@@ -153,6 +172,17 @@ export function checkPlan(text, { stage = 'plan' } = {}) {
         else if (!seen.has(d)) add('unknown-unit', `${u.id} depends on ${d}, which the Units section does not list`)
       }
     }
+    const byId = new Map(units.map(u => [u.id, u]))
+    const visited = new Set(), active = new Set(), stack = []
+    const visit = id => {
+      if (active.has(id)) { add('cycle', `unit dependency cycle: ${[...stack.slice(stack.indexOf(id)), id].join(' -> ')}`); return }
+      if (visited.has(id) || !byId.has(id)) return
+      active.add(id); stack.push(id)
+      // A self edge already has its own precise problem above.
+      for (const dep of byId.get(id).dependsOn) if (dep !== id) visit(dep)
+      stack.pop(); active.delete(id); visited.add(id)
+    }
+    for (const id of byId.keys()) visit(id)
     const covered = new Set(units.flatMap((u) => u.covers))
     for (const r of requirements) if (!covered.has(r)) add('uncovered', `${r} is covered by no unit`)
     const decisions = (find(secs, 'decisions') ?? []).filter((l) => itemWith('D').test(l)).map((l) => /D\d+/.exec(l)[0])
@@ -162,6 +192,7 @@ export function checkPlan(text, { stage = 'plan' } = {}) {
 
   return {
     schemaVersion: PLAN_CHECK_SCHEMA_VERSION,
+    sourceVersion: 1,
     stage,
     requirements,
     units: units.map((u) => ({ id: u.id, covers: u.covers, dependsOn: u.dependsOn, verify: u.verify })),
@@ -175,13 +206,16 @@ function render(file, r) {
   for (const p of r.problems) out.push(`  ${p.id.padEnd(20)} ${p.message}`)
   out.push('', r.ready ? 'Every requirement is covered and every unit has a Verify.' : `${r.problems.length} problem(s). Fix them before handing the plan on.`)
   out.push('Links checked, not truth: whether each Verify could fail is review\'s call.')
+  if (r.sourceVersion === 1) out.push('Legacy version 1: phase and gate prose is not a checked version 2 execution graph.')
   return out.join('\n')
 }
 
-const USAGE = `Usage: plan-check.mjs <plan.md> [--stage brainstorm|plan] [--json] [--cwd <dir>]
+const USAGE = `Usage: plan-check.mjs <plan.md|plan.json> [--stage brainstorm|plan] [--json] [--cwd <dir>]
 
 Check a plan's requirement coverage, Verify lines, Out of scope, open
-questions, and IDs. Read-only. Exits 0 when nothing is missing, 1 when
+questions, IDs, and cycles. Version 2 JSON also checks phases, gates, resource
+claims, and required check references. Unmarked Markdown is legacy version 1.
+Read-only. Exits 0 when nothing is missing, 1 when
 something is, 2 on a usage error.
 `
 

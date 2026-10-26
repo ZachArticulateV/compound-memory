@@ -33,6 +33,7 @@ import {
 import { CLAUDE_MD_SCOPE } from '../scripts/lib/memory-model.mjs'
 import {
   claudeMd,
+  childEnv,
   cleanupAfter,
   commitAll,
   completeMemoryTree,
@@ -62,6 +63,7 @@ function runHook(script, stdin) {
     input: stdin,
     encoding: 'utf8',
     windowsHide: true,
+    env: childEnv(),
   })
   return { status: res.status, stdout: res.stdout ?? '', stderr: res.stderr ?? '' }
 }
@@ -663,9 +665,9 @@ test('a payload naming a directory that cannot be read exits 0 quietly', () => {
 // hooks.json
 // ---------------------------------------------------------------------------
 
-test('hooks.json parses and registers exactly SessionStart and PostToolUse', () => {
+test('hooks.json registers orientation, tool checks, and passive prompt delivery', () => {
   const config = readHooksJson()
-  assert.deepEqual(Object.keys(config.hooks).sort(), ['PostToolUse', 'SessionStart'])
+  assert.deepEqual(Object.keys(config.hooks).sort(), ['PostToolUse', 'SessionStart', 'UserPromptSubmit'])
 })
 
 test('hooks.json registers no Stop hook', () => {
@@ -706,42 +708,24 @@ test('hook timeouts are short, and expressed in seconds', () => {
   }
 })
 
-test('the PostToolUse entry is matched on Edit|Write and narrowed by single-rule if conditions', () => {
+test('the PostToolUse entry runs one handler for passive delivery and filters validation in script', () => {
   const config = readHooksJson()
   const groups = config.hooks.PostToolUse
   assert.equal(groups.length, 1, 'one PostToolUse entry')
-  assert.equal(groups[0].matcher, 'Edit|Write')
+  assert.equal(groups[0].matcher, '*')
 
-  const conditions = groups[0].hooks.map((h) => h.if)
-  assert.deepEqual(conditions, [
-    'Edit(memory/**/*.md)',
-    'Edit(CLAUDE.md)',
-    'Edit(.claude/CLAUDE.md)',
-    'Edit(AGENTS.md)',
-  ])
-
-  for (const condition of conditions) {
-    // The `if` field holds exactly one permission rule: there is no &&, ||, or
-    // list syntax, which is why each scope is its own handler.
-    assert.ok(!/&&|\|\||,/.test(condition), `if must hold exactly one rule: ${condition}`)
-    assert.match(condition, /^Edit\([^()]+\)$/)
-  }
+  assert.equal(groups[0].hooks.length, 1)
+  assert.equal(groups[0].hooks[0].if, undefined)
 })
 
-test('every path this system governs has a hook condition that fires for it', () => {
-  // The scope was declared in three places and enforced in a fourth. The
-  // validator scans `.claude/CLAUDE.md`, isMemoryScoped accepts it, and the
-  // writing rule claims it -- but `Edit(CLAUDE.md)` does not match a nested
-  // path, so the hook never ran for the one file most likely to be edited by
-  // hand. A declared scope with no trigger is a scope in name only.
-  const conditions = readHooksJson().hooks.PostToolUse[0].hooks.map((h) => h.if)
-
+test('the one path filter covers every file this system governs', () => {
+  const root = makeFixture({})
+  cleanupAfter(test, root)
   for (const claimed of CLAUDE_MD_SCOPE) {
-    assert.ok(
-      conditions.includes(`Edit(${claimed})`),
-      `${claimed} is in CLAUDE_MD_SCOPE but no hook condition fires for it`
-    )
+    assert.equal(isMemoryScoped(root, claimed), true, claimed)
   }
+  assert.equal(isMemoryScoped(root, 'memory/current-state.md'), true)
+  assert.equal(isMemoryScoped(root, 'vendor/CLAUDE.md'), false)
 })
 
 test('the SessionStart entry registers no matcher, so it also fires after a compact', () => {

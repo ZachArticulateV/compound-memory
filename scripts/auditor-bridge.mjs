@@ -9,6 +9,9 @@
 //      sandbox property. This file itself writes exactly one thing — a temp
 //      file for the evaluator's JSON, created under the OS temp directory and
 //      removed afterwards. Nothing here ever opens a repository file for write.
+//      User config and action features are disabled separately; filesystem
+//      limits alone do not remove external tools. Check real host grants when
+//      validating a new CLI or managed configuration.
 //   2. NO SHELL. Every invocation goes through execFile with an ARRAY argv and
 //      no `shell` option, so a repository path containing a space, a quote, or
 //      a `;` is data rather than syntax. Never add a template-string command
@@ -217,6 +220,7 @@ export const ENVIRONMENT_SIGNALS = [
   /unrecognized (option|argument|subcommand|flag|command)/i,
   /unknown (option|flag|argument|subcommand|command)/i,
   /unexpected argument/i,
+  /unknown variant [`'"]?mxc\b/i,
   /no such (option|subcommand|file or directory)/i,
   /\bENOENT\b/,
   /\bEACCES\b/,
@@ -258,6 +262,9 @@ export function classifyFailure(run) {
   const exit = typeof run.code === 'number' ? run.code : null
 
   if (run.killed === true) {
+    if (String(run.stdout ?? '').trim() || /maxBuffer|ERR_CHILD_PROCESS_STDIO_MAXBUFFER/i.test(haystack)) return {
+      kind: 'error', reason: 'audit stopped during analysis or exceeded the output limit', detail, signal: 'incomplete-analysis',
+    }
     return {
       kind: 'environment',
       reason: 'environment incompatibility: the CLI was killed before it produced output (timeout)',
@@ -849,21 +856,43 @@ export const CODEX_UNTRUSTED_REPO_FLAGS = Object.freeze([
   '--ignore-rules',
 ])
 
+// These flags request a bounded review configuration. They do not prove that
+// every internal coordination tool is absent. Check actual host capabilities.
+// An
+// older CLI that rejects one must fail; do not retry with fewer restrictions.
+const CODEX_REVIEW_DISABLED_FEATURES = Object.freeze([
+  'apps', 'plugins', 'browser_use', 'browser_use_external', 'computer_use',
+  'image_generation', 'multi_agent', 'multi_agent_v2', 'hooks', 'memories',
+  'in_app_browser', 'workspace_dependencies',
+])
+
 /**
  * The Codex invocation.
  *
- * `-s read-only` is what makes R17 a property of the sandbox rather than a
- * promise in the prompt; `--output-schema` is what makes the finding shape a
- * property of the decoder rather than a request. Neither is optional, and
+ * `-s read-only` limits command writes; it is not an external-tool policy.
+ * Explicit flags skip user config and request disabled action features.
+ * `--output-schema` makes the finding shape a decoder constraint.
+ * Filesystem limits and the output schema are both required, and
  * assertNoWriteEnablingFlags runs over the result before it is executed.
  */
-export function composeCodexArgv({ root, schemaPath = SCHEMA_PATH, outputPath }) {
+export function composeCodexArgv({ root, schemaPath = SCHEMA_PATH, outputPath, platform = process.platform }) {
   // The prompt is NOT here. It carries raw memory content, which is untrusted
   // by definition, and an argv element is a command line on Windows. It goes to
   // stdin instead -- `codex exec` reads instructions from stdin when no prompt
   // argument is given. See the injection note on resolveSpawn.
   return [
     'exec',
+    '--ignore-user-config',
+    '--ephemeral',
+    '-c',
+    'approval_policy="never"',
+    '-c',
+    'web_search="disabled"',
+    // MXC passed the Windows read and denied-write controls on CLI 0.162.1.
+    // The legacy elevated helper failed during provisioning. An unsupported
+    // MXC host reports failure; no unsandboxed or weaker retry is allowed.
+    ...(platform === 'win32' ? ['-c', 'windows.sandbox="mxc"'] : []),
+    ...CODEX_REVIEW_DISABLED_FEATURES.flatMap(name => ['--disable', name]),
     ...CODEX_UNTRUSTED_REPO_FLAGS,
     '-s',
     'read-only',
@@ -1037,7 +1066,7 @@ async function runCodexTier({ root, schemaPath, schema, prompt, execFileImpl, en
   const outputPath = join(dir, 'findings.json')
 
   try {
-    const argv = assertNoWriteEnablingFlags(composeCodexArgv({ root, schemaPath, outputPath }))
+    const argv = assertNoWriteEnablingFlags(composeCodexArgv({ root, schemaPath, outputPath, platform }))
     const spawn = resolveSpawn(binary, argv, { platform })
     if (spawn === null) return shimUnresolved('codex', binary)
     // The prompt goes to stdin, never argv. `codex exec` reads instructions
@@ -1301,6 +1330,8 @@ const USAGE =
   'Runs the memory audit through Codex CLI, then reports that the bundled\n' +
   'memory-auditor subagent must be used. Read-only: this never writes to\n' +
   'memory/, CLAUDE.md, AGENTS.md, or .claude/rules/.\n\n' +
+  'The Codex tier calls a model and creates temporary output outside the project.\n' +
+  'On Windows it uses MXC. Unsupported hosts fail without a weaker retry.\n\n' +
   '--observations passes evidence the coordinating session gathered outside the\n' +
   'checkout — a test run it watched, runtime state, deployment facts — as a file\n' +
   'or on stdin. Without it the evaluator is told explicitly that none was given,\n' +

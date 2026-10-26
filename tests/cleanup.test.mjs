@@ -1,7 +1,7 @@
 // The cleanup mode: contradictions, inaccuracies, and rot.
 //
 // The playbook is instruction, so these tests pin the sentences that carry
-// its guarantees -- nothing is written before the user agrees, the pass is
+// its guarantees -- writes stay within accepted scope, the pass is
 // never presented as independent, history is archived or superseded rather
 // than deleted -- and check that the playbook and the rot script agree on
 // which signals exist.
@@ -53,9 +53,11 @@ test('the accuracy pass is never presented as an independent audit', () => {
   assert.match(cleanup, /recommend `audit`/)
 })
 
-test('nothing is written before the user accepts the plan', () => {
-  assert.match(cleanup, /Nothing is written before that answer/)
-  const plan = raw.indexOf('## 6. Present the plan, then stop')
+test('read-only cleanup stops; accepted repairs proceed; new writes need acceptance', () => {
+  assert.match(cleanup, /For a read-only request, stop after the findings/)
+  assert.match(cleanup, /user already accepted a named set of repairs, apply that set without asking again/)
+  assert.match(cleanup, /Otherwise ask which items to apply before writing/)
+  const plan = raw.indexOf('## 6. Present the findings and check write scope')
   const apply = raw.indexOf('## 7. Apply what was accepted')
   assert.ok(plan !== -1 && apply > plan, 'the plan must come before any write')
 })

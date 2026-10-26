@@ -1,5 +1,9 @@
 # Advanced use
 
+For bounded workers, portable handoffs, due checks, the local scheduler, context
+checkpoints, and migration, see [operation and rollback](operations.md).
+These controls are explicit and opt-in. Ordinary small tasks remain direct.
+
 For when the two-command routine in the [quickstart](quickstart.md) is working
 and you want more: several branches at once, Codex, checks in CI, stronger
 audits, and memory that holds up across a team. Each section stands alone.
@@ -41,8 +45,10 @@ find its own `memory/INDEX.md` first.
 
 ## Codex
 
-The repository ships a Codex plugin manifest (`.codex-plugin/plugin.json`)
-beside the Claude Code one. The skill and its playbooks are shared.
+The repository ships a portable root manifest and a Codex compatibility
+manifest (`.codex-plugin/plugin.json`) beside the Claude Code one.
+Skills and playbooks have one source. The [host test record](host-support.md)
+separates package checks from live host results.
 
 **Pointing Codex at memory.** Codex reads `AGENTS.md`, not `CLAUDE.md`. `init`
 writes the same memory section into `AGENTS.md` when the project has one, and
@@ -60,13 +66,72 @@ whether the two sections match.
   playbooks carry the same discipline.
 - The skill's `$0` and `${CLAUDE_SKILL_DIR}` are not substituted by Codex; the
   skill tells the agent how to resolve them itself.
-- The eleven engineering skills install with the same plugin and are invoked
+- The eleven engineering skills and five explicit shortcuts use the same plugin and are invoked
   as `$plan`, `$review`, `$verify`, and so on. Each carries
   `agents/openai.yaml` for the skill picker and the same note on resolving its
   variables. Where a skill offers a second opinion from another model, the
   other model from a Codex session can be Claude (for example a Claude Code
   subagent or `claude -p`); a second Codex run on the same model is a second
   reading, not a second model.
+
+**Check the package before use.** Run the setup check from the plugin folder:
+
+```bash
+node scripts/hosts/setup.mjs check --host codex-cli
+```
+
+Use `codex-desktop` or `codex-cloud` to inspect those separate limits.
+This reads package files. It does not install the plugin, change settings,
+trust hooks, or prove tool access. Use `--host claude` for the Claude view.
+See the command's `--help` output for an explicit role packet from a version 2
+plan and run. The packet uses the shared assignment and result contracts.
+It does not start an agent. The lead must check the actual tools before dispatch.
+The current role is the memory auditor. New roles belong to Phase 3.
+
+Codex cannot be made read-only by role prose alone. A child can inherit
+external tools. Check those grants as well as file access. If a read fails,
+record a blocked result. Do not widen access to make a test pass.
+
+On the tested Windows CLI 0.162.1, the audit bridge now selects MXC for command
+isolation. The older elevated helper failed before it could read a file.
+MXC passed a real read and a denied-write control. The bridge ignores user config,
+disables app/plugin/browser/agent features and web search, and stays read-only.
+Unsupported hosts return a failure or the existing subagent handoff. There is no
+retry with weaker access. This changes no global Windows or Codex setting.
+
+Codex command reads and Claude file tools have different limits. Native Codex
+coordination tools may remain visible despite feature flags. The packet forbids
+delegation, but that rule is an instruction. Use the narrow Claude auditor when
+tool-level isolation is required. Recheck grants on another host or managed setup.
+The shared result schema is for local validation. It is not directly compatible
+with every provider's strict output decoder. Validate returned JSON through the
+shared submission path; keep all local constraints.
+
+## Claude hooks and fallback
+
+The Claude package uses command hooks. It does not use agent hook handlers.
+Startup and compaction use one bounded SessionStart response per event.
+The edit handler covers Edit, Write, MultiEdit, and NotebookEdit.
+It checks file paths in code. It does not depend on a host `if`
+filter. Shell edits need an explicit status check at the next work boundary.
+
+Plugin enablement and host trust are separate from the plugin's own controls.
+Existing status-line settings stay unchanged. Context percentage is unknown.
+An optional status-line bridge and a persistent integrity queue belong to Phase 5.
+No hook in this phase starts a model or a background job.
+Set `COMPOUND_MEMORY_HOOKS=0` to suppress this plugin's hook output.
+Host hook controls still apply. `COMPOUND_MEMORY_INTEGRITY_QUEUE=1` does not
+start or queue work in Phase 2; setup reports that capability as unavailable.
+
+The memory auditor declares only Read, Grep, and Glob for Claude.
+Plugin-agent `permissionMode`, `hooks`, and `mcpServers` fields do not enforce
+its access. Use actual runtime grants as the evidence.
+If hooks or the agent are unavailable, run an explicit memory status request.
+
+Put live test projects outside the directory loaded as the plugin. In the Phase 2
+checks, narrow file rules worked in an external temporary project and failed in
+the plugin tree. No broader edit grant was needed. See the
+[closure record](plans/2026-10-25-phase-2-closure.md) for the tested limits.
 
 **Handing work to Codex.** From a Claude Code session:
 

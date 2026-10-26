@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 2,
+  "kind": "plan",
+  "planId": "small-example",
+  "revision": 1,
+  "title": "Fix one calculation",
+  "requirements": [{"id": "R1", "description": "The calculation returns the expected value for the regression case."}],
+  "decisions": [{"id": "D1", "choice": "Keep the public call unchanged.", "owner": "project-owner"}],
+  "exclusions": ["No UI change."],
+  "risks": ["A neighboring edge case may change."],
+  "phases": [{"id": "P1", "title": "Fix and check"}],
+  "checks": [{"id": "C1", "description": "Run the calculation tests, including the new regression and the unchanged edge cases."}],
+  "finalChecks": ["C1"],
+  "gates": [],
+  "tasks": [{
+    "id": "U1",
+    "title": "Fix the calculation and add its regression test",
+    "phaseId": "P1",
+    "covers": ["R1"],
+    "dependsOn": [],
+    "requiresGates": [],
+    "paths": ["src/calculation.mjs", "tests/calculation.test.mjs"],
+    "resources": [],
+    "requiredChecks": ["C1"]
+  }]
+}

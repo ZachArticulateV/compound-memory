@@ -1,0 +1,5 @@
+interface:
+  display_name: "Sync"
+  short_description: "Update project memory after completed work."
+policy:
+  allow_implicit_invocation: false

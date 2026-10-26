@@ -1,20 +1,25 @@
 ---
 name: build
-description: "Implement planned work with proof at every step: execute a plan or tickets unit by unit, running independent units in parallel; refine code just written; or improve a measured metric, keeping only the wins that clear the noise. Use when the user asks to implement, build, execute a plan or ticket, clean up freshly written code, or make something faster or smaller."
+description: "Implement planned work, refine recent code, or improve a measured metric. Use when the user asks to build, execute a plan or ticket, simplify code, or optimize a known baseline. Keep small edits small."
 argument-hint: "[work|simplify|optimize] [plan path, ticket, or goal]"
 allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/tickets-check.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/measure.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/run-record.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/changes.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/project-state.mjs" *)
 ---
 
 # Build
 
-Make the change the plan describes, prove each piece as it lands, and leave a
-history someone can follow commit by commit.
+Keep the user's scope. A question stays read-only; plan-only work stops at the
+plan. Use `../../references/task-routing.md` for task size and route choices.
+
+Make the change the plan describes and prove each piece as it lands.
+Use `../../references/agents.md` when a task needs a specialist worker.
 
 **Done when:** every unit you built has a check suited to it that you ran and
 saw give the right answer (new behavior: it failed before the change and
 passes after; cleanup: the same results before and after; configuration or
-documents: they parse, build, or lint), the project's own suite passes, no
-temporary debug code is left, and the work is committed.
+documents: they parse, build, or lint), the required checks pass, and no
+temporary debug code is left. A worker returns its result and real proof.
+The lead checks the combined work and the project's own suite. It commits only
+when commits are in the user's scope. Shared-tree workers never commit.
 
 ## Modes
 
@@ -36,9 +41,10 @@ request to decide it, use `work`. Read only the reference for the mode you run.
    node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" --paths <dir>,<dir>
    ```
 
-   On the repository's default branch, create a feature branch before the first
-   commit. When the working tree already holds edits, snapshot it before your
-   first change, so the commit check can tell the user's edits from yours:
+   The lead creates a feature branch before an authorized commit on the default
+   branch. Shared-tree workers do not branch. When the working tree holds edits,
+   the lead snapshots it before the first change, so the commit check can tell
+   the user's edits from the worker's:
 
    ```bash
    node "${CLAUDE_SKILL_DIR}/../../scripts/changes.mjs" snapshot
@@ -65,7 +71,8 @@ building what was asked and proving it works.
 
 - **Reads:** a plan or tickets from `plan`, lessons, a prototype's validated
   module, the project's verification skill.
-- **Hands off:** commits to `review` and `ship`; finished tickets marked done;
+- **Hands off:** changes and proof to the lead or `review`; authorized commits
+  to `ship`; finished tickets marked done by the lead;
   a lesson worth keeping to `learn capture`.
 - **Alone:** given a plain request and no plan, write a short plan in the reply
   (units, each with a check) and build from that.

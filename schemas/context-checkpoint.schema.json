@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Bounded advisory context checkpoint",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "kind", "host", "sessionId", "modelId", "epoch", "at", "reading", "reason", "facts", "nextStep", "limit"],
+  "properties": {
+    "schemaVersion": {"const": 1}, "kind": {"const": "context-checkpoint"},
+    "host": {"enum": ["claude", "codex"]}, "sessionId": {"type": "string"}, "modelId": {"type": "string"},
+    "epoch": {"type": "integer", "minimum": 0}, "at": {"type": "integer"},
+    "reading": {"type": "object", "required": ["usedPercentage", "basis", "reason"]},
+    "reason": {"enum": ["threshold", "pre-compact", "handoff", "time-fallback"]},
+    "facts": {"type": "array", "maxItems": 10, "items": {"type": "string", "maxLength": 300}},
+    "nextStep": {"type": "string", "maxLength": 500}, "limit": {"type": "string"}
+  }
+}
