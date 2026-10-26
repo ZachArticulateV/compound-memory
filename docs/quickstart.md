@@ -24,6 +24,16 @@ You need:
 
 ## 1. Install the plugin
 
+Daily memory modes also have explicit shortcuts in Claude Code:
+`/compound-memory:handoff`, `/compound-memory:sync`, `/compound-memory:grill`,
+`/compound-memory:cleanup`, and `/compound-memory:repair`. They read the same
+playbooks as the longer mode commands below. Short forms such as `/handoff`
+depend on name collisions; see [task selection](../references/task-routing.md).
+
+For local code work, `ship commit` and `autopilot` can finish at checked,
+reviewed commits without a hosted remote. GitHub steps run only when publishing
+is in scope. A blocked requested publish stays blocked, not complete.
+
 Inside Claude Code, run these two commands:
 
 ```bash

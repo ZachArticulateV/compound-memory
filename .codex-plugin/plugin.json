@@ -2,7 +2,7 @@
   "name": "compound-memory",
   "displayName": "Compound Memory",
   "version": "2.1.0-rc.1",
-  "description": "Project memory and development work for Claude Code and Codex. Seventeen skills: project-memory, plan, prototype, build, debug, review, verify, ship, autopilot, learn, write, catch-up, handoff, sync, grill, cleanup, and repair. The last five are explicit memory shortcuts. Shared plans, task results, captured proof, specialist roles, bounded CLI workers, and portable handoffs stay in project files. Optional local memory checks are off until enabled. Claude has advisory hooks. Codex hooks remain disabled; manual boundaries and the local polling runner are available. See host-support.md for tested versions and limits.",
+  "description": "Project memory and development work for Claude Code and Codex, with shared plans, proof, specialist workers, and portable handoffs. Twelve core skills (project-memory, plan, prototype, build, debug, review, verify, ship, autopilot, learn, write, catch-up) plus five shortcuts (handoff, sync, grill, cleanup, repair); Claude hooks are advisory, Codex hooks stay disabled, and local memory checks are opt-in; see docs/host-support.md for tested scope and limits.",
   "author": {
     "name": "Zachary W.",
     "url": "https://articulatevision.com"

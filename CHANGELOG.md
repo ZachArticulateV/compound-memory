@@ -6,6 +6,13 @@ All notable changes to this plugin are documented here. Format follows
 
 ## [Unreleased]
 
+- Recovered the missing Claude branch changes while keeping the newer shared
+  work rules: local-only shipping outcomes, short skill and manifest descriptions,
+  explicit shortcut guidance, and Windows session-path lookup notes.
+- Added separate core-skill and shortcut counts and description checks.
+  Cross-session shipping now checks related branches before claiming all work
+  shipped. The branch audit records deliberate exclusions and preserved work.
+
 - Changed the 50% context action to a passive continuity save after local setup.
   The active lead updates memory, saves a handoff and plan/proof links, then
   continues work. Failed saves stay pending. Hooks never block or reset a session.

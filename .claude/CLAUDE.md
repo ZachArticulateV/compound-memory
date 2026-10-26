@@ -9,6 +9,10 @@ review, verify, ship, autopilot, learn, write, catch-up) that hand work to each
 other through the files in `references/artifacts.md`. This repository ships the
 plugin and tracks its own development in its own `memory/` tree.
 
+Memory and development work can stay local. `ship commit` needs Git but no
+hosted remote. PRs, CI, and review comments use GitHub only when publishing is
+in scope. Report unsupported or inaccessible hosts as blocked when requested.
+
 ## Critical Commands
 
 - Test: `node --test` (from the repository root; never `node --test tests/`,
@@ -29,6 +33,8 @@ plugin and tracks its own development in its own `memory/` tree.
   author, and carry no attribution lines.
 - The engineering skills state outcomes and trust the model (decision 009).
   Add a script for a fact that must be exact rather than a prohibition.
+- Each skill description has at most two sentences and 300 characters.
+  Keep the task scope and invocation rules when shortening it.
 - `.claude-plugin/plugin.json` and `.codex-plugin/plugin.json` keep identical
   shared metadata; `tests/manifest.test.mjs` enforces it.
 - Counts stated in prose (modes, checks, templates, secret patterns) are pinned

@@ -1,6 +1,6 @@
 ---
 name: write
-description: "Write or revise docs, reports, and agent instructions, or explain text in plain words. Use when the user asks to write, edit, tighten, or explain prose. A short rewrite needs only a short reply."
+description: "Write or revise docs, reports, and agent instructions, or explain text in plain words. Use when the user asks to write, edit, tighten, or explain prose; a short rewrite needs only a short reply."
 argument-hint: "[docs|agents|plain] [text, file path, or nothing for the last message]"
 allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/rewrite-check.mjs" *)
 ---

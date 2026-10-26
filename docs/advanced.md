@@ -167,6 +167,11 @@ lines into its resume prompt, so the other agent works to the same contract.
 
 ## Planning with `grill`
 
+The explicit Claude Code shortcut is `/compound-memory:grill <plan>`.
+Handoff, sync, cleanup, and repair have the same prefixed shortcut form.
+In Codex, select the matching skill from this plugin. The existing mode
+commands still work; see [task selection](../references/task-routing.md).
+
 `/project-memory grill <plan>` interviews you about a plan before you build it.
 Questions come in rounds, each with a recommended answer; Claude looks up facts
 itself and asks you only for decisions. Every answer is checked against

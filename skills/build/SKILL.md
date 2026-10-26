@@ -1,6 +1,6 @@
 ---
 name: build
-description: "Implement planned work, refine recent code, or improve a measured metric. Use when the user asks to build, execute a plan or ticket, simplify code, or optimize a known baseline. Keep small edits small."
+description: "Implement planned work, refine recent code, or improve a measured metric. Use when the user asks to build, execute a plan or ticket, simplify code, or optimize a known baseline; keep small edits small."
 argument-hint: "[work|simplify|optimize] [plan path, ticket, or goal]"
 allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/tickets-check.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/measure.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/run-record.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/changes.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/project-state.mjs" *)
 ---

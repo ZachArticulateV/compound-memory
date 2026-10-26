@@ -23,6 +23,14 @@ Turn the working tree into commits a reviewer can read one at a time.
    apply cleanly; the patch keeps their work. Edits that were unstaged before
    you began stay unstaged; when one sits in a file you changed, stage only
    your hunks.
+   When shipping the latest work across sessions or branches, inventory the
+   relevant local branches, worktrees, and remote heads first. Compare each
+   branch with its merge result and the current files. A merged PR does not
+   include commits pushed to its branch after the merge; a commit count alone
+   can also mislead after rewritten history. Record which changes are already
+   present, brought in, superseded, or intentionally excluded. Do not claim all
+   work is shipped until that inventory is resolved. Keep newer work and
+   deliberate removals when applying an older change.
 2. **Group by intent.** One commit per logical change (a unit, a ticket, a
    fix). Stage files, or hunks with `git add -p`, per group. When one file
    holds changes for two groups, or yours and someone else's, stage only your

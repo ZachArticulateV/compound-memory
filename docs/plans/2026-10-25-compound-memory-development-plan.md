@@ -2,6 +2,11 @@
 
 Date: 2026-10-25.
 
+The user authorized a full Claude branch recovery and source push/merge on
+2026-10-26. The [branch reconciliation](2026-10-26-claude-branch-reconciliation.md)
+records the seven checked branches, missing changes, preserved newer work,
+and checks. This follow-up does not install the plugin or start jobs.
+
 Phases 0-3 passed within their recorded scope. The remaining units are built for
 2.1.0-rc.1. The [completion results](2026-10-26-completion-results.md) record
 Phases 4-7, final gate evidence, and explicit support limits.
@@ -12,7 +17,8 @@ optional-only warning policy: after local setup, measured 50% use requests a
 memory update, handoff, and documentation links while the session continues.
 See [the passive-save follow-up](2026-10-26-passive-continuity.md).
 Phase 2 closure passed the named local CLI checks. Desktop UI and cloud are not runtime-certified.
-This does not approve a global install, a scheduled job, a push, or a release.
+Source push and merge were authorized later, as recorded above. A global
+install, a scheduled job, and a public release remain outside that scope.
 
 Read the [validation cases and source notes](2026-10-25-compound-memory-validation.md) with this plan.
 They define the proof each task must produce.
@@ -21,7 +27,8 @@ Read the [Phase 0 findings](2026-10-25-phase-0-findings.md), [coverage map](../c
 U1-U3 have deliverables. G0 is met because source conflicts and host unknowns now have explicit records.
 This is not a claim that all host tests passed.
 The Phase 0 Codex file-read failure was resolved in Phase 2 with the supported Windows MXC mode.
-Later phase and release gates remain open.
+Later phase gates were open at that Phase 0 checkpoint. The completion results
+above record their later bounded checks; public release remains a separate step.
 Read the [Phase 1 results](2026-10-25-phase-1-results.md) for U4-U7, the final tests, and Claude's recheck.
 Read the [Phase 2 results](2026-10-25-phase-2-results.md) for U8-U11, Claude review, routing observations, and the remaining host checks.
 The [Phase 2 closure](2026-10-25-phase-2-closure.md) resolves those checks and records the current host limits.

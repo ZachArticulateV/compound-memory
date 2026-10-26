@@ -4,6 +4,11 @@ Updated: 2026-10-26
 
 ## Now
 
+The [Claude branch audit](../docs/plans/2026-10-26-claude-branch-reconciliation.md)
+records recovery of missing branch changes. Check its validation and GitHub
+merge record before treating this follow-up as shipped. It preserves the
+candidate version and requires no new installation or timer.
+
 The remaining development units are built for candidate 2.1.0-rc.1.
 Read the [completion report](../docs/plans/2026-10-26-completion-results.md) for
 final proof and host limits. Read [operation and rollback](../docs/operations.md)

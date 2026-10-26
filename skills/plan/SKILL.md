@@ -1,6 +1,6 @@
 ---
 name: plan
-description: "Settle requirements, compare approaches, write a plan, or split it into tasks. Use when the user asks to plan work, explore requirements, choose an approach, or create tickets. Planning does not authorize implementation."
+description: "Settle requirements, compare approaches, write a plan, or split it into tasks. Use when the user asks to plan work, explore requirements, choose an approach, or create tickets; planning does not authorize implementation."
 argument-hint: "[brainstorm|decide|plan|tickets] [idea, question, plan path, or issue]"
 allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/tickets-check.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/plan-check.mjs" *)
 ---

@@ -118,7 +118,18 @@ and three Claude Code hook events. The Codex manifest opts out of the hooks
 
 ## Active workstreams
 
-Phase 1 shared work rules are built and checked in the working tree on the Phase 1 branch.
+The 2026-10-26 Claude branch reconciliation checked all seven remote Claude
+branches against their merge results and current source. One post-merge commit
+had missing changes. Local-only shipping, short descriptions, shortcut guidance,
+and Windows session-path notes are now restored with the newer controls intact.
+See [the branch audit](../docs/plans/2026-10-26-claude-branch-reconciliation.md)
+and decision 017. GitHub is authoritative for the follow-up PR and merge state.
+The source suite passed 1,034 of 1,061 tests, with 27 skipped and none failed.
+Strict Claude validation and memory validation passed. Claude reviewed the
+changed instructions; the final scoped recheck had no findings.
+
+Phase 1 shared work rules were built and checked on the Phase 1 branch.
+They are included in the source merged through PR 11 and preserved by this follow-up.
 G1 passed. Claude's final recheck found no remaining P1 or P2 issue in the recovery fixes.
 See [the Phase 1 record](../docs/plans/2026-10-25-phase-1-results.md).
 The version 2 path adds plan graphs, lead-owned run state, immutable worker results,
@@ -172,8 +183,10 @@ The remaining units are built as a local candidate. The
 [completion report](../docs/plans/2026-10-26-completion-results.md) carries final
 checks and support bounds. Bounded workers, portable handoffs, opt-in due checks,
 context checkpoints, local reports, lesson policy, and migration are present.
-Queues and jobs remain off in this project. No commit, push, global install,
-production schedule, or public release was made.
+Queues and jobs remain off in this project. That completion pass did not commit
+or push. Source later merged through
+[PR 11](https://github.com/ZachArticulateV/compound-memory/pull/11).
+No global install, production schedule, or public release was made.
 
 The user then chose passive continuity saves. After local Claude bridge setup,
 50% measured use queues an update for the current lead. The lead saves verified

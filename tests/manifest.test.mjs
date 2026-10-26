@@ -84,9 +84,13 @@ test('the description names every skill and states how many there are', () => {
   for (const skill of skills) {
     assert.match(description, new RegExp(`\\b${skill}\\b`), `the description does not name the ${skill} skill`)
   }
-  const countWord = NUMBER_WORDS[skills.length]
-  assert.ok(countWord, `no number word for ${skills.length} skills`)
-  assert.match(description, new RegExp(`\\b${countWord} skills\\b`, 'i'), `the description should say "${countWord} skills"`)
+  const shortcut = (name) => /^disable-model-invocation:\s*true$/m.test(readFileSync(join(skillsDir, name, 'SKILL.md'), 'utf8'))
+  const counts = { 'core skills': skills.filter((name) => !shortcut(name)).length, shortcuts: skills.filter(shortcut).length }
+  for (const [kind, count] of Object.entries(counts)) {
+    assert.ok(NUMBER_WORDS[count], `no number word for ${count} ${kind}`)
+    assert.match(description, new RegExp(`\\b${NUMBER_WORDS[count]} ${kind}\\b`, 'i'))
+  }
+  assert.ok((description.match(/[.!?](?=\s|$)/g) ?? []).length <= 2, 'keep the description to two sentences')
 })
 
 test('homepage and repository point at the repository named after the plugin', () => {

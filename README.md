@@ -44,8 +44,8 @@ blocks a success claim.
 | `debug` | Reproduce a bug with a tight loop, find the root cause, fix it behind a regression test |
 | `review` | Review code or a document in separate spec, standards, and correctness lenses, with quote-checked findings |
 | `verify` | Generate a verification skill for your app, drive the real app, and keep the evidence |
-| `ship` | Commit, open a PR that states how it was verified, watch CI, and answer review comments |
-| `autopilot` | Take a request to a reviewed, verified pull request without stopping |
+| `ship` | Make reviewable local commits; when publishing is in scope, open a PR, watch CI, and answer review comments |
+| `autopilot` | Finish at reviewed, verified commits; add a PR when publishing is in scope and GitHub is available |
 | `learn` | Capture lessons, turn repeated mistakes into checks, run retros, refresh lessons, update your working profile |
 | `write` | Write docs for people, instructions for agents, or a plain explanation |
 | `catch-up` | Summarize what changed since your last message, or where work stands across sessions |
@@ -57,6 +57,21 @@ requests. Selection is model behavior; the package does not guarantee it.
 The five shortcuts are explicit-only: `handoff`, `sync`, `grill`, `cleanup`,
 and `repair`. They read the existing memory playbooks.
 See [task selection](references/task-routing.md) for scope and name collisions.
+
+| Claude Code shortcut | Same memory mode |
+| --- | --- |
+| `/compound-memory:grill [plan]` | `/project-memory grill` |
+| `/compound-memory:handoff [focus]` | `/project-memory handoff` |
+| `/compound-memory:sync` | `/project-memory sync` |
+| `/compound-memory:cleanup` | `/project-memory cleanup` |
+| `/compound-memory:repair` | `/project-memory repair` |
+
+Short forms such as `/handoff` work only when the host resolves them to this
+plugin. In Codex, select the matching skill and check its source.
+Memory and development work can stay local. `ship commit` needs a Git
+repository, but no remote or GitHub account. PRs, CI, and review comments need
+GitHub and publishing scope. A local-only request ends at the commits even if
+a remote exists. If requested publishing is unavailable, report that blocked step.
 
 ## Alone, together, or end to end
 
@@ -74,7 +89,7 @@ Common combinations:
 /compound-memory:debug            ->  review  ->  ship pr  ->  learn capture
 /compound-memory:verify create    (once per app)  then  verify run  after every user-facing change
 /compound-memory:learn correct    whenever you correct an agent for the same thing twice
-/compound-memory:autopilot        all of the first line, unattended, ending at an open PR
+/compound-memory:autopilot        reviewed local commits; a PR when publishing is in scope
 ```
 
 ## Memory

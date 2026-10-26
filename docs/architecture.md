@@ -504,7 +504,20 @@ metadata. The skill is model-invoked in both harnesses, so it sets no
 `allow_implicit_invocation` policy; a test fails if the two harnesses ever
 disagree about who may invoke it.
 
+### Five shortcuts
+
+The five explicit shortcuts each read their existing memory playbook.
+Claude uses `disable-model-invocation: true`; Codex uses
+`allow_implicit_invocation: false`. Shortcuts keep the current scoped script
+grants and do not start another skill. Description limits are two sentences
+and 300 characters per entry. The manifest counts twelve core skills and five
+shortcuts separately. These are package rules, not a zero-context-use promise.
+
 ### Eleven engineering skills
+
+Local shipping ends at reviewed commits. Hosted publishing adds GitHub PR,
+CI, and feedback steps only within the user's scope. Both routes retain the
+current proof gates, task ownership, and combined-code checks.
 
 `plan`, `prototype`, `build`, `debug`, `review`, `verify`, `ship`, `autopilot`,
 `learn`, `write`, and `catch-up` each live in `skills/<name>/` with the same
@@ -624,22 +637,26 @@ project-memory/
 │   │   ├── evidence-policy.md         |  shared references,
 │   │   ├── safety.md                  |  loaded on demand
 │   │   └── interview.md              /
-│   └── templates/
-│       ├── index.md                  → memory/INDEX.md
-│       ├── project-brief.md          → memory/project-brief.md
-│       ├── current-state.md          → memory/current-state.md
-│       ├── handoff.md                → memory/handoff.md or handoffs/<slug>.md
-│       ├── next-actions.md           → memory/next-actions.md
-│       ├── bugs-and-risks.md         → memory/bugs-and-risks.md
-│       ├── acceptance-criteria.md    → memory/acceptance-criteria.md
-│       ├── glossary.md               → memory/glossary.md
-│       ├── decision-record.md        → one file under memory/decisions/
-│       └── claude-md-section.md      → the section inserted into CLAUDE.md
+│   ├── templates/
+│   │   ├── index.md                  → memory/INDEX.md
+│   │   ├── project-brief.md          → memory/project-brief.md
+│   │   ├── current-state.md          → memory/current-state.md
+│   │   ├── handoff.md                → memory/handoff.md or handoffs/<slug>.md
+│   │   ├── next-actions.md           → memory/next-actions.md
+│   │   ├── bugs-and-risks.md         → memory/bugs-and-risks.md
+│   │   ├── acceptance-criteria.md    → memory/acceptance-criteria.md
+│   │   ├── glossary.md               → memory/glossary.md
+│   │   ├── decision-record.md        → one file under memory/decisions/
+│   │   └── claude-md-section.md      → the section inserted into CLAUDE.md
+│   └── agents/openai.yaml            Codex picker metadata; model-invoked
 ├── skills/<plan|prototype|build|debug|review|verify|ship|autopilot|learn|write|catch-up>/
 │   ├── SKILL.md                      outcome, Done when, mode table, Works with
 │   ├── references/                   one file per mode, loaded one at a time
 │   ├── templates/                    learn only: lesson.md, guardrails.md
 │   └── agents/openai.yaml            Codex picker metadata
+├── skills/<grill|handoff|sync|cleanup|repair>/
+│   ├── SKILL.md                      explicit shortcut reading one memory playbook
+│   └── agents/openai.yaml            Codex implicit invocation off
 ├── tests/
 │   ├── *.test.mjs                    unit suites, one per component
 │   ├── acceptance/                   scenario-labelled composed runs, plus a

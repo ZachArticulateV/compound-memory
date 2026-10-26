@@ -1,6 +1,6 @@
 ---
 name: catch-up
-description: "Report what changed or where work stands, with open decisions and the next step. Use when the user asks for a progress update, a session summary, or where they left off. Memory health belongs to project-memory status."
+description: "Report what changed or where work stands, with open decisions and the next step. Use when the user asks for a progress update, a session summary, or where they left off; memory health belongs to project-memory status."
 argument-hint: "[chat|work] [topic or time window]"
 allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/project-state.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/tickets-check.mjs" *)
 ---

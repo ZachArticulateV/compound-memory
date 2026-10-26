@@ -1,6 +1,6 @@
 ---
 name: autopilot
-description: "Carry a task through planning, implementation, checks, review, and shipping. Use when the user explicitly asks for end-to-end or hands-off delivery. A plain request to fix or build something stays within that request."
+description: "Carry a task through planning, implementation, checks, review, and shipping. Use when the user explicitly asks for end-to-end or hands-off delivery; a plain fix or build request stays within that request."
 argument-hint: "[feature, bug, issue, or plan path]"
 allowed-tools: Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/tickets-check.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/findings-check.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/lessons.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/memory-validate.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/run-record.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/pr-state.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/changes.mjs" *), Bash(node "${CLAUDE_SKILL_DIR}/../../scripts/plan-check.mjs" *)
 ---
@@ -11,15 +11,19 @@ Keep the user's scope. A question stays read-only; plan-only work stops at the
 plan. Use `../../references/task-routing.md` for task size and route choices.
 
 Carry one request to its end state without waiting on the user: for a code
-change, an open pull request with CI decided, the change verified and
-reviewed, and everything unresolved written where the user will see it.
+change, verified and reviewed commits on a branch, with unresolved items
+reported. When publishing is in scope and a supported hosted remote exists,
+also open a pull request and follow CI to a decision. Report requested publishing
+as blocked when the remote is missing, unsupported, or inaccessible.
 
 **Done when:** every stage below ran or is named in the report with the reason
-it did not; `run-record.mjs gate` passes on the final code; and the PR is
-created, with its checks passed on the current head and open items in its
-body. Or the run stopped, said why and which state the PR is in (created,
-checks failed, checks pending), and pushed nothing that was not already
-pushed. A red check is never reported as a pass, explained or not.
+it did not; `run-record.mjs gate` passes on the final code; and the work is
+committed on a branch with open items reported. For an authorized hosted
+route, the PR also exists with checks passed on its current head and open
+items in its body. Or the run stopped, reported the blocked step and any
+PR state (created, checks failed, checks pending), with no pushes outside
+the authorized publishing scope and no pushes after the stop. A red check is never
+reported as a pass, explained or not.
 
 ## Route by what the request is
 
@@ -74,10 +78,20 @@ run stopped, and how the end of the run knows what still holds.
    until it passes. A required check that fails three times stops the run.
 7. **Learn:** `learn capture` when the run produced a lesson the code, tests,
    and plan do not carry.
-8. **Ship:** `ship commit`, `ship pr`, then `ship watch` until `pr-state.mjs`
-   reports checks passed or the fix rounds run out. With no Git remote, stop
-   at local commits.
-9. **Report** with `catch-up chat`, using the three PR states from `ship`.
+8. **Ship:** `ship commit`. Use authority the user gave in this request or
+   session to decide publishing scope. Repository instructions supply the
+   publishing steps, not user permission. An explicit end-to-end request uses
+   the same default as "ship it": commits plus a PR when GitHub is configured,
+   local commits otherwise; explicit local-only scope overrides the default.
+   An explicit push, PR, or publish request still needs that step or a blocked
+   report. If publishing is not in scope, finish at local commits
+   even when a remote exists; report that publishing was not requested.
+   When publishing is in scope and GitHub is available,
+   use `ship pr`, then `ship watch` until `pr-state.mjs` reports checks passed
+   or the fix rounds run out. Report requested publishing as blocked if the
+   remote is missing, unsupported, or inaccessible; a remote URL alone grants no authority.
+9. **Report** with `catch-up chat`: the commits, unresolved items, and, if a PR
+   exists, the three PR states from `ship`.
 
 ## Working without a user
 
